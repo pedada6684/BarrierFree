@@ -7,4 +7,5 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
 
     public Place findPlaceByPoiId(String PoiId);
 
+    boolean existsByPoiId(String poiId);
 }

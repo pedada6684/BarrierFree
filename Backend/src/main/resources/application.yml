@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/fullShip
+    username: root
+    password: 1234
+  profiles:
+    include: auth, secret
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        # show_sql: true # sysout 단계에서 쿼리문을 날린다
+        format_sql: true
+        default_batch_fetch_size: 1000  # select 배치 조회 크기
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace # log 단계에서 쿼리문을 나타낸다 !
+
+server:
+  servlet:
+    context-path: '/api'
+

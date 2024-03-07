@@ -210,35 +210,6 @@ public class BarrierFreeConstructor {
 
     //tmap에서 받은 정보를 mysql에 저장
 
-    public void publicDataPlaceXmlParser(String data) {
-        try {
-
-            InputStream is = new ByteArrayInputStream(data.getBytes("UTF-8"));
-
-            // Document 객체 생성
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-
-            Document doc = dBuilder.parse(is);
-            doc.getDocumentElement().normalize();
-
-            // facInfoList 태그 내의 servList 태그들을 가져오기
-            NodeList servList = doc.getElementsByTagName("servList");
-
-            // servList 태그들을 순회하며 각 태그에 해당하는 값들 저장
-            for (int i = 0; i < servList.getLength(); i++) {
-                Element servElement = (Element) servList.item(i);
-
-                Element wfcltIdElement = (Element) servElement.getElementsByTagName("wfcltId").item(0);
-                String wfcltId = (wfcltIdElement != null) ? wfcltIdElement.getTextContent() : "";
-
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private HttpHeaders setHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

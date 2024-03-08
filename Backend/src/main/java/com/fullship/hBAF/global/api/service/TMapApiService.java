@@ -29,7 +29,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class TMapApiService {
 
-  @Value("${public.api.tmap.key}")
+  @Value("${api.tmap.key}")
   private String TMapKey;
 
   private final ApiService<String> apiService;

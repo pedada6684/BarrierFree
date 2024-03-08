@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TagoApiService {
 
-  @Value("${public.api.public.key}")
+  @Value("${api.tago.key}")
   private String TagoKey;
 
   private HttpHeaders setHttpHeaders() {

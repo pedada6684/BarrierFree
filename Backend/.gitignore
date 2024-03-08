@@ -25,7 +25,8 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-application.properties
+application-secret.yml
+application.yml
 
 ### NetBeans ###
 /nbproject/private/

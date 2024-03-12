@@ -6,14 +6,13 @@ import com.fullship.hBAF.global.api.service.command.SearchPathToTransitCommand;
 import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
+import java.net.URI;
 import java.sql.SQLOutput;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Response;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 @Slf4j
@@ -41,9 +41,9 @@ public class TMapApiService {
     return headers;
   }
 
-  public WheelPathForm searchPathToWheel(SearchPathToWheelCommand command) throws ParseException {
+  public WheelPathForm searchPathToWheel(SearchPathToWheelCommand command) {
     ResponseEntity<String> responseEntity =
-        apiService.post(command.getUrl(), setHttpHeaders(), command.getRequestBody(), String.class);
+        apiService.post(command.getUri(), setHttpHeaders(), command.getRequestBody(), String.class);
 
     WheelPathForm wheelPathForm = WheelPathForm.jsonToO(responseEntity);
 
@@ -55,10 +55,9 @@ public class TMapApiService {
     }
   }
 
-  public List<TransitPathForm> searchPathToTransit(SearchPathToTransitCommand command)
-      throws ParseException {
+  public List<TransitPathForm> searchPathToTransit(SearchPathToTransitCommand command) {
     ResponseEntity<String> responseEntity =
-        apiService.post(command.getUrl(), setHttpHeaders(), command.getRequestBody(), String.class);
+        apiService.post(command.getUri(), setHttpHeaders(), command.getRequestBody(), String.class);
 
     List<TransitPathForm> transitPathList = TransitPathForm.jsonToO(responseEntity);
 

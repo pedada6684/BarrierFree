@@ -2,6 +2,10 @@ package com.fullship.hBAF.domain.place.controller.request;
 
 import com.fullship.hBAF.global.api.service.command.SearchPathToTransitCommand;
 import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
+import com.fullship.hBAF.global.response.ErrorCode;
+import com.fullship.hBAF.global.response.exception.CustomException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
@@ -15,10 +19,14 @@ public class PathSearchToTransitRequest {
   private String endY;
 
   public SearchPathToTransitCommand createForTransit() {
-    return SearchPathToTransitCommand.builder()
-        .url("https://apis.openapi.sk.com/transit/routes")
-        .requestBody(createRequestBody())
-        .build();
+    try {
+      return SearchPathToTransitCommand.builder()
+          .uri(new URI("https://apis.openapi.sk.com/transit/routes"))
+          .requestBody(createRequestBody())
+          .build();
+    } catch (URISyntaxException e) {
+      throw new CustomException(ErrorCode.URI_SYNTAX_ERROR);
+    }
   }
 
   public Map createRequestBody() {

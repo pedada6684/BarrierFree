@@ -1,5 +1,6 @@
 package com.fullship.hBAF.global.api.service.command;
 
+import java.net.URI;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
@@ -8,7 +9,7 @@ import lombok.Data;
 @Builder
 public class SearchPathToWheelCommand {
 
-  private String url;
+  private URI uri;
   private Map<String, Object> requestBody;
 
 }

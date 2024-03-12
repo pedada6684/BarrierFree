@@ -8,6 +8,6 @@ import java.net.URL;
 @Data
 @Builder
 public class UpdatePlaceImageCommand {
-    private String poiId;
+    private Long placeId;
     private String imageUrl;
 }

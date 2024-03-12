@@ -42,13 +42,13 @@ public class PlaceService {
     if (command.getBarrierFree()){
       newPlace.insertWtcltId(command.getWtcltId());
     }
-    //검색결과를 기반으로 entity를 만들고 save함
+    //검색결과를 기반으로 save함
     return placeRepository.save(newPlace).getId();
   }
 
   @Transactional(readOnly = false)
   public Long updatePlaceImageUrl(UpdatePlaceImageCommand command){
-    Place place = placeRepository.findByPoiId(command.getPoiId()).orElseThrow(() -> new IllegalStateException());
+    Place place = placeRepository.findById(command.getPlaceId()).orElseThrow(() -> new IllegalStateException());
     Optional<Image> imageOptional = imageRepository.findByPlaceAndImageType(place, 0);
     if (imageOptional.isPresent()){
       Image image = imageOptional.get();

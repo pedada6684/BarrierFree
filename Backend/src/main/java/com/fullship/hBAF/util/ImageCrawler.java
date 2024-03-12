@@ -3,6 +3,7 @@ package com.fullship.hBAF.util;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.fullship.hBAF.domain.place.service.PlaceService;
+import com.fullship.hBAF.domain.place.service.command.UpdatePlaceImageCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
@@ -24,14 +25,29 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Transactional
 @Slf4j
 public class ImageCrawler {
     private final AmazonS3Client amazonS3Client;
+    private final PlaceService placeService;
 
     @Value("${cloud.aws.bucket}")
     private String bucket;
 
-    @Transactional
+    /**
+     * 베리어프리 장소 썸네일 이미지 업데이트 메서드
+     * @param placeName: 장소명
+     * @param placeId: 장소 id
+     */
+    public void updatelBFImage(String placeName, Long placeId) {
+        URL s3Url = crawlThumbnailImage(placeName);
+        UpdatePlaceImageCommand updatePlaceImageCommand = UpdatePlaceImageCommand.builder()
+                .placeId(placeId)
+                .imageUrl(s3Url.toString())
+                .build();
+        placeService.updatePlaceImageUrl(updatePlaceImageCommand);
+    }
+
     public URL crawlThumbnailImage(String searchKey) {
         //초기설정
         //TODO: driver 분화 필요
@@ -54,16 +70,15 @@ public class ImageCrawler {
         //크롤링
         List<WebElement> elements = webDriver.findElements(By.cssSelector(".lazyload-wrapper img"));
         for (WebElement element : elements) {
-            System.out.println(element.getAttribute("src"));
             String src = element.getAttribute("src");
             String alt = element.getAttribute("alt");
             if (alt.equals(searchKey)){
                 //이미지 S3 저장
                 return uploadImageToS3(src, alt);
             }else { // 검색결과가 매칭되지 않으면 저장하지 않음
-                System.out.println("NOT MATCH");
-                System.out.println("alt: " + alt);
-                System.out.println("search: " + searchKey);
+                log.info("NOT MATCH");
+                log.info("alt: " + alt);
+                log.info("search: " + searchKey);
             }
         }
         return null;

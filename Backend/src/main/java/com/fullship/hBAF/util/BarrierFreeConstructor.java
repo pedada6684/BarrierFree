@@ -151,12 +151,13 @@ public class BarrierFreeConstructor {
                             String frontLon = (String) poi.get("frontLon");
                             String id = (String) poi.get("id");
 
+                            //위, 경도가 있을 때
                             if (!faclLat.isEmpty() && !faclLng.isEmpty()) {
                                 String subFaclLat = faclLat.substring(0, 5);
                                 String subFaclLng = faclLng.substring(0, 5);
                                 String subFrontLat = frontLat.substring(0, 5);
                                 String subFrontLon = frontLon.substring(0, 5);
-
+                                // 위, 경도, 시설명 첫자리 일치 여부 확인
                                 if (subFaclLat.equals(subFrontLat) && subFaclLng.equals(subFrontLon) && faclNm.substring(0, 1).equals(name.substring(0, 1))) {
                                     CreatePlaceCommand command = CreatePlaceCommand.builder()
                                             .placeName(name)
@@ -168,11 +169,10 @@ public class BarrierFreeConstructor {
                                             .barrierFree(true)
                                             .wtcltId(wfcltId)
                                             .build();
-
                                     placeService.createPlace(command);
                                     break;
                                 }
-                            } else if (name.equals(faclNm)) {
+                            } else if (name.equals(faclNm)) { //위, 경도 없을 때, 이름 일치만 체크
                                 CreatePlaceCommand command = CreatePlaceCommand.builder()
                                         .placeName(name)
                                         .address(fullAddressRoad)
@@ -183,21 +183,10 @@ public class BarrierFreeConstructor {
                                         .barrierFree(true)
                                         .wtcltId(wfcltId)
                                         .build();
-
                                 placeService.createPlace(command);
                                 break;
                             }
-                            //                    //크롤링
-                            //                    URL imageUrl = imageCrawler.crawlThumbnailImage(searchKeyword);
-                            //                    log.info("저장되는 imageUrl : " + imageUrl.toString());
-                            //                    //image 저장
-                            //                    UpdatePlaceImageCommand updatePlaceImageCommand = UpdatePlaceImageCommand.builder()
-                            //                            .poiId(id)
-                            //                            .imageUrl(imageUrl.toString())
-                            //                            .build();
-                            //                    placeService.updatePlaceImageUrl(updatePlaceImageCommand);
                         }
-
                     } catch (ParseException e) {
                         throw new RuntimeException(e);
                     }

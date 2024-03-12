@@ -2,6 +2,8 @@ package com.fullship.hBAF.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fullship.hBAF.domain.place.service.PlaceService;
+import com.fullship.hBAF.domain.place.service.command.CreatePlaceCommand;
+import com.fullship.hBAF.domain.place.service.command.UpdatePlaceImageCommand;
 import com.fullship.hBAF.global.api.service.DataApiService;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
@@ -31,6 +33,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.Map;
 import java.util.Objects;
 
@@ -40,6 +44,7 @@ import java.util.Objects;
 public class BarrierFreeConstructor {
 
     private final PlaceService placeService;
+    private final ImageCrawler imageCrawler;
     private final DataApiService dataApiService;
 
     @Value("${tmap.poi.appkey}")
@@ -123,34 +128,34 @@ public class BarrierFreeConstructor {
                     .queryParam("appKey", tmapAppkey)
                     .build();
 
-            log.info("uri: "+ uri.toString());
-            ResponseEntity<String> responseEntity =
-                    restTemplate.exchange(uri.toString(), HttpMethod.GET, entity, String.class);
-            if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                //성공
-                System.out.println("responseEntity.getBody()");
-                System.out.println(responseEntity.getBody());
+        ResponseEntity<String> responseEntity =
+                restTemplate.exchange(uri.toString(), HttpMethod.GET, entity, String.class);
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            //성공
+            System.out.println("responseEntity.getBody()");
+            System.out.println(responseEntity.getBody());
 
-                JSONParser parser = new JSONParser();
-                try {
-                    JSONObject object = (JSONObject) parser.parse(responseEntity.getBody());
-                    JSONObject searchPoiInfo = (JSONObject) object.get("searchPoiInfo");
-                    JSONObject pois = (JSONObject) searchPoiInfo.get("pois");
-                    JSONArray poiArr = (JSONArray) pois.get("poi");
+            JSONParser parser = new JSONParser();
+            try {
+                JSONObject object = (JSONObject) parser.parse(responseEntity.getBody());
+                JSONObject searchPoiInfo = (JSONObject) object.get("searchPoiInfo");
+                JSONObject pois = (JSONObject) searchPoiInfo.get("pois");
+                JSONArray poiArr = (JSONArray) pois.get("poi");
 
-                    for (int i = 0; i < poiArr.size(); i++) {
 
-                        JSONObject poi = (JSONObject) poiArr.get(i);
-                        JSONObject newAddressList = (JSONObject) poi.get("newAddressList");
-                        JSONArray newAddress = (JSONArray) newAddressList.get("newAddress");
-                        if (newAddress == null || newAddress.isEmpty()) continue;
-                        JSONObject address = (JSONObject) newAddress.get(0);
-                        String fullAddressRoad = (String) address.get("fullAddressRoad");
+                for (int i = 0; i < poiArr.size(); i++) {
 
-                        String name = (String) poi.get("name");
-                        String frontLat = (String) poi.get("frontLat");
-                        String frontLon = (String) poi.get("frontLon");
-                        String id = (String) poi.get("id");
+                    JSONObject poi = (JSONObject) poiArr.get(i);
+                    JSONObject newAddressList = (JSONObject) poi.get("newAddressList");
+                    JSONArray newAddress = (JSONArray) newAddressList.get("newAddress");
+                    if (newAddress == null || newAddress.isEmpty()) continue;
+                    JSONObject address = (JSONObject) newAddress.get(0);
+                    String fullAddressRoad = (String) address.get("fullAddressRoad");
+
+                    String name = (String) poi.get("name");
+                    String frontLat = (String) poi.get("frontLat");
+                    String frontLon = (String) poi.get("frontLon");
+                    String id = (String) poi.get("id");
 
 //                        System.out.println("공공데이터 경도 : " + faclLat + ", 위도 : " + faclLng);
 //                        System.out.println("TMap 경도 : " + frontLat + ", 위도 : " + frontLon);
@@ -192,20 +197,25 @@ public class BarrierFreeConstructor {
                             placeService.createPlace(command);
                             break;
                         }
-
+                    //크롤링
+                    URL imageUrl = imageCrawler.crawlThumbnailImage(searchKeyword);
+                    log.info("저장되는 imageUrl : " + imageUrl.toString());
+                    //image 저장
+                    UpdatePlaceImageCommand updatePlaceImageCommand = UpdatePlaceImageCommand.builder()
+                            .poiId(id)
+                            .imageUrl(imageUrl.toString())
+                            .build();
+                    placeService.updatePlaceImageUrl(updatePlaceImageCommand);
                     }
-
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-            } else if (responseEntity.getStatusCode() == HttpStatus.NO_CONTENT) {
-                ++noContentCnt;
-                log.error(responseEntity.getStatusCode().toString() + " : " + searchKeyword);
-            } else {
-                throw new CustomException(ErrorCode.NO_AVAILABLE_API);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
             }
+        } else if (responseEntity.getStatusCode() == HttpStatus.NO_CONTENT) {
+            log.error(responseEntity.getStatusCode().toString() + " : "+searchKeyword);
+        } else {
+            throw new CustomException(ErrorCode.NO_AVAILABLE_API);
         }
-        log.info("NO - CONTENT : {}", noContentCnt);
+     }
     }
 
     //tmap에서 받은 정보를 mysql에 저장

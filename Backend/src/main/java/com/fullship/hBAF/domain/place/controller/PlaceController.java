@@ -38,8 +38,7 @@ public class PlaceController {
       @ApiResponse(responseCode = "200", description = "경로 조회 성공", content = @Content(schema = @Schema(implementation = String.class))),
       @ApiResponse(responseCode = "400", description = "경로 조회 실패")
   })
-  public ResponseEntity<?> searchPathByWheel(@RequestBody PathSearchToWheelRequest requestDto)
-      throws ParseException {
+  public ResponseEntity<?> searchPathByWheel(@RequestBody PathSearchToWheelRequest requestDto) {
     SearchPathToWheelCommand command = requestDto.createForWheel();
     return getResponseEntity(SuccessCode.OK, tMapApiService.searchPathToWheel(command));
   }
@@ -50,8 +49,7 @@ public class PlaceController {
       @ApiResponse(responseCode = "200", description = "경로 조회 성공", content = @Content(schema = @Schema(implementation = String.class))),
       @ApiResponse(responseCode = "400", description = "경로 조회 실패")
   })
-  public ResponseEntity<?> searchPathByTransit(@RequestBody PathSearchToTransitRequest requestDto)
-      throws ParseException {
+  public ResponseEntity<?> searchPathByTransit(@RequestBody PathSearchToTransitRequest requestDto) {
     SearchPathToTransitCommand command = requestDto.createForTransit();
     return getResponseEntity(SuccessCode.OK, tMapApiService.searchPathToTransit(command));
 //    return getResponseEntity(SuccessCode.OK, placeService.useTransitPath(command));

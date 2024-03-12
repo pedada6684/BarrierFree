@@ -30,6 +30,9 @@ public class Place {
   private Long type;
 
 
+  @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Image> images;
+
   public static Place createNewPlace(
           String placeName,
           String address,
@@ -49,6 +52,7 @@ public class Place {
     place.poiId = poiId;
     place.category = category;
     place.barrierFree = barrierFree;
+    place.images = new ArrayList<>();
     place.wtcltId = wtcltId;
     place.type = type;
     return place;
@@ -58,4 +62,7 @@ public class Place {
     this.wtcltId = wtcltId;
   }
 
+  public void addImage(Image image){
+    this.images.add(image);
+  }
 }

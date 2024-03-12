@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+
 @Service
 @RequiredArgsConstructor
 public class ApiService<T> {
@@ -18,7 +20,7 @@ public class ApiService<T> {
     return callApiEndpoint(url, HttpMethod.GET, headers, null, (Class<T>) Object.class);
   }
 
-  public ResponseEntity<T> get(String url, HttpHeaders headers, Class<T> clazz) {
+  public ResponseEntity<T> get(URI url, HttpHeaders headers, Class<T> clazz) {
     return callApiEndpoint(url, HttpMethod.GET, headers, null, clazz);
   }
   public ResponseEntity<T> post(String url, HttpHeaders headers, Object body) {
@@ -28,7 +30,12 @@ public class ApiService<T> {
     return callApiEndpoint(url, HttpMethod.POST, headers, body, clazz);
   }
   private ResponseEntity<T> callApiEndpoint(String url, HttpMethod method, HttpHeaders headers,
-      Object body, Class<T> tClass) {
-      return restTemplate.exchange(url, method, new HttpEntity<>(body, headers), tClass);
+                                            Object body, Class<T> tClass) {
+    return restTemplate.exchange(url, method, new HttpEntity<>(body, headers), tClass);
+  }
+
+  private ResponseEntity<T> callApiEndpoint(URI url, HttpMethod method, HttpHeaders headers,
+                                            Object body, Class<T> tClass) {
+    return restTemplate.exchange(url, method, new HttpEntity<>(body, headers), tClass);
   }
 }

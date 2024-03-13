@@ -14,6 +14,7 @@ import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,14 +34,24 @@ public class BarrierFreeConstructor {
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
-    public void saveBusInfo() throws UnsupportedEncodingException {
+    @Order(1)
+    public void saveBusInfo() {
         dataApiService.saveBusInfo();
     }
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
-    public void saveBusRouteInfo() throws UnsupportedEncodingException {
+    @Order(2)
+    public void saveBusRouteInfo() {
         dataApiService.saveRoute();
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional
+    @Order(3)
+    public void saveBusStop(){
+
+        dataApiService.saveBusStop();
     }
 
 }

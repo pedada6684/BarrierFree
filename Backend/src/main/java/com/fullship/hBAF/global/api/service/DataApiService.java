@@ -4,6 +4,8 @@ import com.fullship.hBAF.domain.busInfo.entity.BusInfo;
 import com.fullship.hBAF.domain.busInfo.repository.BusInfoRepository;
 import com.fullship.hBAF.domain.busRouteInfo.entity.BusRouteInfo;
 import com.fullship.hBAF.domain.busRouteInfo.repository.BusRouteInfoRepository;
+import com.fullship.hBAF.domain.busStopInfo.entity.BusStopInfo;
+import com.fullship.hBAF.domain.busStopInfo.repository.BusStopRepository;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -24,6 +26,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +37,7 @@ public class DataApiService {
     private final ApiService<String> apiService;
     private final BusInfoRepository busInfoRepository;
     private final BusRouteInfoRepository busRouteInfoRepository;
+    private final BusStopRepository busStopRepository;
 
     @Value("${api.data.license.key}")
     private String dataLicenseKey;
@@ -133,6 +138,60 @@ public class DataApiService {
             }
 
         } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Transactional(readOnly = false)
+    public void saveBusStop() {
+        List<BusRouteInfo> busRouteInfoList = busRouteInfoRepository.findAll();
+        System.out.println(busRouteInfoList.size());
+        try {
+
+            for(BusRouteInfo i : busRouteInfoList){
+                UriComponents uriComponents = UriComponentsBuilder
+                        .fromHttpUrl("http://openapitraffic.daejeon.go.kr/api/rest/busRouteInfo/getStaionByRoute")
+                        .queryParam("serviceKey", routeKey)
+                        .queryParam("busRouteId", i.getRouteNo().substring(3))
+                        .build(true);
+                System.out.println(uriComponents.toUri());
+                ResponseEntity<String> response = apiService.get(uriComponents.toUri(), setHttpHeaders(), String.class);
+
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = factory.newDocumentBuilder();
+
+                Document document = builder.parse(new InputSource(new StringReader(response.getBody().toString())));
+                document.getDocumentElement().normalize();
+                NodeList itemList = document.getElementsByTagName("itemList");
+                NodeList busStopName = document.getElementsByTagName("BUSSTOP_NM");
+                NodeList busStopSeq = document.getElementsByTagName("BUSSTOP_SEQ");
+                NodeList busStopType = document.getElementsByTagName("BUSSTOP_TP");
+                NodeList busStopNo = document.getElementsByTagName("BUS_NODE_ID");
+                NodeList busStopArsNo = document.getElementsByTagName("BUS_STOP_ID");
+
+                int max = 0;
+                for(int j = 0; j<itemList.getLength(); j++) {
+                    String str;
+                    int num = 0;
+                    if(!Objects.equals(str = busStopType.item(j).getTextContent(), " "))
+                        num = Integer.parseInt(str);
+                    max = Math.max(max,num);
+                    BusStopInfo busStopInfo = BusStopInfo.createBusStopInfo(
+                            busStopName.item(j).getTextContent(),
+                            busStopSeq.item(j).getTextContent(),
+                            String.valueOf(max),
+                            busStopNo.item(j).getTextContent(),
+                            busStopArsNo.item(j).getTextContent(),
+                            i.getRouteNo().substring(3),
+                            i.getBusNo());
+                    busStopRepository.save(busStopInfo);
+                    busRouteInfoRepository.getReferenceById(i.getId()).getBusStopInfo().add(busStopInfo);
+                }
+                break;
+            }
+
+        } catch (ParserConfigurationException | IOException | SAXException e) {
             throw new RuntimeException(e);
         }
 

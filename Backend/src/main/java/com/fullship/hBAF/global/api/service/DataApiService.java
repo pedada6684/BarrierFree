@@ -6,6 +6,10 @@ import com.fullship.hBAF.domain.busRouteInfo.entity.BusRouteInfo;
 import com.fullship.hBAF.domain.busRouteInfo.repository.BusRouteInfoRepository;
 import com.fullship.hBAF.domain.busStopInfo.entity.BusStopInfo;
 import com.fullship.hBAF.domain.busStopInfo.repository.BusStopRepository;
+import com.fullship.hBAF.global.api.response.BusesCurLocation;
+import com.fullship.hBAF.global.api.service.command.BusesCurLocationCommand;
+import com.fullship.hBAF.global.response.ErrorCode;
+import com.fullship.hBAF.global.response.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -26,6 +30,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,8 +41,8 @@ public class DataApiService {
 
     private final ApiService<String> apiService;
     private final BusInfoRepository busInfoRepository;
-    private final BusRouteInfoRepository busRouteInfoRepository;
     private final BusStopRepository busStopRepository;
+    private final BusRouteInfoRepository busRouteInfoRepository;
 
     @Value("${api.data.license.key}")
     private String dataLicenseKey;
@@ -169,6 +174,8 @@ public class DataApiService {
                 NodeList busStopType = document.getElementsByTagName("BUSSTOP_TP");
                 NodeList busStopNo = document.getElementsByTagName("BUS_NODE_ID");
                 NodeList busStopArsNo = document.getElementsByTagName("BUS_STOP_ID");
+                NodeList busStopLat = document.getElementsByTagName("GPS_LATI");
+                NodeList busStopLong = document.getElementsByTagName("GPS_LONG");
 
                 int max = 0;
                 for(int j = 0; j<itemList.getLength(); j++) {
@@ -184,7 +191,9 @@ public class DataApiService {
                             busStopNo.item(j).getTextContent(),
                             busStopArsNo.item(j).getTextContent(),
                             i.getRouteNo().substring(3),
-                            i.getBusNo());
+                            i.getBusNo(),
+                            busStopLat.item(j).getTextContent(),
+                            busStopLong.item(j).getTextContent());
                     busStopRepository.save(busStopInfo);
                     busRouteInfoRepository.getReferenceById(i.getId()).getBusStopInfo().add(busStopInfo);
                 }
@@ -193,6 +202,55 @@ public class DataApiService {
 
         } catch (ParserConfigurationException | IOException | SAXException e) {
             throw new RuntimeException(e);
+        }
+
+    }
+
+    @Transactional(readOnly = true)
+    public BusesCurLocation findBusesOnRouteName(String routeName, String direction) {
+
+        try {
+
+            UriComponents uriComponents = UriComponentsBuilder
+                    .fromHttpUrl("http://openapitraffic.daejeon.go.kr/api/rest/busposinfo/getBusPosByRtid")
+                    .queryParam("serviceKey", routeKey)
+                    .queryParam("busRouteId", routeName)
+                    .build(true);
+
+            ResponseEntity<String> response = apiService.get(uriComponents.toUri(), setHttpHeaders(), String.class);
+
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+
+            Document document = builder.parse(new InputSource(new StringReader(response.getBody().toString())));
+            document.getDocumentElement().normalize();
+            NodeList itemList = document.getElementsByTagName("itemList");
+            NodeList busNodeId = document.getElementsByTagName("BUS_NODE_ID");
+            NodeList dir = document.getElementsByTagName("DIR");
+            NodeList plateNo = document.getElementsByTagName("PLATE_NO");
+
+            List<BusesCurLocationCommand> list = new ArrayList<>();
+            for(int i = 0; i<itemList.getLength(); i++){
+                BusesCurLocationCommand command = BusesCurLocationCommand.builder()
+                        .busNodeId(busNodeId.item(i).getTextContent())
+                        .dir(dir.item(i).getTextContent())
+                        .license(plateNo.item(i).getTextContent())
+                        .build();
+
+                if(!direction.equals(command.getDir()))
+                    continue;
+                if(busInfoRepository.findBusInfoByLicense(command.getLicense())==null)
+                    continue;
+                list.add(command);
+            }
+
+            BusesCurLocation busesCurLocation = BusesCurLocation.builder()
+                    .list(list)
+                    .build();
+
+            return busesCurLocation;
+        } catch (ParserConfigurationException | IOException | SAXException e) {
+            throw new CustomException(ErrorCode.NO_AVAILABLE_API);
         }
 
     }

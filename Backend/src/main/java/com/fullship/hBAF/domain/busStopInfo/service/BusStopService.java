@@ -76,13 +76,13 @@ public class BusStopService {
                 eDir = Integer.parseInt(endBusStop.getDir());
                 if(sDir == eDir || (sDir==2 && sDir<eDir) || (eDir==2 && sDir==1)){
                     if(sDir==1)
-                        return "1";
+                        return "0";
                     else
-                        return "2";
+                        return "1";
                 }
             }
         }
-        return "0";
+        return "-1";
     }
 
 

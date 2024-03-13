@@ -1,11 +1,6 @@
-import 'package:barrier_free/screen/bottomBar.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-import 'map/map_screen_temp.dart';
 
 class HomeScreen extends StatefulWidget {
-
   const HomeScreen({super.key});
 
   @override
@@ -13,7 +8,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,6 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
           '홈',
           style: TextStyle(
             color: Colors.white,
+            fontWeight: FontWeight.w700,
           ),
         ),
         backgroundColor: Color(0xfffca63d),

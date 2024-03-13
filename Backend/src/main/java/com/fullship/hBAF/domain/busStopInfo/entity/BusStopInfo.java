@@ -21,6 +21,8 @@ public class BusStopInfo {
     String busStopArsNo;
     String routeNo;
     String busNo;
+    String busStopLat;
+    String busStopLong;
 
     public static BusStopInfo createBusStopInfo(
             String busStopName,
@@ -29,7 +31,9 @@ public class BusStopInfo {
             String busStopNo,
             String busStopArsNo,
             String routeNo,
-            String busNo
+            String busNo,
+            String busStopLat,
+            String busStopLong
     ){
         BusStopInfo busStopInfo = new BusStopInfo();
         busStopInfo.busStopName=busStopName;
@@ -39,6 +43,8 @@ public class BusStopInfo {
         busStopInfo.busStopArsNo=busStopArsNo;
         busStopInfo.routeNo=routeNo;
         busStopInfo.busNo=busNo;
+        busStopInfo.busStopLat=busStopLat;
+        busStopInfo.busStopLong=busStopLong;
 
         return busStopInfo;
     }

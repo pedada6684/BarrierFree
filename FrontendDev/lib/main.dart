@@ -33,10 +33,6 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        // appBar: AppBar(
-        //   title: Text('앱 타이틀'),
-        //   backgroundColor: Color(0xfffca63d),
-        // ),
         body: Center(
           child: _screens.elementAt(_selectedIndex), // 현재 선택된 화면을 표시
         ),

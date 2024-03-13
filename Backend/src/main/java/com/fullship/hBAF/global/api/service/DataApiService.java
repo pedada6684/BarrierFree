@@ -195,6 +195,8 @@ public class DataApiService {
                             busStopLat.item(j).getTextContent(),
                             busStopLong.item(j).getTextContent());
                     busStopRepository.save(busStopInfo);
+                    if(max==2)
+                        max++;
                     busRouteInfoRepository.getReferenceById(i.getId()).getBusStopInfo().add(busStopInfo);
                 }
                 break;

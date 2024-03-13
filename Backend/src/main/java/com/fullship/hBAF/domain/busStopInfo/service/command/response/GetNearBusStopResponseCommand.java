@@ -11,5 +11,8 @@ public class GetNearBusStopResponseCommand {
     String busStopName;
     String lat;
     String lng;
+    String seq;
+    String dir;
+    double diff;
 
 }

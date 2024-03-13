@@ -10,15 +10,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class BusRouteService {
+public class BusRouteInfoService {
 
     private final BusRouteInfoRepository busRouteInfoRepository;
 
-    public GetBusRouteInfoCommand getBusRouteInfo(String busId){
+    public GetBusRouteInfoCommand getBusRouteInfo(String busNo){
 
-        BusRouteInfo busRouteInfo = busRouteInfoRepository.findBusRouteInfoByBusId(busId);
+        BusRouteInfo busRouteInfo = busRouteInfoRepository.findBusRouteInfoByBusNo(busNo);
         GetBusRouteInfoCommand command = GetBusRouteInfoCommand.builder()
-                .routeId(busRouteInfo.getRouteId().substring(3)).build();
+                .routeName(busRouteInfo.getRouteNo().substring(3)).build();
         return command;
 
     }

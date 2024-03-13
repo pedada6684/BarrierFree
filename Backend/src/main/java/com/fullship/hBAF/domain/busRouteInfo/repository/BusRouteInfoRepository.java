@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BusRouteInfoRepository extends JpaRepository<BusRouteInfo,Long> {
 
-    BusRouteInfo findBusRouteInfoByBusId(String busId);
+    BusRouteInfo findBusRouteInfoByBusNo(String busNo);
 
 }

@@ -1,34 +1,39 @@
 package com.fullship.hBAF.domain.busRouteInfo.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import com.fullship.hBAF.domain.busStopInfo.entity.BusStopInfo;
+import jakarta.persistence.*;
 import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
 public class BusRouteInfo {
 
     @Id
-    @GeneratedValue
-    Long busRouteInfoId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
 
-    String routeId;
-    String busId;
+    String routeNo;
+    String busNo;
     String purpose;
     String startTime;
     String startStop;
 
+    @OneToMany
+    List<BusStopInfo> busStopInfo = new ArrayList<>();
+
     public static BusRouteInfo createBusRouteInfo(
-            String routeId,
-            String busId,
+            String routeNo,
+            String busNo,
             String purpose,
             String startTime,
             String startStop
     ){
         BusRouteInfo busRouteInfo = new BusRouteInfo();
-        busRouteInfo.routeId=routeId;
-        busRouteInfo.busId=busId;
+        busRouteInfo.routeNo=routeNo;
+        busRouteInfo.busNo=busNo;
         busRouteInfo.purpose=purpose;
         busRouteInfo.startTime=startTime;
         busRouteInfo.startStop=startStop;

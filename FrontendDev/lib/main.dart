@@ -1,3 +1,4 @@
+import 'package:barrier_free/screen/mypage/mypage_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'screen/bottomBar.dart';
@@ -20,6 +21,7 @@ class _MyAppState extends State<MyApp> {
   final List<Widget> _screens = [
     HomeScreen(),
     MapScreen(),
+    MyPageScreen(),
   ];
 
   void _onItemTapped(int index) {

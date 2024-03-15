@@ -1,12 +1,29 @@
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          '홈',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        backgroundColor: Color(0xfffca63d),
+      ),
       body: Center(
+        child: Text('홈화면'),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center, // 중앙 정렬
           crossAxisAlignment: CrossAxisAlignment.start,

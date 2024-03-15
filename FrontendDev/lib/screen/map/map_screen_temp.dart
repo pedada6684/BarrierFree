@@ -133,7 +133,6 @@ class _MapScreenState extends State<MapScreen> {
         children: [
           Container(
             width: 400.0,
-            // height: 50.0,
             decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.all(Radius.circular(30.0)),

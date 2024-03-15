@@ -18,19 +18,11 @@ class CustomBottomNavigationBar extends StatelessWidget {
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: Icon(Icons.map_outlined, color: Colors.white),
-          label: '길찾기',
+          label: '홈',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.place_outlined, color: Colors.white),
-          label: '지도',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.call_outlined, color: Colors.white),
-          label: '콜택시',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outlined, color: Colors.white),
-          label: '마이',
+          label: '길찾기',
         ),
       ],
       currentIndex: selectedIndex,

@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:app_settings/app_settings.dart';
+import 'package:barrier_free/services/location_service.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapScreen extends StatefulWidget {
@@ -13,169 +13,230 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  GoogleMapController? mapController;
-  static final LatLng companyLatLng = LatLng(
-    36.354946759143,
-    127.29980994578,
-  );
-  static final CameraPosition initialPosition = CameraPosition(
-    target: companyLatLng,
+  final CameraPosition _firstSpot = CameraPosition(
+    target: LatLng(
+      36.354946759143,
+      127.29980994578,
+    ),
     zoom: 18.0,
   );
-  static final Marker marker = Marker(
-    markerId: MarkerId('marker'),
-    position: companyLatLng,
+
+  final CameraPosition _secondSpot = CameraPosition(
+    target: LatLng(
+      36.331139593396,
+      127.43314242945,
+    ),
+    zoom: 18.0,
   );
 
-  AppBar renderAppBar() {
-    return AppBar(
-      centerTitle: true,
-      title: Text(
-        '길찾기',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-        ),
+  Completer<GoogleMapController> _controller = Completer();
+  TextEditingController _originController = TextEditingController();
+  TextEditingController _destinationController = TextEditingController();
+
+  Set<Marker> _markers = Set<Marker>();
+  Set<Polygon> _polygons = Set<Polygon>();
+  Set<Polyline> _polylines = Set<Polyline>();
+  List<LatLng> polygonLatLng = <LatLng>[];
+
+  int _polygonIdCounter = 1;
+  int _polylineIdCounter = 1;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _setMarker(
+      LatLng(
+        36.354946759143,
+        127.29980994578,
       ),
-      backgroundColor: Color(0xfffca63d),
-      actions: [
-        IconButton(
-          onPressed: () async {
-            if (mapController == null) {
-              return;
-            }
-            final location = await Geolocator.getCurrentPosition();
-            mapController!.animateCamera(
-              CameraUpdate.newLatLng(
-                LatLng(location.latitude, location.longitude),
-              ),
-            );
-          },
-          icon: Icon(
-            Icons.my_location,
-            color: Colors.white,
+    );
+  }
+
+  void _setMarker(LatLng point) {
+    final String markerIdVal = 'marker_${_markers.length}'; // 유니크한 ID 생성
+    setState(
+      () {
+        _markers.add(
+          Marker(
+            markerId: MarkerId(markerIdVal),
+            position: point,
+            onTap: () {
+              _showMarkerInfo(point.latitude, point.longitude); // 익명 함수 내에서 호출
+            },
           ),
+        );
+      },
+    );
+  }
+
+  void _setPolygon() {
+    final String polygonIdVal = 'polygon_$_polygonIdCounter';
+    _polygonIdCounter++;
+
+    _polygons.add(
+      Polygon(
+        polygonId: PolygonId(polygonIdVal),
+        points: polygonLatLng,
+        strokeWidth: 2,
+        fillColor: Colors.transparent,
+      ),
+    );
+  }
+
+  void _showMarkerInfo(double lat, double lng) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('위도: $lat, 경도: $lng'),
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _setPolyline(List<PointLatLng> points) {
+    final String polylineIdVal = 'polyline_$_polylineIdCounter';
+    _polylineIdCounter++;
+
+    List<LatLng> polylineCoordinates = points
+        .map(
+          (point) => LatLng(point.latitude, point.longitude),
+        )
+        .toList();
+
+    _polylines.add(
+      Polyline(
+        polylineId: PolylineId(
+          polylineIdVal,
         ),
-      ],
+        width: 2,
+        color: Colors.blue,
+        points: polylineCoordinates,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: renderAppBar(),
-      body: FutureBuilder(
-        future: checkPermission(),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          //로딩
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (snapshot.data == '위치 권한이 허가되었습니다.') {
-            return Column(
-              children: [
-                _CustomGoogleMap(
-                  initialPosition: initialPosition,
-                  marker: marker,
-                  onMapCreated: onMapCreated,
-                ),
-              ],
-            );
-          } else if (snapshot.data == '위치 권한을 허가해주세요.') {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(snapshot.data!), // 권한 상태 메시지 표시
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final permission = await Geolocator.requestPermission();
-                      if (permission == LocationPermission.whileInUse ||
-                          permission == LocationPermission.always) {
-                        setState(() {}); // 권한 상태 업데이트 후 UI 재구성
-                      } else if (permission ==
-                          LocationPermission.deniedForever) {
-                        AppSettings.openAppSettings(); // 앱 설정으로 이동
-                      }
-                    },
-                    child: Text('권한 요청'),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Color(0xfffca63d),
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text(
+          '길찾기',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        backgroundColor: Color(0xfffca63d),
+      ),
+      body: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          hintText: '출발지를 입력해주세요',
+                        ),
+                        textCapitalization: TextCapitalization.words,
+                        controller: _originController,
+                        onChanged: (value) {
+                          print(value);
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          hintText: '도착지를 입력해주세요.',
+                        ),
+                        textCapitalization: TextCapitalization.words,
+                        controller: _destinationController,
+                        onChanged: (value) {
+                          print(value);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            );
-          }
-
-          return Center(
-            child: Text(snapshot.data),
-          );
-        },
+              IconButton(
+                onPressed: () async {
+                  var directions = await LocationService().getDirections(
+                      _originController.text, _destinationController.text);
+                  if (directions != null) {
+                    _goToStart(
+                      directions['start_location']['lat'],
+                      directions['start_location']['lng'],
+                      directions['bounds_ne'],
+                      directions['bounds_sw'],
+                    );
+                    _setPolyline(directions['polyline_decoded']);
+                  }
+                },
+                icon: Icon(Icons.search),
+              ),
+            ],
+          ),
+          Expanded(
+            child: GoogleMap(
+              mapType: MapType.normal,
+              markers: _markers,
+              polygons: _polygons,
+              polylines: _polylines,
+              myLocationEnabled: true,
+              initialCameraPosition: _firstSpot,
+              onMapCreated: (GoogleMapController controller) {
+                _controller.complete(controller);
+              },
+              onTap: (point) {
+                setState(() {
+                  polygonLatLng.add(point);
+                  _setPolygon();
+                });
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
-}
-
-//위치 권한 요청하기
-Future<String> checkPermission() async {
-  final isLocationEnabled = await Geolocator.isLocationServiceEnabled();
-
-  if (!isLocationEnabled) {
-    return '위치 서비스를 활성화 해주세요.';
-  }
-  //현재 어플 위치서비스에 대한 권한
-  LocationPermission checkedPermission = await Geolocator.checkPermission();
-
-  if (checkedPermission == LocationPermission.denied) {
-    checkedPermission = await Geolocator.requestPermission();
-
-    if (checkedPermission == LocationPermission.denied) {
-      return '위치 권한을 허가해주세요.';
-    }
-  }
-
-  if (checkedPermission == LocationPermission.deniedForever) {
-    //dialog 띄울 수 없다 모바일 설정 화면으로 보내기
-    // Future.microtask(() => AppSettings.openAppSettings());
-    return '위치 권한을 설정에서 허가해주세요.';
-  }
-  return '위치 권한이 허가되었습니다.';
-}
-
-class _CustomGoogleMap extends StatelessWidget {
-  final CameraPosition initialPosition;
-  final Marker marker;
-  final MapCreatedCallback onMapCreated;
-
-  const _CustomGoogleMap(
-      {super.key,
-      required this.initialPosition,
-      required this.marker,
-      required this.onMapCreated});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GoogleMap(
-        mapType: MapType.normal,
-        //처음 실행했을때 위치
-        initialCameraPosition: initialPosition,
-        myLocationEnabled: true,
-        myLocationButtonEnabled: false,
-        //내위치로 가는 버튼
-        markers: Set.from([marker]),
-        onMapCreated: onMapCreated,
+  Future<void> _goToStart(
+    double lat,
+    double lng,
+    Map<String, dynamic> boundsNe,
+    Map<String, dynamic> boundsSw,
+  ) async {
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(
+      CameraPosition(
+        target: LatLng(lat, lng),
+        zoom: 12,
       ),
+    ));
+
+    controller.animateCamera(
+      CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+              southwest: LatLng(
+                boundsSw['lat'],
+                boundsSw['lng'],
+              ),
+              northeast: LatLng(
+                boundsNe['lat'],
+                boundsNe['lng'],
+              )),
+          25),
+    );
+
+    _setMarker(
+      LatLng(lat, lng),
     );
   }
 }

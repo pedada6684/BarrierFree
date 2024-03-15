@@ -123,65 +123,69 @@ class _MapScreenState extends State<MapScreen> {
         title: const Text(
           '길찾기',
           style: TextStyle(
-            color: Colors.white,
+            color: Color(0xfffca63d),
             fontWeight: FontWeight.w700,
           ),
         ),
-        backgroundColor: Color(0xfffca63d),
+        backgroundColor: Colors.white,
       ),
       body: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          hintText: '출발지를 입력해주세요',
-                        ),
-                        textCapitalization: TextCapitalization.words,
-                        controller: _originController,
-                        onChanged: (value) {
-                          print(value);
-                        },
-                      ),
+          Container(
+            width: 400.0,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                border: Border.all(color: Color(0xfffca63d), width: 2.5),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 2,
+                      blurRadius: 4,
+                      offset: Offset(3, 3))
+                ]),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                      hintText: '검색어를 입력해주세요.',
+                      hintStyle: TextStyle(
+                          color: Color(0xfffca63d),
+                          fontWeight: FontWeight.w600),
+                      border: OutlineInputBorder(borderSide: BorderSide.none),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          hintText: '도착지를 입력해주세요.',
-                        ),
-                        textCapitalization: TextCapitalization.words,
-                        controller: _destinationController,
-                        onChanged: (value) {
-                          print(value);
-                        },
-                      ),
-                    ),
-                  ],
+                    textCapitalization: TextCapitalization.words,
+                    controller: _originController,
+                    onChanged: (value) {
+                      print(value);
+                    },
+                  ),
                 ),
-              ),
-              IconButton(
-                onPressed: () async {
-                  var directions = await LocationService().getDirections(
-                      _originController.text, _destinationController.text);
-                  if (directions != null) {
-                    _goToStart(
-                      directions['start_location']['lat'],
-                      directions['start_location']['lng'],
-                      directions['bounds_ne'],
-                      directions['bounds_sw'],
-                    );
-                    _setPolyline(directions['polyline_decoded']);
-                  }
-                },
-                icon: Icon(Icons.search),
-              ),
-            ],
+                IconButton(
+                  onPressed: () async {
+                    var directions = await LocationService().getDirections(
+                        _originController.text, _destinationController.text);
+                    if (directions != null) {
+                      _goToStart(
+                        directions['start_location']['lat'],
+                        directions['start_location']['lng'],
+                        directions['bounds_ne'],
+                        directions['bounds_sw'],
+                      );
+                      _setPolyline(directions['polyline_decoded']);
+                    }
+                  },
+                  icon: Icon(
+                    Icons.search,
+                    color: Color(
+                      0xfffca63d,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           Expanded(
             child: GoogleMap(

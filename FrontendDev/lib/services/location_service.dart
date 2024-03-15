@@ -1,11 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 
 class LocationService {
-  final String key = 'AIzaSyCtCtNRAnIz4OH_c1RDcKfwsJl1g1BQ-p8';
+  final String key = dotenv.env['appKey']!;
 
   Future<String> getPlaceId(String input) async {
     final String url =

@@ -13,14 +13,15 @@ class CustomBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
       backgroundColor: Color(0xfffca63d),
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: Icon(Icons.home, color: Colors.white),
+          icon: Icon(Icons.map_outlined, color: Colors.white),
           label: '홈',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.map, color: Colors.white),
+          icon: Icon(Icons.place_outlined, color: Colors.white),
           label: '길찾기',
         ),
       ],

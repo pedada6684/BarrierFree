@@ -23,7 +23,6 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Color(0xfffca63d),
       ),
       body: Center(
-        child: Text('홈화면'),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center, // 중앙 정렬
           crossAxisAlignment: CrossAxisAlignment.start,

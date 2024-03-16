@@ -1,9 +1,10 @@
+import 'package:barrier_free/component/bottomBar.dart';
+import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/screen/mypage/mypage_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'common/bottomBar.dart';
 import 'screen/home_screen.dart';
 import 'screen/map/map_screen_temp.dart';
 
@@ -52,10 +53,10 @@ class _MyAppState extends State<MyApp> {
         appBarTheme: AppBarTheme(
             centerTitle: true,
             iconTheme: IconThemeData(
-              color: Color(0xfffca63d),
+              color: mainOrange,
             ),
             titleTextStyle: TextStyle(
-                color: Color(0xfffca63d),
+                color: mainOrange,
                 fontWeight: FontWeight.bold,
                 fontSize: 22.0)),
       ),

@@ -1,3 +1,4 @@
+import 'package:barrier_free/const/color.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -20,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
             fontWeight: FontWeight.w700,
           ),
         ),
-        backgroundColor: Color(0xfffca63d),
+        backgroundColor: mainOrange,
       ),
       body: const Center(
         child: Column(
@@ -33,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   "함께 가는 길, 장애물 없는 하루", // 추가할 텍스트
                   style: TextStyle(
-                    color: Color(0xfffca63d),
+                    color: mainOrange,
                     fontSize: 22.0,
                     fontWeight: FontWeight.bold,
                   ),
@@ -41,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   "베프.",
                   style: TextStyle(
-                    color: Color(0xfffca63d),
+                    color: mainOrange,
                     fontFamily: 'LogoFont',
                     fontSize: 100.0,
                   ),

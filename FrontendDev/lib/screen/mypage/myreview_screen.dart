@@ -1,4 +1,4 @@
-import 'package:barrier_free/common/appBar.dart';
+import 'package:barrier_free/component/appBar.dart';
 import 'package:flutter/material.dart';
 
 class MyReviewScreen extends StatefulWidget {
@@ -12,7 +12,7 @@ class _MyReviewScreenState extends State<MyReviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: '게시글')
+      appBar: CustomAppBar(title: '게시글'),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:barrier_free/common/appBar.dart';
+import 'package:barrier_free/component/appBar.dart';
+import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -127,7 +128,7 @@ class _MapScreenState extends State<MapScreen> {
             decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                border: Border.all(color: Color(0xfffca63d), width: 2.5),
+                border: Border.all(color: mainOrange, width: 2.5),
                 boxShadow: [
                   BoxShadow(
                       color: Colors.grey.withOpacity(0.5),
@@ -143,7 +144,7 @@ class _MapScreenState extends State<MapScreen> {
                       contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
                       hintText: '검색어를 입력해주세요.',
                       hintStyle: TextStyle(
-                          color: Color(0xfffca63d),
+                          color: mainOrange,
                           fontWeight: FontWeight.w600),
                       border: OutlineInputBorder(borderSide: BorderSide.none),
                     ),
@@ -170,9 +171,7 @@ class _MapScreenState extends State<MapScreen> {
                   },
                   icon: Icon(
                     Icons.search,
-                    color: Color(
-                      0xfffca63d,
-                    ),
+                    color: mainOrange,
                   ),
                 ),
               ],

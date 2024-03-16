@@ -1,5 +1,10 @@
+import 'package:barrier_free/common/appBar.dart';
+import 'package:barrier_free/screen/mypage/myplace_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'myfavorite_screen.dart';
+import 'myreview_screen.dart';
 
 class MyPageScreen extends StatefulWidget {
   const MyPageScreen({super.key});
@@ -9,30 +14,20 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
+  final Map<String, Widget Function(BuildContext)> menuItems = {
+    '내 장소': (context) => MyPlaceScreen(),
+    '즐겨찾기': (context) => MyFavoriteScreen(),
+    '게시글': (context) => MyReviewScreen(),
+  };
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text(
-          '마이페이지',
-          style: TextStyle(
-            color: Color(0xfffca63d),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        backgroundColor: Colors.white,
-      ),
+      appBar: CustomAppBar(title: '마이페이지'),
       body: ListView(
         children: [
           _buildTopSection(),
-          ..._buildMenuItems([
-            '내 장소',
-            '즐겨찾기',
-            '게시글',
-            '로그아웃',
-            '탈퇴하기',
-          ]),
+          ..._buildMenuItems(menuItems),
         ],
       ),
     );
@@ -59,6 +54,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: const [
+          //유저 닉네임마다 달라질 것
           Text(
             '배프 님,\n환영합니다.',
             style: TextStyle(
@@ -97,13 +93,13 @@ class _MyPageScreenState extends State<MyPageScreen> {
     );
   }
 
-  List<Widget> _buildMenuItems(List<String> menuItems) {
-    return menuItems.map((item) {
+  List<Widget> _buildMenuItems(Map<String, Widget Function(BuildContext)> menuItems) {
+    return menuItems.entries.map((MapEntry<String, Widget Function(BuildContext)> entry) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListTile(
           leading: Text(
-            item,
+            entry.key,
             style: const TextStyle(
               fontSize: 20.0,
             ),
@@ -112,7 +108,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
             Icons.arrow_forward_ios,
             color: Color(0xff909090),
           ),
-          onTap: () {},
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: entry.value));
+          },
         ),
       );
     }).toList();

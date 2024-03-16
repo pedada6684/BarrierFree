@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:barrier_free/common/appBar.dart';
 import 'package:barrier_free/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -118,17 +119,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text(
-          '길찾기',
-          style: TextStyle(
-            color: Color(0xfffca63d),
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        backgroundColor: Colors.white,
-      ),
+      appBar: CustomAppBar(title: '길찾기'),
       body: Column(
         children: [
           Container(

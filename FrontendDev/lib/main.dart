@@ -1,3 +1,4 @@
+import 'package:barrier_free/screen/mypage/mypage_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -23,6 +24,7 @@ class _MyAppState extends State<MyApp> {
   final List<Widget> _screens = [
     HomeScreen(),
     MapScreen(),
+    MyPageScreen(),
   ];
 
   void _onItemTapped(int index) {

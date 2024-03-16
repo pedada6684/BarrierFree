@@ -24,6 +24,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
           icon: Icon(Icons.place_outlined, color: Colors.white),
           label: '길찾기',
         ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outlined, color: Colors.white),
+          label: '마이',
+        ),
       ],
       currentIndex: selectedIndex,
       selectedItemColor: Colors.white,

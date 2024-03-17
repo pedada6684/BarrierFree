@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:barrier_free/component/appBar.dart';
+import 'package:barrier_free/component/facility_button.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/services/location_service.dart';
 import 'package:flutter/material.dart';
@@ -125,8 +126,17 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      appBar: CustomAppBar(title: '길찾기'),
+      appBar: CustomAppBar(
+        title: '베프.',
+        titleStyle: TextStyle(
+          fontFamily: 'LogoFont',
+          fontSize: 32.0,
+          fontWeight: FontWeight.bold,
+          color: mainOrange,
+        ),
+      ),
       body: _myCurrentSpot == null
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -206,16 +216,32 @@ class _MapScreenState extends State<MapScreen> {
                     ],
                   ),
                 ),
+                SizedBox(
+                  height: 16.0,
+                ),
+                // CustomFacilityButton(onFeatureSelected: (String) {  },),
                 Expanded(
-                  child: GoogleMap(
-                    mapType: MapType.normal,
-                    markers: _markers,
-                    polylines: _polylines,
-                    myLocationEnabled: true,
-                    initialCameraPosition: _myCurrentSpot!,
-                    onMapCreated: (GoogleMapController controller) {
-                      _controller.complete(controller);
-                    },
+                  child: Stack(
+                    children: [
+                      GoogleMap(
+                        mapType: MapType.normal,
+                        markers: _markers,
+                        polylines: _polylines,
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: false,
+                        initialCameraPosition: _myCurrentSpot!,
+                        onMapCreated: (GoogleMapController controller) {
+                          _controller.complete(controller);
+                        },
+                      ),
+                      Positioned(
+                        top: 8.0, // 위치 조정 가능
+                        left: 0,
+                        right: 0,
+                        child: CustomFacilityButton(
+                            onFeatureSelected: (String) {}),
+                      ),
+                    ],
                   ),
                 ),
               ],

@@ -1,12 +1,13 @@
 import 'package:barrier_free/component/bottomBar.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/screen/directions/directions_screen.dart';
 import 'package:barrier_free/screen/mypage/mypage_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'screen/home_screen.dart';
-import 'screen/map/map_screen_temp.dart';
+import 'screen/map/map_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,12 +21,13 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  int _selectedIndex = 0;
+  //지도(MapScreen)가 먼저 뜨도록 index 1로 설정
+  int _selectedIndex = 1;
 
   // 화면 리스트
   final List<Widget> _screens = [
-    MapScreen(),
-    HomeScreen(),
+    DirectionsScreen(),
+    MapScreen(), //지도
     MyPageScreen(),
   ];
 

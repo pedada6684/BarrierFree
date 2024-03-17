@@ -43,6 +43,7 @@ dependencies:
   flutter_polyline_points: ^2.0.0
   flutter_dotenv: ^5.1.0
   url_launcher: ^6.2.5
+  flutter_spinkit: ^5.2.0
 
 dev_dependencies:
   flutter_test:

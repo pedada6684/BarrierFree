@@ -5,6 +5,8 @@ import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapScreen extends StatefulWidget {
@@ -15,44 +17,62 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  final CameraPosition _firstSpot = CameraPosition(
-    target: LatLng(
-      36.354946759143,
-      127.29980994578,
-    ),
-    zoom: 18.0,
-  );
-
-  final CameraPosition _secondSpot = CameraPosition(
-    target: LatLng(
-      36.331139593396,
-      127.43314242945,
-    ),
-    zoom: 18.0,
-  );
-
-  Completer<GoogleMapController> _controller = Completer();
+  CameraPosition? _myCurrentSpot;
+  final Completer<GoogleMapController> _controller = Completer();
   TextEditingController _originController = TextEditingController();
   TextEditingController _destinationController = TextEditingController();
 
   Set<Marker> _markers = Set<Marker>();
-  Set<Polygon> _polygons = Set<Polygon>();
   Set<Polyline> _polylines = Set<Polyline>();
   List<LatLng> polygonLatLng = <LatLng>[];
 
-  int _polygonIdCounter = 1;
   int _polylineIdCounter = 1;
 
   @override
   void initState() {
     super.initState();
+    _getCurrentLocation();
+  }
 
-    _setMarker(
-      LatLng(
-        36.354946759143,
-        127.29980994578,
-      ),
-    );
+  Future<void> _getCurrentLocation() async {
+    Position position = await _determinePosition();
+    if (position.latitude != null && position.longitude != null) {
+      setState(() {
+        _myCurrentSpot = CameraPosition(
+          target: LatLng(position.latitude!, position.longitude!),
+          zoom: 18.0,
+        );
+        _setMarker(
+          LatLng(position.latitude, position.longitude),
+        );
+      });
+    }
+  }
+
+  //위치 권환 확인, 위치 정보 열기
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      //위치서비스 비활성화 되어있으면 오류
+      return Future.error('위치 서비스가 활성화 되어 있지 않습니다.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      //거절되어 있으면 창 띄우기
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('위치 권한이 거부되었습니다.');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error('위치 권한을 설정에서 허가해주세요.');
+    }
+
+    return await Geolocator.getCurrentPosition();
   }
 
   void _setMarker(LatLng point) {
@@ -69,20 +89,6 @@ class _MapScreenState extends State<MapScreen> {
           ),
         );
       },
-    );
-  }
-
-  void _setPolygon() {
-    final String polygonIdVal = 'polygon_$_polygonIdCounter';
-    _polygonIdCounter++;
-
-    _polygons.add(
-      Polygon(
-        polygonId: PolygonId(polygonIdVal),
-        points: polygonLatLng,
-        strokeWidth: 2,
-        fillColor: Colors.transparent,
-      ),
     );
   }
 
@@ -121,83 +127,99 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(title: '길찾기'),
-      body: Column(
-        children: [
-          Container(
-            width: 400.0,
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                border: Border.all(color: mainOrange, width: 2.5),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
-                      spreadRadius: 2,
-                      blurRadius: 4,
-                      offset: Offset(3, 3))
-                ]),
-            child: Row(
+      body: _myCurrentSpot == null
+          ? Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Expanded(
-                  child: TextFormField(
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
-                      hintText: '검색어를 입력해주세요.',
-                      hintStyle: TextStyle(
-                          color: mainOrange,
-                          fontWeight: FontWeight.w600),
-                      border: OutlineInputBorder(borderSide: BorderSide.none),
-                    ),
-                    textCapitalization: TextCapitalization.words,
-                    controller: _originController,
-                    onChanged: (value) {
-                      print(value);
-                    },
+                SpinKitPouringHourGlassRefined(
+                  color: mainOrange,
+                  size: 70.0,
+                  duration: Duration(seconds: 2),
+                ),
+                SizedBox(
+                  height: 16.0,
+                ),
+                Text(
+                  'loading',
+                  style: TextStyle(
+                    color: mainOrange,
+                    fontSize: 16.0,
                   ),
                 ),
-                IconButton(
-                  onPressed: () async {
-                    var directions = await LocationService().getDirections(
-                        _originController.text, _destinationController.text);
-                    if (directions != null) {
-                      _goToStart(
-                        directions['start_location']['lat'],
-                        directions['start_location']['lng'],
-                        directions['bounds_ne'],
-                        directions['bounds_sw'],
-                      );
-                      _setPolyline(directions['polyline_decoded']);
-                    }
-                  },
-                  icon: Icon(
-                    Icons.search,
-                    color: mainOrange,
+              ],
+            )
+          : Column(
+              children: [
+                Container(
+                  width: 400.0,
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      border: Border.all(color: mainOrange, width: 2.5),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 4,
+                            offset: Offset(3, 3))
+                      ]),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 16.0),
+                            hintText: '검색어를 입력해주세요.',
+                            hintStyle: TextStyle(
+                                color: mainGray, fontWeight: FontWeight.w600),
+                            border:
+                                OutlineInputBorder(borderSide: BorderSide.none),
+                          ),
+                          textCapitalization: TextCapitalization.words,
+                          controller: _originController,
+                          onChanged: (value) {
+                            print(value);
+                          },
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          var directions = await LocationService()
+                              .getDirections(_originController.text,
+                                  _destinationController.text);
+                          if (directions != null) {
+                            _goToStart(
+                              directions['start_location']['lat'],
+                              directions['start_location']['lng'],
+                              directions['bounds_ne'],
+                              directions['bounds_sw'],
+                            );
+                            _setPolyline(directions['polyline_decoded']);
+                          }
+                        },
+                        icon: Icon(
+                          Icons.search,
+                          color: mainOrange,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: GoogleMap(
+                    mapType: MapType.normal,
+                    markers: _markers,
+                    polylines: _polylines,
+                    myLocationEnabled: true,
+                    initialCameraPosition: _myCurrentSpot!,
+                    onMapCreated: (GoogleMapController controller) {
+                      _controller.complete(controller);
+                    },
                   ),
                 ),
               ],
             ),
-          ),
-          Expanded(
-            child: GoogleMap(
-              mapType: MapType.normal,
-              markers: _markers,
-              polygons: _polygons,
-              polylines: _polylines,
-              myLocationEnabled: true,
-              initialCameraPosition: _firstSpot,
-              onMapCreated: (GoogleMapController controller) {
-                _controller.complete(controller);
-              },
-              onTap: (point) {
-                setState(() {
-                  polygonLatLng.add(point);
-                  _setPolygon();
-                });
-              },
-            ),
-          ),
-        ],
-      ),
     );
   }
 

@@ -1,19 +1,22 @@
 package com.fullship.hBAF.domain.member.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fullship.hBAF.domain.bookmarkPlace.entity.BookmarkPlace;
+import jakarta.persistence.*;
 import lombok.Getter;
+
+import java.util.List;
 
 @Entity
 @Getter
-@Table(name = "member")
 public class Member {
 
   @Id
   @GeneratedValue
   @Column(name = "member_id")
   private Long id;
+
+  @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+  private List<BookmarkPlace> bookmarkPlaces;
+
+
 }

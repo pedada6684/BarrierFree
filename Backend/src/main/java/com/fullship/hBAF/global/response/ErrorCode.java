@@ -17,7 +17,9 @@ public enum ErrorCode {
     JSON_PARSE_IMPOSSIBLE(HttpStatus.BAD_GATEWAY, "API Parsing 중 오류가 발생했습니다."),
 
     /* URI */
-    URI_SYNTAX_ERROR(HttpStatus.BAD_GATEWAY, "외부 API 호출 중 오류가 발생했습니다.");
+    URI_SYNTAX_ERROR(HttpStatus.BAD_GATEWAY, "외부 API 호출 중 오류가 발생했습니다."),
+
+    REQUEST_NOT_FOUND(HttpStatus.BAD_REQUEST, "요청 변수를 확인해주십시오.");
 
     private final HttpStatus httpStatus;
 

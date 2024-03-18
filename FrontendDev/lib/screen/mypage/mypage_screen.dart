@@ -1,4 +1,5 @@
-import 'package:barrier_free/common/appBar.dart';
+import 'package:barrier_free/component/appBar.dart';
+import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/screen/mypage/myplace_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +36,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   Widget _buildTopSection() {
     return Container(
-      color: Color(0xfffca63d),
+      color: mainOrange,
       height: 230.0,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -78,7 +79,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
       child: const Text(
         '프로필 수정하기',
         style: TextStyle(
-          color: Color(0xfffca63d),
+          color: mainOrange,
           fontWeight: FontWeight.bold,
           fontSize: 18.0,
         ),
@@ -93,8 +94,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
     );
   }
 
-  List<Widget> _buildMenuItems(Map<String, Widget Function(BuildContext)> menuItems) {
-    return menuItems.entries.map((MapEntry<String, Widget Function(BuildContext)> entry) {
+  List<Widget> _buildMenuItems(
+      Map<String, Widget Function(BuildContext)> menuItems) {
+    return menuItems.entries
+        .map((MapEntry<String, Widget Function(BuildContext)> entry) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListTile(
@@ -106,7 +109,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
           ),
           trailing: const Icon(
             Icons.arrow_forward_ios,
-            color: Color(0xff909090),
+            color: mainGray,
           ),
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: entry.value));

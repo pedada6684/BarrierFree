@@ -1,4 +1,4 @@
-import 'package:barrier_free/common/appBar.dart';
+import 'package:barrier_free/component/appBar.dart';
 import 'package:flutter/material.dart';
 
 class MyPlaceScreen extends StatefulWidget {

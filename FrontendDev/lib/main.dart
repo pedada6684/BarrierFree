@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'screen/home_screen.dart';
-import 'screen/map/map_screen.dart';
+import 'screen/map/map_screen2.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

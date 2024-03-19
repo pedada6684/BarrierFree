@@ -55,7 +55,7 @@ public class BarrierFreeConstructor {
     private final PlaceRepository placeRepository;
     private ArrayList<HashMap<String, String>> etcData = new ArrayList<>();
 
-    @EventListener(ApplicationReadyEvent.class)
+//    @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void saveBarrierFree() throws IOException, ParseException, ParserConfigurationException, SAXException {
 

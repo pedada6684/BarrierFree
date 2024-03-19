@@ -20,12 +20,12 @@ if (flutterRoot == null) {
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
+    flutterVersionCode = '3'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
+    flutterVersionName = '3.0'
 }
 
 android {
@@ -51,10 +51,14 @@ android {
         applicationId "com.example.barrier_free"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        minSdkVersion 21
+        targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        multiDexEnabled true
+        def tmapApiKey = localProperties['TMAP_API_KEY']
+        buildConfigField "String", "TMAP_API_KEY", "\"${tmapApiKey}\""
+
     }
 
     buildTypes {
@@ -80,4 +84,5 @@ dependencies {
 
     // TMap SDK
     implementation files('libs/com.skt.Tmap_1.75.jar')
+    implementation 'com.android.support:multidex:2.0.1'
 }

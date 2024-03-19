@@ -9,19 +9,20 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.platform.PlatformView
+import com.skt.Tmap.TMapView
+import com.example.barrier_free.BuildConfig
 
 internal class NativeView(
-    activity: FlutterActivity,
-    context: Context?,
-    id: Int,
-    creationParams: Map<String?, Any?>?
+        activity: FlutterActivity,
+        context: Context?,
+        id: Int,
+        creationParams: Map<String?, Any?>?
 ) :
-    PlatformView {
+        PlatformView {
 
     private val layout: FrameLayout
     override fun getView(): View {
         return layout
-
     }
 
 
@@ -32,15 +33,10 @@ internal class NativeView(
 
     init {
         layout = FrameLayout(context!!)
-        layout.setBackgroundColor(Color.argb(255, 230, 230, 230))
 
-        val textview = TextView(context!!)
-        textview.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        textview.setText("이 화면은 안드로이드 화면입니다.\nfloatingActionButton 클릭 시 티맵화면이 띄어집니다.")
-        textview.gravity = Gravity.CENTER
-        layout.addView(textview)
+        val tmapView = TMapView(context).apply {
+            setSKTMapApiKey(BuildConfig.TMAP_API_KEY) // 수정된 부분
+        }
+        layout.addView(tmapView)
     }
 }

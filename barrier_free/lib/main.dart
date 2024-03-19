@@ -1,86 +1,87 @@
-import 'dart:developer';
-
+import 'package:barrier_free/component/bottomBar.dart';
+import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/screen/directions/directions_screen.dart';
+import 'package:barrier_free/screen/mypage/mypage_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'screen/map/map_screen.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+  runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
+class MyApp extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
+  _MyAppState createState() => _MyAppState();
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class _MyAppState extends State<MyApp> {
+  //지도(MapScreen)가 먼저 뜨도록 index 1로 설정
+  int _selectedIndex = 1;
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+  // 화면 리스트
+  final List<Widget> _screens = [
+    DirectionsScreen(),
+    MapScreen(), //지도
+    MyPageScreen(),
+  ];
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  final platform = const MethodChannel("testing.flutter.android");
-
-  Future<void> _showActivity() async {
-    try {
-      await platform.invokeMethod('showActivity');
-    } on PlatformException catch (e) {
-      log("Error : $e");
+  void _onItemTapped(int index) {
+    if (index == 2) {
+      _makePhoneCall('15881668');
+    } else {
+      if (index < 2) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      } else if (index > 2) {
+        setState(() {
+          _selectedIndex = 2;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        appBarTheme: AppBarTheme(
+            centerTitle: true,
+            iconTheme: IconThemeData(
+              color: mainOrange,
+            ),
+            titleTextStyle: TextStyle(
+                color: mainOrange,
+                fontWeight: FontWeight.bold,
+                fontSize: 22.0)),
       ),
-      body: Container(
-        color: Colors.white,
-        alignment: Alignment.center,
-        child: const AndroidView(
-          viewType: "androidView",
-          layoutDirection: TextDirection.ltr,
-          creationParamsCodec: StandardMessageCodec(),
+      home: Scaffold(
+        body: Center(
+          child: _screens.elementAt(_selectedIndex), // 현재 선택된 화면을 표시
+        ),
+        bottomNavigationBar: CustomBottomNavigationBar(
+          selectedIndex: _selectedIndex,
+          onItemSelected: _onItemTapped,
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showActivity,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
     );
+  }
+}
+
+void _makePhoneCall(String phoneNumber) async {
+  final Uri launchUri = Uri(
+    scheme: 'tel',
+    path: phoneNumber,
+  );
+  if (await canLaunchUrl(launchUri)) {
+    await launchUrl(launchUri);
+  } else {
+    throw '$launchUri를 설치하지 못했습니다.';
   }
 }

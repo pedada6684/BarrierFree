@@ -12,6 +12,7 @@ public class CreatePlaceCommand {
     private String longitude;
     private String poiId;
     private String category;
-    private Boolean barrierFree;
+    private String barrierFree;
     private String wtcltId;
+    private Boolean type;
 }

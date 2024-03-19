@@ -26,9 +26,8 @@ public class Place {
   private String poiId;
   private String category;
   private String barrierFree;
+  private boolean type; // 배리어프리 장소인지 여부
   private String wtcltId;
-  private Long type;
-
 
   @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Image> images;
@@ -42,7 +41,7 @@ public class Place {
           String category,
           String barrierFree,
           String wtcltId,
-          Long type
+          boolean type
   ){
     Place place = new Place();
     place.placeName = placeName;
@@ -61,7 +60,7 @@ public class Place {
   public void insertWtcltId(String wtcltId) {
     this.wtcltId = wtcltId;
   }
-
+  public void updateBarrierFree(String value) {this.barrierFree = value;}
   public void addImage(Image image){
     this.images.add(image);
   }

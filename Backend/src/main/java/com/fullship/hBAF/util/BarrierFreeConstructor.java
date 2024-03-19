@@ -1,6 +1,7 @@
 package com.fullship.hBAF.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fullship.hBAF.domain.place.entity.Place;
+import com.fullship.hBAF.domain.place.repository.PlaceRepository;
 import com.fullship.hBAF.domain.place.service.PlaceService;
 import com.fullship.hBAF.domain.place.service.command.CreatePlaceCommand;
 import com.fullship.hBAF.domain.place.service.command.UpdatePlaceImageCommand;
@@ -33,10 +34,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -47,14 +47,19 @@ public class BarrierFreeConstructor {
     private final ImageCrawler imageCrawler;
     private final DataApiService dataApiService;
 
+    @Value("${api.data.license.key}")
+    private String serviceKey;
     @Value("${api.tmap.key}")
     private String tmapAppkey;
+
+    private final PlaceRepository placeRepository;
+    private ArrayList<HashMap<String, String>> etcData = new ArrayList<>();
+
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void saveBarrierFree() throws IOException, ParseException, ParserConfigurationException, SAXException {
 
         // 공공데이터 포털 배리어프리 장소 저장
-        String serviceKey = "wK665NJtOMK0uGapMP0tdiUoYhk1%2Br1wC%2ByxQyuQrrpEkmezYheSeQ0Y0cwQTq8R2LxxrHg9QLd1FE%2F6wkLNXg%3D%3D";
         Map<String, String> categoryMap = getCategoryMap();
         for (String faclTyCd : categoryMap.keySet()) {
             String category = categoryMap.get(faclTyCd);
@@ -72,9 +77,6 @@ public class BarrierFreeConstructor {
             HttpEntity<?> he = new HttpEntity<>(setHttpHeaders());
             ResponseEntity<String> resultMap = rt.exchange(publicDataPlaceUri.toUri(), HttpMethod.GET, he, String.class);
 
-            System.out.println("공공데이터 결과 : ");
-            System.out.println(resultMap);
-
             InputStream is = new ByteArrayInputStream(Objects.requireNonNull(resultMap.getBody()).getBytes("UTF-8"));
 
             // Document 객체 생성
@@ -88,7 +90,6 @@ public class BarrierFreeConstructor {
             NodeList servList = doc.getElementsByTagName("servList");
 
             // servList 태그들을 순회하며 각 태그에 해당하는 값들 저장
-            int noContentCnt = 0;
             for (int idx = 0; idx < servList.getLength(); idx++) {
                 Element servElement = (Element) servList.item(idx);
 
@@ -128,8 +129,6 @@ public class BarrierFreeConstructor {
                         restTemplate.exchange(uri.toString(), HttpMethod.GET, entity, String.class);
                 if (responseEntity.getStatusCode() == HttpStatus.OK) {
                     //성공
-                    System.out.println("responseEntity.getBody()");
-                    System.out.println(responseEntity.getBody());
 
                     JSONParser parser = new JSONParser();
                     try {
@@ -166,7 +165,8 @@ public class BarrierFreeConstructor {
                                             .longitude(frontLon)
                                             .poiId(id)
                                             .category(category)
-                                            .barrierFree(true)
+                                            .type(true)
+//                                            .barrierFree(barrierfreeInfo)
                                             .wtcltId(wfcltId)
                                             .build();
                                     placeService.createPlace(command);
@@ -180,7 +180,8 @@ public class BarrierFreeConstructor {
                                         .longitude(frontLon)
                                         .poiId(id)
                                         .category(category)
-                                        .barrierFree(true)
+                                        .type(true)
+//                                        .barrierFree(barrierfreeInfo)
                                         .wtcltId(wfcltId)
                                         .build();
                                 placeService.createPlace(command);
@@ -197,8 +198,85 @@ public class BarrierFreeConstructor {
                 }
             }
 
+//            setBarrierfreeInfo();
         }
     }
+
+//    @EventListener(ApplicationReadyEvent.class)
+    @Transactional
+    public void setBarrierfreeInfo() throws ParserConfigurationException, IOException, SAXException {
+        List<String> WtcltIdList = placeRepository.findWtcltIdByType();
+
+        for (String wtcltId : WtcltIdList) {
+            UriComponents publicDataDetailPlaceUri = UriComponentsBuilder
+                    .fromHttpUrl("https://www.bokjiro.go.kr/ssis-tbu/getFacInfoOpenApiJpEvalInfoList.do")
+                    .queryParam("serviceKey", serviceKey)
+                    .queryParam("wfcltId", wtcltId) /*장애인편의시설용도구분코드코드표 참조*/
+//                    .queryParam("wfcltId", place.getWtcltId()) /*장애인편의시설용도구분코드코드표 참조*/
+                    .queryParam("SG_APIM", "2ug8Dm9qNBfD32JLZGPN64f3EoTlkpD8kSOHWfXpyrY")
+                    .build();
+
+            RestTemplate rt = new RestTemplate();
+            HttpEntity<?> he = new HttpEntity<>(setHttpHeaders());
+            System.out.println(publicDataDetailPlaceUri.toUri());
+            ResponseEntity<String> resultMap = rt.exchange(publicDataDetailPlaceUri.toUri(), HttpMethod.GET, he, String.class);
+
+            InputStream is = new ByteArrayInputStream(Objects.requireNonNull(resultMap.getBody()).getBytes("UTF-8"));
+
+            // Document 객체 생성
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+
+            Document doc = dBuilder.parse(is);
+            doc.getDocumentElement().normalize();
+
+            // facInfoList 태그 내의 servList 태그들을 가져오기
+            NodeList servList = doc.getElementsByTagName("servList");
+
+            StringBuilder barrierfreeResult = new StringBuilder();
+
+            String evalInfo = "";
+            // servList 태그들을 순회하며 각 태그에 해당하는 값들 저장
+            for (int idx = 0; idx < servList.getLength(); idx++) {
+                Element servElement = (Element) servList.item(idx);
+
+                /**
+                 * 	계단 또는 승강설비,대변기,복도,소변기,일반사항,장애인전용주차구역,주출입구 높이차이 제거,주출입구 접근로,출입구(문),해당시설 층수
+                 * 	대변기, 소변기 -> 변기 a, 장애인전용주차구역 -> 주차 b, 주출입구 높이차이 제거 -> 높이 c, 주출입구 접근로 -> 접근로 d, 출입구(문) -> 문 e,승강설비 -> 승강 f, 나머지는 이어 붙이기
+                 */
+                Element evalInfoElement = (Element) servElement.getElementsByTagName("evalInfo").item(0);
+                evalInfo = (evalInfoElement != null) ? evalInfoElement.getTextContent() : "";
+
+                String[] inputs = evalInfo.split(",");
+                for (String input : inputs) {
+                    if (input.contains("변기")) barrierfreeResult.append("a");
+                    else if (input.contains("주차")) barrierfreeResult.append("b");
+                    else if (input.contains("높이")) barrierfreeResult.append("c");
+                    else if (input.contains("접근로")) barrierfreeResult.append("d");
+                    else if (input.contains("문")) barrierfreeResult.append("e");
+                    else if (input.contains("승강")) barrierfreeResult.append("f");
+                    else {
+                        HashMap<String, String> etc = new HashMap<>();
+                        etc.put(wtcltId, input);
+                        etcData.add(etc);
+                    }
+                }
+            }
+
+            char[] beforeSort = barrierfreeResult.toString().toCharArray();
+            Arrays.sort(beforeSort);
+
+            Place place = placeRepository.findByWtcltId(wtcltId)
+                    .orElseThrow(() -> new IllegalArgumentException("NO CONTENT wtcltId " + wtcltId));
+            place.updateBarrierFree(new String(beforeSort));
+        }
+
+//        System.out.println("------------------------우리에게 없는 배리어프리 기구 출력------------------------------");
+//        for (Map<String, String> data : etcData) {
+//            System.out.println("wfcid: " + data.keySet() + ", data: " + data.values());
+//        }
+    }
+
     private HttpHeaders setHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -221,10 +299,10 @@ public class BarrierFreeConstructor {
     private Map<String, String> getCategoryMap() {
         Map<String, String> categoryMap = new HashMap<>();
 
-        categoryMap.put("UC0A13", "화장실");
+        categoryMap.put("UC0A13", "화장실"); //2개
 
-        categoryMap.put("UC0B01", "음식점");
-        categoryMap.put("UC0B02", "음식점");
+//        categoryMap.put("UC0B01", "음식점"); //95개
+        categoryMap.put("UC0B02", "음식점"); //1개
 
         categoryMap.put("UC0F01", "병원");
         categoryMap.put("UC0F03", "병원");

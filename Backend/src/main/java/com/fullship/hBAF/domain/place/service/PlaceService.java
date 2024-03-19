@@ -1,5 +1,6 @@
 package com.fullship.hBAF.domain.place.service;
 
+import com.fullship.hBAF.domain.place.controller.response.PlaceListResonse;
 import com.fullship.hBAF.domain.place.entity.Image;
 import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.domain.place.repository.ImageRepository;
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -37,9 +40,11 @@ public class PlaceService {
             command.getLongitude(),
             command.getPoiId(),
             command.getCategory(),
-            command.getBarrierFree()
+            command.getBarrierFree(),
+            command.getType()
     );
-    if (command.getBarrierFree()){
+
+    if (command.getType()){
       newPlace.insertWtcltId(command.getWtcltId());
     }
     //검색결과를 기반으로 save함
@@ -58,5 +63,21 @@ public class PlaceService {
       imageRepository.save(newImage);
     }
     return place.getId();
+  }
+
+  /**
+   * 장애인 시설 카테고리별 불러오기
+   * @param category
+   * @return
+   */
+  public List<PlaceListResonse> getPlaceByCategory(String category) {
+    List<Place> placeEntityList = placeRepository.findByCategory(category);
+
+    List<PlaceListResonse> placeList = new ArrayList<>();
+    for (Place place : placeEntityList) {
+      placeList.add(PlaceListResonse.from(place));
+    }
+
+    return placeList;
   }
 }

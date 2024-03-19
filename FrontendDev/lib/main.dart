@@ -3,14 +3,11 @@ import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/screen/directions/directions_screen.dart';
 import 'package:barrier_free/screen/mypage/mypage_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'screen/map/map_screen2.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
   runApp(MyApp());
 }
 

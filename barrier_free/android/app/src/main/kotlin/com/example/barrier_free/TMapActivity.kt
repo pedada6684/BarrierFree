@@ -8,8 +8,6 @@ import com.skt.Tmap.TMapView
 
 class TMapActivity : AppCompatActivity() {
 
-    val API_KEY = "JChx6o3smL7JUiVxcOIBY56ihstjNuFv4e2xJBDi" // 발급받은 API 키
-
     var tmapView: TMapView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +20,7 @@ class TMapActivity : AppCompatActivity() {
         val container = findViewById<FrameLayout>(R.id.tmapContainer)
         container.addView(tmapView)
 
-        tmapView?.setSKTMapApiKey(API_KEY)
+        tmapView?.setSKTMapApiKey(BuildConfig.TMAP_API_KEY)
 
 
     }

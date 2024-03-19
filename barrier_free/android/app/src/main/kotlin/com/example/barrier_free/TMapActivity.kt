@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.skt.Tmap.TMapView
+import com.example.barrier_free.BuildConfig
 
 
 class TMapActivity : AppCompatActivity() {
@@ -15,13 +16,16 @@ class TMapActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_tmap)
 
-        tmapView = TMapView(this)
+        tmapView = TMapView(this).apply {
+            setSKTMapApiKey(BuildConfig.TMAP_API_KEY)
+        }
 
         val container = findViewById<FrameLayout>(R.id.tmapContainer)
         container.addView(tmapView)
 
-        tmapView?.setSKTMapApiKey(BuildConfig.TMAP_API_KEY)
-
+        if (intent.getBooleanExtra("enableTrackingMode", false)) {
+            tmapView?.setTrackingMode(true)
+        }
 
     }
 

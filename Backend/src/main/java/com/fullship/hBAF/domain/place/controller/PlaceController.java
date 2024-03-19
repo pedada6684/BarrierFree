@@ -4,6 +4,7 @@ import static com.fullship.hBAF.global.response.CommonResponseEntity.getResponse
 
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToTransitRequest;
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToWheelRequest;
+import com.fullship.hBAF.domain.place.controller.response.PlaceListResonse;
 import com.fullship.hBAF.domain.place.service.PlaceService;
 import com.fullship.hBAF.global.api.service.TMapApiService;
 import com.fullship.hBAF.global.api.service.command.SearchPathToTransitCommand;
@@ -18,10 +19,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,5 +53,18 @@ public class PlaceController {
     SearchPathToTransitCommand command = requestDto.createForTransit();
     return getResponseEntity(SuccessCode.OK, tMapApiService.searchPathToTransit(command));
 //    return getResponseEntity(SuccessCode.OK, placeService.useTransitPath(command));
+  }
+
+  @GetMapping("/list")
+  public ResponseEntity<?> getPlaceByCategory(@RequestParam("category") String category) {
+    List<PlaceListResonse> placeList = placeService.getPlaceByCategory(category);
+    return getResponseEntity(SuccessCode.OK, placeList);
+  }
+
+  @GetMapping("/test")
+  public ResponseEntity<?> test()
+          throws ParseException {
+    System.out.println("통신 테스트");
+    return getResponseEntity(SuccessCode.OK, "테스트입니다.");
   }
 }

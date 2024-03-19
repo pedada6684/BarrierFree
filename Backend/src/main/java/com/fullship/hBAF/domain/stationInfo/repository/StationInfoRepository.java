@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface StationInfoRepository extends JpaRepository<StationInfo,Long> {
 
+  StationInfo findStationInfoBySubwayName(String startName);
 }

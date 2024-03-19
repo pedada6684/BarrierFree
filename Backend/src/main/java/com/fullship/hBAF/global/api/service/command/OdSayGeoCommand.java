@@ -5,10 +5,8 @@ import lombok.Data;
 
 @Data
 @Builder
-public class BusesCurLocationCommand {
+public class OdSayGeoCommand {
+  private String uri;
 
-    String busNodeId;
-    String dir;
-    String license;
-
+  private String mapObj;
 }

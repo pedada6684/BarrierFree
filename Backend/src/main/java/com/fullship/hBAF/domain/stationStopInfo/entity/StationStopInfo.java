@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.time.LocalTime;
 import lombok.Getter;
 
 @Entity
@@ -18,10 +19,10 @@ public class StationStopInfo {
 
   private int metroInfoId;
 
-  private String arrTime;
+  private LocalTime arrTime;
 
   public static StationStopInfo createStationStopInfo(int subwayInfoId, int metroInfoId,
-      String arrTime) {
+      LocalTime arrTime) {
     StationStopInfo stationStopInfo = new StationStopInfo();
     stationStopInfo.subwayInfoId = subwayInfoId;
     stationStopInfo.metroInfoId = metroInfoId;

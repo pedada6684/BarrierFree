@@ -1,0 +1,55 @@
+package com.fullship.hBAF.global.api.response;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.Builder;
+import lombok.Data;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.springframework.http.ResponseEntity;
+
+@Data
+@Builder
+public class PathGeoCode {
+
+  @Schema(description = "경로 구분")
+  private long trafficType;
+  @Schema(description = "좌표 값")
+  private List<String[]> geoCode;
+
+  public static List<PathGeoCode> jsonToO(ResponseEntity<String> response) {
+    List<PathGeoCode> pathGeoCodes = new ArrayList<>();
+    try {
+      JSONParser parser = new JSONParser();
+      JSONObject object = (JSONObject) parser.parse(response.getBody());
+      JSONObject result = (JSONObject) object.get("result");
+      JSONArray lanes = (JSONArray) result.get("lane");
+      for (Object o : lanes) {
+        JSONObject lane = (JSONObject) o;
+        long trafficType = (long) lane.get("class");
+
+        List<String[]> geoCode = new ArrayList<>();
+        JSONObject section = (JSONObject) ((JSONArray) lane.get("section")).get(0);
+        JSONArray graphPoses = (JSONArray) section.get("graphPos");
+        for (Object graphPose : graphPoses) {
+          JSONObject graphPos = (JSONObject) graphPose;
+          geoCode.add(
+              new String[]{graphPos.get("x").toString(), graphPos.get("y").toString()});
+        }
+
+        pathGeoCodes.add(
+            PathGeoCode.builder()
+                .trafficType(trafficType == 1 ? 2 : 1)
+                .geoCode(geoCode)
+                .build());
+      }
+      return pathGeoCodes;
+    } catch (ParseException e) {
+      throw new RuntimeException(e);
+    }
+
+  }
+}

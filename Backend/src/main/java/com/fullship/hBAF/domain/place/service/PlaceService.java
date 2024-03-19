@@ -1,14 +1,40 @@
 package com.fullship.hBAF.domain.place.service;
 
+import static com.fullship.hBAF.domain.place.controller.request.PathSearchToWheelRequest.createForWheel;
+import static com.fullship.hBAF.global.api.response.OdSayPath.changeSubPathToWheel;
+
+import com.fullship.hBAF.domain.busInfo.entity.BusInfo;
+import com.fullship.hBAF.domain.busInfo.repository.BusInfoRepository;
+import com.fullship.hBAF.domain.busStop.entity.BusStop;
+import com.fullship.hBAF.domain.busStop.repository.BusStopRepository;
+import com.fullship.hBAF.domain.metroInfo.repository.MetroInfoRepository;
 import com.fullship.hBAF.domain.place.controller.response.PlaceListResonse;
 import com.fullship.hBAF.domain.place.entity.Image;
 import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.domain.place.repository.ImageRepository;
 import com.fullship.hBAF.domain.place.repository.PlaceRepository;
+import com.fullship.hBAF.domain.stationInfo.entity.StationInfo;
+import com.fullship.hBAF.domain.stationInfo.repository.StationInfoRepository;
+import com.fullship.hBAF.domain.stationStopInfo.entity.StationStopInfo;
+import com.fullship.hBAF.domain.stationStopInfo.repository.StationStopInfoRepository;
+import com.fullship.hBAF.global.api.response.OdSayPath;
+import com.fullship.hBAF.global.api.response.OdSayPath.SubPath;
+import com.fullship.hBAF.global.api.response.PathGeoCode;
+import com.fullship.hBAF.global.api.response.WheelPathForm;
+import com.fullship.hBAF.global.api.service.DataApiService;
+import com.fullship.hBAF.global.api.service.OdSayApiService;
 import com.fullship.hBAF.domain.place.service.command.CreatePlaceCommand;
 import com.fullship.hBAF.domain.place.service.command.UpdatePlaceImageCommand;
 import com.fullship.hBAF.global.api.response.TransitPathForm;
 import com.fullship.hBAF.global.api.service.TMapApiService;
+import com.fullship.hBAF.global.api.service.TagoApiService;
+import com.fullship.hBAF.global.api.response.BusesCurLocation;
+import com.fullship.hBAF.global.api.service.command.OdSayGeoCommand;
+import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.TextStyle;
 import com.fullship.hBAF.global.api.service.command.SearchPathToTransitCommand;
 
 import java.io.IOException;
@@ -25,65 +51,191 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 import static com.fullship.hBAF.util.H3.daejeonH3Index;
 
-@Slf4j
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PlaceService {
 
-  private final PlaceRepository placeRepository;
   private final TMapApiService tMapApiService;
+  private final OdSayApiService odSayApiService;
+  private final DataApiService dataApiService;
+  private final TagoApiService tagoApiService;
+  private final BusInfoRepository busInfoRepository;
+  private final BusStopRepository busStopRepository;
+  private final PlaceRepository placeRepository;
+  private final StationInfoRepository stationInfoRepository;
+  private final MetroInfoRepository metroInfoRepository;
+  private final StationStopInfoRepository stationStopInfoRepository;
   private final ImageRepository imageRepository;
 
-  public String useTransitPath(SearchPathToTransitCommand command) throws ParseException {
-    List<TransitPathForm> list = tMapApiService.searchPathToTransit(command);
+  public List<OdSayPath> useTransitPath(OdSayPathCommand command) {
+    List<OdSayPath> list = odSayApiService.searchPathToTransit(command);
+    log.info("대중교통 이용 경로 호출 결과 = {}", list);
 
-    List<TransitPathForm> transferList = new ArrayList<>(list);
-    Collections.sort(transferList,
-        (o1, o2) -> (int) (o1.getTransferCount() - o2.getTransferCount()));
+    /* 총합 시간 순 정렬 (오름차순) */
+    list.sort((o1, o2) -> (int) (o1.getTotalTime() - o2.getTotalTime()));
+    /* 소요시간의 중앙값 */
+    long midTime = list.get(list.size() / 2).getTotalTime();
+    /* 소요시간의 이상치 (중앙값보다 3600 이상 큰 값) 제거 */
+    for (int i = (list.size() / 2); i < list.size(); i++) {
+      if (list.get(i).getTotalTime() >= midTime + 3600) {
+        list = list.subList(0, i);
+      }
+    }
+    log.info("소요시간 이상치 제거 결과 = {}", list);
 
-    int idx = 0;
-    long min = transferList.get(0).getTransferCount();
-    for (int i = 0; i < transferList.size(); i++, idx++) {
-      if(transferList.get(i).getTransferCount() > min + 1)
+    /* 환승 횟수 정렬 (오름차순) */
+    list.sort((o1, o2) -> (int) (o1.getTotalTransferCount() - o2.getTotalTransferCount()));
+    /* 환승 횟수가 최소치 보다 2 이상 높은 경우 제거 */
+    long min = list.get(0).getTotalTransferCount();
+    for (int i = 0; i < list.size(); i++) {
+      if (list.get(i).getTotalTransferCount() >= min + 2) {
+        list = list.subList(0, i);
         break;
+      }
+    }
+    log.info("환승 횟수 이상치 제거 결과 = {}", list);
+
+    for (int i = 0; i < list.size(); i++) {
+      /* 대중교통 경로 좌표 */
+      list.get(i).setGeoCode(
+          odSayApiService.getOdSayGeoCode(
+              OdSayGeoCommand.builder()
+                  .uri("https://api.odsay.com/v1/api/loadLane?")
+                  .mapObj("0:0@" + list.get(i).getMapObj())
+                  .build()));
+
+      int sumTime = 0;
+      for (int j = 0; j < list.get(i).getSubPaths().size(); j++) {
+        SubPath subPath = list.get(i).getSubPaths().get(j);
+        /* WALK 모드 */
+        if (subPath.getTrafficType() == 3) {
+          String[] startGeo;
+          String[] endGeo;
+          /* 제일 처음에 걷는 경우 */
+          if (j == 0) {
+            startGeo = new String[]{command.getRequestBody().get("startX").toString(),
+                command.getRequestBody().get("startY").toString()};
+            endGeo = list.get(i).getSubPaths().get(j + 1).getStartGeo();
+          }
+          /* 끝에 걷는 경우 */
+          else if (j == list.get(i).getSubPaths().size() - 1) {
+            startGeo = list.get(i).getSubPaths().get(j - 1).getEndGeo();
+            endGeo = list.get(i).getSubPaths().get(j + 1).getStartGeo();
+          }
+          /* 중간에 걷는 경우 */
+          else {
+            startGeo = list.get(i).getSubPaths().get(j - 1).getEndGeo();
+            endGeo = new String[]{command.getRequestBody().get("endX").toString(),
+                command.getRequestBody().get("endY").toString()};
+          }
+
+          WheelPathForm wheelForm = tMapApiService.searchPathToWheel(
+              createForWheel(startGeo, endGeo));
+          list.get(i).getSubPaths().set(j, changeSubPathToWheel(wheelForm));
+          list.get(i).setGeoCode(setWheelGeoCode(list.get(i).getGeoCode(), wheelForm, j));
+        }
+        /* BUS 모드 */
+        else if (subPath.getTrafficType() == 2) {
+          /* 탑승 가능한 Bus 목록 */
+          for (int b = 0; b < subPath.getBusList().size(); b++) {
+            /* 버스 고르기 해야 함 */
+            // 1. 상 하행 구분
+            BusStop busStop = busStopRepository.findBusStopByStopId(subPath.getStartStationId());
+            String direction = busStop.getStationDirection();
+            // 2. 검색 대상 노선 찾기
+            String busPublicId = subPath.getBusList().get(b).getPublicBusId();
+            // 3. 해당 노선에 버스 목록 찾기 (상 하행 필터링)
+            List<BusesCurLocation> buses =
+                tagoApiService.findBusesByPublicId(busPublicId, direction);
+            List<BusesCurLocation> lowFilter = new ArrayList<>();
+            // 4. 저상 필터링
+            for (BusesCurLocation bus : buses) {
+              BusInfo busInfo =
+                  busInfoRepository.findBusInfoByBusRegNo(bus.getLicense());
+              if (busInfo.getBusType().equals("2")) {
+                lowFilter.add(bus);
+              }
+            }
+            // 5. 몇 정류장 전에 있는지 확인
+            for (int k = 0; k < lowFilter.size(); k++) {
+              BusStop curBusStop =
+                  busStopRepository.findBusStopByArsId(buses.get(k).getArsId());
+              long countStop = Math.abs(busStop.getId() - curBusStop.getId());
+              list.get(i).getSubPaths().get(j).setBeforeCount(countStop);
+            }
+          }
+        }
+        /* 지하철인 경우 */
+        else if (subPath.getTrafficType() == 1) {
+          /* 상행 하행 구분 */
+          StationInfo sStation = stationInfoRepository.findStationInfoBySubwayName(
+              subPath.getStartStationName());
+          StationInfo eStation = stationInfoRepository.findStationInfoBySubwayName(
+              subPath.getEndStationName());
+          boolean isUp = sStation.getId() - eStation.getId() < 0;
+
+          /* 평일 휴일 구분 */
+          LocalDateTime curDateTime = LocalDateTime.now();
+          String week = curDateTime.getDayOfWeek()
+              .getDisplayName(TextStyle.NARROW, new Locale("ko", "KR"));
+          boolean isWeekDay = !week.equals("토") && !week.equals("일");
+
+          LocalTime futureTime = LocalTime.of(curDateTime.getHour(), curDateTime.getMinute());
+          futureTime.plusMinutes(sumTime / 60);
+          /* 평-휴일, 상-하행 필터를 거치고 남는 metro */
+          List<Integer> metroIdList = isUp ?
+              metroInfoRepository.findAllByIsWeekDayAndUp(isWeekDay) :
+              metroInfoRepository.findAllByIsWeekDayAndDown(isWeekDay);
+          List<StationStopInfo> MetroArrInfoList = stationStopInfoRepository.findByTimeAndMetroInfo(
+              futureTime, metroIdList);
+
+          /* 역 도착시간과 열차 도착시간 비교 (대기시간) */
+          Duration duration = Duration.between(MetroArrInfoList.get(0).getArrTime(), futureTime);
+          long waitTime = duration.toMinutes() * 60;
+          list.get(i).getSubPaths().get(j).setWaitTime(waitTime);
+        }
+        sumTime += (int) subPath.getSectionTime();
+      }
     }
 
-    for(int i = idx; i < transferList.size(); i++){
-      transferList.remove(idx);
-    }
-      return null;
+    return list;
   }
 
-    @Transactional(readOnly = false)
-    public Long createPlace(CreatePlaceCommand command){
-      //poiId를 통해 존재확인
-      if (placeRepository.existsByPoiId(command.getPoiId())) {
-        return null;
+  @Transactional(readOnly = false)
+  public Long createPlace(CreatePlaceCommand command){
+    //poiId를 통해 존재확인
+    if (placeRepository.existsByPoiId(command.getPoiId())) {
+      return null;
 //      throw new IllegalStateException("이미 존재하는 장소 :" + command.getPoiId()+" "+command.getPlaceName());
-      }
-      Place newPlace = Place.createNewPlace(
-              command.getPlaceName(),
-              command.getAddress(),
-              command.getLatitude(),
-              command.getLongitude(),
-              command.getPoiId(),
-              command.getCategory(),
-              command.getBarrierFree(),
-              command.getWtcltId(),
-              command.getType()
-      );
-
-      if (command.getType()) {
-        newPlace.insertWtcltId(command.getWtcltId());
-      }
-      //검색결과를 기반으로 save함
-      return placeRepository.save(newPlace).getId();
     }
+    Place newPlace = Place.createNewPlace(
+        command.getPlaceName(),
+        command.getAddress(),
+        command.getLatitude(),
+        command.getLongitude(),
+        command.getPoiId(),
+        command.getCategory(),
+        command.getBarrierFree(),
+        command.getWtcltId(),
+        command.getType()
+    );
+
+    if (command.getType()) {
+      newPlace.insertWtcltId(command.getWtcltId());
+    }
+    //검색결과를 기반으로 save함
+    return placeRepository.save(newPlace).getId();
+  }
 
   @Transactional(readOnly = false)
   public Long updatePlaceImageUrl(UpdatePlaceImageCommand command){
@@ -177,8 +329,8 @@ public class PlaceService {
       sinLambda = Math.sin(lambda);
       cosLambda = Math.cos(lambda);
       sinSigma = Math.sqrt((cosU2 * sinLambda) * (cosU2 * sinLambda) +
-              (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda) *
-                      (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda));
+          (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda) *
+              (cosU1 * sinU2 - sinU1 * cosU2 * cosLambda));
       if (sinSigma == 0) return 0;  // coincident points
       cosSigma = sinU1 * sinU2 + cosU1 * cosU2 * cosLambda; // cosSigma 계산
       sigma = Math.atan2(sinSigma, cosSigma);
@@ -188,7 +340,7 @@ public class PlaceService {
       double C = f / 16 * cosSqAlpha * (4 + f * (4 - 3 * cosSqAlpha));
       lambdaP = lambda;
       lambda = L + (1 - C) * f * sinAlpha *
-              (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM)));
+          (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM)));
     } while (Math.abs(lambda - lambdaP) > 1e-12 && --iterLimit > 0);
 
     if (iterLimit == 0) {
@@ -199,9 +351,9 @@ public class PlaceService {
     double A = 1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
     double B = uSq / 1024 * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)));
     double deltaSigma = B * sinSigma *
-            (cos2SigmaM + B / 4 * (cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM) -
-                    B / 6 * cos2SigmaM * (-3 + 4 * sinSigma * sinSigma) *
-                            (-3 + 4 * cos2SigmaM * cos2SigmaM)));
+        (cos2SigmaM + B / 4 * (cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM) -
+            B / 6 * cos2SigmaM * (-3 + 4 * sinSigma * sinSigma) *
+                (-3 + 4 * cos2SigmaM * cos2SigmaM)));
 
     double s = b * A * (sigma - deltaSigma);
 
@@ -221,5 +373,15 @@ public class PlaceService {
     }
 
     return placeList;
+  }
+}
+
+  public static List<PathGeoCode> setWheelGeoCode(List<PathGeoCode> origin, WheelPathForm wheel, int idx) {
+    List<String[]> wheelGeoCode = wheel.getGeoCode();
+    origin.add(idx, PathGeoCode.builder()
+        .geoCode(wheelGeoCode)
+        .trafficType(3)
+        .build());
+    return origin;
   }
 }

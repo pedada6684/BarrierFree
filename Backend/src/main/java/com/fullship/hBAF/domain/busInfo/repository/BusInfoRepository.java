@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BusInfoRepository extends JpaRepository<BusInfo,Long> {
 
-    BusInfo findBusInfoByLicense(String license);
+    BusInfo findBusInfoByBusRegNo(String license);
 
 }

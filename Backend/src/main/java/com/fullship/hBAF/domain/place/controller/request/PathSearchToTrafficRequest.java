@@ -1,41 +1,44 @@
 package com.fullship.hBAF.domain.place.controller.request;
 
-import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
+import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
+import com.fullship.hBAF.global.api.service.command.SearchPathToTrafficCommand;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.Builder;
 import lombok.Data;
 
 @Data
-@Builder
-public class PathSearchToWheelRequest {
+public class PathSearchToTrafficRequest {
 
   private String startX;
   private String startY;
   private String endX;
   private String endY;
 
-  public static SearchPathToWheelCommand createForWheel(String[] startGeo, String[] endGeo) {
-    return PathSearchToWheelRequest.builder()
-        .startX(startGeo[0])
-        .startY(startGeo[1])
-        .endX(endGeo[0])
-        .endY(endGeo[0])
-        .build()
-        .createForWheel();
-  }
-
-  public SearchPathToWheelCommand createForWheel() {
+  public SearchPathToTrafficCommand createForTaxi() {
     try {
-      return SearchPathToWheelCommand.builder()
-          .uri(new URI("https://apis.openapi.sk.com/tmap/routes/pedestrian"))
+      return SearchPathToTrafficCommand.builder()
+          .uri(new URI("https://apis.openapi.sk.com/tmap/routes"))
           .requestBody(createRequestBody())
           .build();
     } catch (URISyntaxException e) {
+      throw new CustomException(ErrorCode.URI_SYNTAX_ERROR);
+    }
+  }
+
+  public OdSayPathCommand createForSearch() {
+    try {
+      return OdSayPathCommand.builder()
+          .uri("https://api.odsay.com/v1/api/searchPubTransPathT?"
+                  + "SX=" + startX
+                  + "&SY=" + startY
+                  + "&EX=" + endX
+                  + "&EY=" + endY)
+          .build();
+    } catch (Exception e) {
       throw new CustomException(ErrorCode.URI_SYNTAX_ERROR);
     }
   }
@@ -46,10 +49,6 @@ public class PathSearchToWheelRequest {
     map.put("startY", startY);
     map.put("endX", endX);
     map.put("endY", endY);
-    map.put("startName", "출발지");
-    map.put("endName", "도착지");
-    map.put("searchOption", "30");
-
     return map;
   }
 }

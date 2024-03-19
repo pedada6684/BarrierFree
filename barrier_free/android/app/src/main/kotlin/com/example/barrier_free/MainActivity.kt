@@ -32,6 +32,7 @@ class MainActivity : FlutterActivity() {
                     }
 //                    startActivity(intent)
                     result.success("TMap 추적 모드 활성화 요청 날렸음")
+                    print(result)
                 }
                 else -> result.notImplemented()
             }

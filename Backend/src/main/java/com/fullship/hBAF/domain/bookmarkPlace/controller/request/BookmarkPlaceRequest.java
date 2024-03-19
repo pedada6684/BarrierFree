@@ -1,6 +1,10 @@
 package com.fullship.hBAF.domain.bookmarkPlace.controller.request;
 
-public class BookmarkRequest {
+import lombok.Data;
+import lombok.Getter;
+
+@Getter
+public class BookmarkPlaceRequest {
 
     Long memberId;
     String poiId;
@@ -8,6 +12,5 @@ public class BookmarkRequest {
     String address;
     String latitude;
     String longitude;
-    Long type;
 
 }

@@ -4,10 +4,8 @@ import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.domain.place.repository.PlaceRepository;
 import com.fullship.hBAF.domain.place.service.PlaceService;
 import com.fullship.hBAF.domain.place.service.command.CreatePlaceCommand;
-import com.fullship.hBAF.global.api.service.DataApiService;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
-import com.uber.h3core.exceptions.LineUndefinedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
@@ -15,12 +13,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -43,8 +37,6 @@ import java.util.*;
 public class BarrierFreeConstructor {
 
     private final PlaceService placeService;
-    private final ImageCrawler imageCrawler;
-    private final DataApiService dataApiService;
 
     @Value("${api.data.license.key}")
     private String serviceKey;
@@ -54,8 +46,6 @@ public class BarrierFreeConstructor {
     private final PlaceRepository placeRepository;
     private ArrayList<HashMap<String, String>> etcData = new ArrayList<>();
 
-//    @EventListener(ApplicationReadyEvent.class)
-    @Transactional
     public void saveBarrierFree() throws IOException, ParseException, ParserConfigurationException, SAXException {
 
         // 공공데이터 포털 배리어프리 장소 저장
@@ -201,8 +191,6 @@ public class BarrierFreeConstructor {
         }
     }
 
-//    @EventListener(ApplicationReadyEvent.class)
-    @Transactional
     public void setBarrierfreeInfo() throws ParserConfigurationException, IOException, SAXException {
         List<String> WtcltIdList = placeRepository.findWtcltIdByType();
 
@@ -319,42 +307,4 @@ public class BarrierFreeConstructor {
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
-
-//    @EventListener(ApplicationReadyEvent.class)
-//    @Transactional
-//    @Order(1)
-//    public void saveBusInfo() {
-//        dataApiService.saveBusInfo();
-//    }
-//
-//    @EventListener(ApplicationReadyEvent.class)
-//    @Transactional
-//    @Order(2)
-//    public void saveBusRouteInfo() {
-//        dataApiService.saveRoute();
-//    }
-//
-//
-//    @EventListener(ApplicationReadyEvent.class)
-//    @Transactional
-//    @Order(3)
-//    public void saveBusStop(){
-//
-//        dataApiService.saveBusStop();
-//    }
-//
-//    @EventListener(ApplicationReadyEvent.class)
-//    @Transactional
-//    @Order(4)
-//    public void saveSubway(){
-//        dataApiService.saveSubway();
-//    }
-
-    @EventListener(ApplicationReadyEvent.class)
-    @Transactional
-    @Order(5)
-    public void uberTest() throws IOException, LineUndefinedException {
-        H3.setH3Index();
-    }
-
 }

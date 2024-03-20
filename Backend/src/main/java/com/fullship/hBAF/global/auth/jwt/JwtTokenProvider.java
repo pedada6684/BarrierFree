@@ -1,4 +1,4 @@
-package com.fullship.hBAF.config.jwt;
+package com.fullship.hBAF.global.auth.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;

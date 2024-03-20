@@ -1,4 +1,4 @@
-package com.fullship.hBAF.config.auth.loginRequest;
+package com.fullship.hBAF.global.auth.dto.loginRequest;
 
 import com.fullship.hBAF.domain.member.entity.OAuthProvider;
 import lombok.AllArgsConstructor;

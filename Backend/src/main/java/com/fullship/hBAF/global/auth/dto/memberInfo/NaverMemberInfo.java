@@ -1,4 +1,4 @@
-package com.fullship.hBAF.config.auth.memberInfo;
+package com.fullship.hBAF.global.auth.dto.memberInfo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -1,12 +1,10 @@
 package com.fullship.hBAF.domain.member.controller;
 
-import com.fullship.hBAF.config.auth.loginRequest.NaverLoginRequest;
-import com.fullship.hBAF.config.jwt.AuthToken;
+import com.fullship.hBAF.global.auth.dto.loginRequest.NaverLoginRequest;
+import com.fullship.hBAF.global.auth.jwt.AuthToken;
 import com.fullship.hBAF.domain.member.service.OAuthLoginService;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.queue.PredicatedQueue;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

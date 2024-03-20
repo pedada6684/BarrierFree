@@ -1,4 +1,4 @@
-package com.fullship.hBAF.config.auth.memberInfo;
+package com.fullship.hBAF.global.auth.dto.memberInfo;
 
 import com.fullship.hBAF.domain.member.entity.OAuthProvider;
 

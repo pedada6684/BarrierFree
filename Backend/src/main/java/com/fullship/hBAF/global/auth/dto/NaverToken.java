@@ -1,9 +1,9 @@
-package com.fullship.hBAF.config.auth;
+package com.fullship.hBAF.global.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * naver oauth 응답 데이터
+ * naver 에서 사용하는 accessToken
  * https://developers.naver.com/docs/login/api/api.md#4-2--%EC%A0%91%EA%B7%BC-%ED%86%A0%ED%81%B0-%EB%B0%9C%EA%B8%89-%EC%9A%94%EC%B2%AD
  * @param accessToken
  * @param refreshToken

@@ -1,10 +1,10 @@
 package com.fullship.hBAF.domain.member.service;
 
-import com.fullship.hBAF.config.auth.loginRequest.OAuthLoginRequest;
-import com.fullship.hBAF.config.auth.memberInfo.OAuthMemberInfo;
-import com.fullship.hBAF.config.jwt.AuthToken;
-import com.fullship.hBAF.config.jwt.AuthTokenGenerator;
-import com.fullship.hBAF.config.oauth.RequestOAuthInfoService;
+import com.fullship.hBAF.global.auth.dto.loginRequest.OAuthLoginRequest;
+import com.fullship.hBAF.global.auth.dto.memberInfo.OAuthMemberInfo;
+import com.fullship.hBAF.global.auth.jwt.AuthToken;
+import com.fullship.hBAF.global.auth.jwt.AuthTokenGenerator;
+import com.fullship.hBAF.global.auth.oauth.RequestOAuthInfoService;
 import com.fullship.hBAF.domain.member.entity.Member;
 import com.fullship.hBAF.domain.member.repository.MemberRepository;
 import com.fullship.hBAF.domain.member.service.command.CreateMemberCommand;
@@ -20,6 +20,11 @@ public class OAuthLoginService {
 //  private final PasswordEncorder 
 //TODO: passwordEncoder 사용해볼것
 
+  /**
+   * oauth login or join 메서드
+   * @param request
+   * @return
+   */
   public AuthToken login(OAuthLoginRequest request){
     OAuthMemberInfo oAuthMemberInfo = requestOAuthInfoService.request(request);
     Member member = memberRepository.findByEmail(oAuthMemberInfo.getEmail())

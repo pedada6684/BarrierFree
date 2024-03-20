@@ -1,4 +1,4 @@
-package com.fullship.hBAF.config.jwt;
+package com.fullship.hBAF.global.auth.jwt;
 
 import lombok.Getter;
 

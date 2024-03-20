@@ -5,8 +5,9 @@ import com.fullship.hBAF.global.auth.jwt.AuthToken;
 import com.fullship.hBAF.domain.member.service.OAuthLoginService;
 import com.fullship.hBAF.global.auth.jwt.AuthTokenGenerator;
 import com.fullship.hBAF.global.auth.jwt.JwtTokenProvider;
-import com.fullship.hBAF.global.auth.jwt.RedisRefreshToken;
+import com.fullship.hBAF.global.auth.entity.RedisRefreshToken;
 import com.fullship.hBAF.global.auth.repository.RefreshTokenRepository;
+import com.fullship.hBAF.global.auth.service.RefreshTokenService;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import jakarta.servlet.http.Cookie;
@@ -24,8 +25,8 @@ public class OAuthController {
 
   private final OAuthLoginService oAuthLoginService;
   private final JwtTokenProvider jwtTokenProvider;
-  private  final AuthTokenGenerator authTokenGenerator;
-  private final RefreshTokenRepository refreshTokenRedisRepository;
+  private final AuthTokenGenerator authTokenGenerator;
+  private final RefreshTokenService refreshTokenService;
 
   @GetMapping("/naver")
   public ResponseEntity<AuthToken> naverLogin(String code, String state){
@@ -48,13 +49,12 @@ public class OAuthController {
     jwtTokenProvider.validateToken(refreshToken);
 
     //redis와 검증
-    String userId = jwtTokenProvider.extractSubject(refreshToken);
-    RedisRefreshToken redisRefreshToken = refreshTokenRedisRepository.findById(userId)
-            .orElseThrow(() -> new CustomException(ErrorCode.INVALID_TOKEN));
-    jwtTokenProvider.validateToken(redisRefreshToken.getRefreshToken());
+    Long memberId = Long.parseLong(jwtTokenProvider.extractSubject(refreshToken));
+    String redisRefreshToken = refreshTokenService.findTokenByMemberId(memberId);
+    jwtTokenProvider.validateToken(redisRefreshToken);
 
     //새로운 토큰 생성
-    AuthToken authToken = authTokenGenerator.generate(Long.parseLong(userId));
+    AuthToken authToken = authTokenGenerator.generate(memberId);
     return new ResponseEntity<>(authToken, HttpStatus.OK);
   }
 }

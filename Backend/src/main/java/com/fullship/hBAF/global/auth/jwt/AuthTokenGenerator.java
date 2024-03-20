@@ -10,7 +10,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class AuthTokenGenerator {
     private static final String BEARER_TYPE= "Bearer";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME= 1000 * 60 * 10;            // 30분
+    private static final long ACCESS_TOKEN_EXPIRE_TIME= 1000 * 60 * 10;            // 10분
     private static final long REFRESH_TOKEN_EXPIRE_TIME= 1000 * 60 * 60 * 24 * 90;  // 90일
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -30,6 +30,6 @@ public class AuthTokenGenerator {
         refreshTokenService.removeRefreshToken(userId);
         refreshTokenService.saveTokenInfo(userId, refreshToken);
 
-        return AuthToken.of(accessToken, refreshToken, BEARER_TYPE, 1000L);
+        return AuthToken.of(accessToken, refreshToken, BEARER_TYPE, ACCESS_TOKEN_EXPIRE_TIME);
     }
 }

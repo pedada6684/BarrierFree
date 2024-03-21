@@ -7,15 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
+import android.graphics.BitmapFactory
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.platform.PlatformView
 import com.skt.Tmap.TMapView
+import com.skt.Tmap.TMapMarkerItem
+import com.skt.Tmap.TMapPoint
 import com.barrier_free.BuildConfig
 import android.util.Log
 
 internal class NativeView(
         activity: FlutterActivity,
-        context: Context?,
+       private val context: Context?,
         id: Int,
         creationParams: Map<String?, Any?>?
 ) :
@@ -44,14 +47,31 @@ internal class NativeView(
 //        NativeViewManager.setNativeView(this)
     }
 
+    //위치 업데이트
     fun updateLocation(longitude: Double, latitude: Double) {
+
+        tmapView.removeMarkerItem("currentLocationMarker")
 
         tmapView.setLocationPoint(longitude, latitude)
         tmapView.setCenterPoint(longitude, latitude)
+
+        //현재 위치에 마커 추가하기
+        val markerItem = TMapMarkerItem().apply {
+            tMapPoint = TMapPoint(latitude, longitude)// 마커 위치
+            name = "현재 위치"
+            visible = TMapMarkerItem.VISIBLE
+
+            //아이콘
+//            val bitmap = BitmapFactory.decodeResource(context?.resources, R.drawable.icon)
+//            icon = bitmap
+
+        }
+        tmapView.addMarkerItem("currentLocationMarker", markerItem)
+
     }
 
     override fun dispose() {
-//        NativeViewManager.clearNativeView()
+        NativeViewManager.clearNativeView()
     }
 }
 

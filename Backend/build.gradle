@@ -63,6 +63,16 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc' // Jdbc, Driver
 	implementation 'com.h2database:h2'
+
+	//임시로 사용할 타임리프
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+	// In-Memory H2 DB
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc' // Jdbc, Driver
+	implementation 'com.h2database:h2'
+
+	//redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 tasks.named('test') {

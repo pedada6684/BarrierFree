@@ -9,6 +9,6 @@ public class ModifyReviewRequestCommand {
 
     Long reviewId;
     String content;
-    Long like;
+    Long feedback;
 
 }

@@ -9,7 +9,7 @@ public class AddReviewRequestCommand {
 
     Long memberId;
     String content;
-    Long like;
+    Long feedback;
     String poiId;
 
 }

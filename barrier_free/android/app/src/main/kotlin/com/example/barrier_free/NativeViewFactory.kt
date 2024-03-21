@@ -1,4 +1,4 @@
-package com.example.barrier_free
+package com.barrier_free
 
 import android.content.Context
 import io.flutter.embedding.android.FlutterActivity

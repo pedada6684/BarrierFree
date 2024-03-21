@@ -1,7 +1,6 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/screen/mypage/myplace_screen.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'myfavorite_screen.dart';
@@ -104,7 +103,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
           leading: Text(
             entry.key,
             style: const TextStyle(
-              fontSize: 20.0,
+              fontSize: 18.0,
             ),
           ),
           trailing: const Icon(

@@ -42,26 +42,29 @@ class MainActivity : FlutterActivity() {
                 }
 
                 "setCurrentLocation" -> {
-                    val longitude = call.argument<Double>("longitude")
-                    val latitude = call.argument<Double>("latitude")
+                    val longitude = call.argument<Double>("longitude") ?: 0.0
+                    val latitude = call.argument<Double>("latitude") ?: 0.0
 
                     Log.d(TAG, "위치 설정: 위도 = $latitude, 경도 = $longitude")
 
-                    if (TMapActivity.currentInstance != null) {
-                        // 현재 실행 중인 TMapActivity가 있으면 위치 업데이트
-                        TMapActivity.currentInstance?.updateLocation(latitude!!, longitude!!)
-                        result.success("TMap 위치 업데이트")
-                    } else {
+//                    if (TMapActivity.currentInstance != null) {
+//                        // 현재 실행 중인 TMapActivity가 있으면 위치 업데이트
+//                        TMapActivity.currentInstance?.updateLocation(latitude!!, longitude!!)
+//                        result.success("TMap 위치 업데이트")
+//                    } else {
+//
+//                        val intent = Intent(this@MainActivity, TMapActivity::class.java).apply {
+//                            putExtra("latitude", latitude)
+//                            putExtra("longitude", longitude)
+//                            putExtra("enableTrackingMode", true) // 추적 모드 활성화를 위한 추가 정보
+//                        }
+//
+//                        startActivity(intent)
+//                        result.success("TMap 위치 설정, 활성화 요청 완")
+//                    }
 
-                        val intent = Intent(this@MainActivity, TMapActivity::class.java).apply {
-                            putExtra("latitude", latitude)
-                            putExtra("longitude", longitude)
-                            putExtra("enableTrackingMode", true) // 추적 모드 활성화를 위한 추가 정보
-                        }
-
-                        startActivity(intent)
-                        result.success("TMap 위치 설정, 활성화 요청 완")
-                    }
+                    NativeViewManager.updateLocation(latitude, longitude)
+                    result.success("TMap 위치 업데이트")
                 }
 
                 else -> result.notImplemented()

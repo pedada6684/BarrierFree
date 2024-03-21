@@ -46,10 +46,10 @@ class _MapScreenState extends State<MapScreen> {
 
     final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    platform.invokeMethod('setCurrentLocation', {
-      'latitude': position.latitude,
-      'longitude': position.longitude,
-    });
+    // platform.invokeMethod('setCurrentLocation', {
+    //   'latitude': position.latitude,
+    //   'longitude': position.longitude,
+    // });
 
     setState(() {
       _currentPosition = position;

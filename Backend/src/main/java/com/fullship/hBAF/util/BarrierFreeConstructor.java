@@ -8,11 +8,19 @@ import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -27,6 +35,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -46,7 +55,7 @@ public class BarrierFreeConstructor {
     private final PlaceRepository placeRepository;
     private ArrayList<HashMap<String, String>> etcData = new ArrayList<>();
 
-    public void saveBarrierFree() throws IOException, ParseException, ParserConfigurationException, SAXException {
+    public void saveBarrierFree() throws IOException,ParserConfigurationException, SAXException {
 
         // 공공데이터 포털 배리어프리 장소 저장
         Map<String, String> categoryMap = getCategoryMap();
@@ -99,92 +108,15 @@ public class BarrierFreeConstructor {
                 String searchKeyword = faclNm;        //장애시설 db로 장소리스트 받아옴
                 if (searchKeyword == null || searchKeyword.equals(" ")) continue;
                 //장애시설의 이름을 tmap에 검색하여 실제로 존재하는 장소인지 검증
-                HttpHeaders headers = setHttpHeaders();
-                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(headers);
-                RestTemplate restTemplate = new RestTemplate();
-                UriComponents uri = UriComponentsBuilder
-                        .fromHttpUrl("https://apis.openapi.sk.com/tmap/pois")
-                        .queryParam("version", 1)
-                        .queryParam("searchKeyword", searchKeyword)
-                        .queryParam("count", 10)
-                        .queryParam("resCoordType", "WGS84GEO")
-                        .queryParam("reqCoordType", "WGS84GEO")
-                        .queryParam("centerLon", faclLng)
-                        .queryParam("centerLat", faclLat)
-                        .queryParam("appKey", tmapAppkey)
-                        .build();
 
-                ResponseEntity<String> responseEntity =
-                        restTemplate.exchange(uri.toString(), HttpMethod.GET, entity, String.class);
-                if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                    //성공
+                Map<String, String> placeInfo = new HashMap<>();
+                placeInfo.put("searchKeyword", searchKeyword);
+                placeInfo.put("faclLat", faclLat);
+                placeInfo.put("faclLng", faclLng);
+                placeInfo.put("wfcltId", wfcltId);
+                placeInfo.put("category", category);
 
-                    JSONParser parser = new JSONParser();
-                    try {
-                        JSONObject object = (JSONObject) parser.parse(responseEntity.getBody());
-                        JSONObject searchPoiInfo = (JSONObject) object.get("searchPoiInfo");
-                        JSONObject pois = (JSONObject) searchPoiInfo.get("pois");
-                        JSONArray poiArr = (JSONArray) pois.get("poi");
-
-                        for (int i = 0; i < poiArr.size(); i++) {
-                            JSONObject poi = (JSONObject) poiArr.get(i);
-                            JSONObject newAddressList = (JSONObject) poi.get("newAddressList");
-                            JSONArray newAddress = (JSONArray) newAddressList.get("newAddress");
-                            if (newAddress == null || newAddress.isEmpty()) continue;
-                            JSONObject address = (JSONObject) newAddress.get(0);
-                            String fullAddressRoad = (String) address.get("fullAddressRoad");
-
-                            String name = (String) poi.get("name");
-                            String frontLat = (String) poi.get("frontLat");
-                            String frontLon = (String) poi.get("frontLon");
-                            String id = (String) poi.get("id");
-
-                            //위, 경도가 있을 때
-                            if (!faclLat.isEmpty() && !faclLng.isEmpty()) {
-                                String subFaclLat = faclLat.substring(0, 5);
-                                String subFaclLng = faclLng.substring(0, 5);
-                                String subFrontLat = frontLat.substring(0, 5);
-                                String subFrontLon = frontLon.substring(0, 5);
-                                // 위, 경도, 시설명 첫자리 일치 여부 확인
-                                if (subFaclLat.equals(subFrontLat) && subFaclLng.equals(subFrontLon) && faclNm.substring(0, 1).equals(name.substring(0, 1))) {
-                                    CreatePlaceCommand command = CreatePlaceCommand.builder()
-                                            .placeName(name)
-                                            .address(fullAddressRoad)
-                                            .latitude(frontLat)
-                                            .longitude(frontLon)
-                                            .poiId(id)
-                                            .category(category)
-                                            .type(true)
-//                                            .barrierFree(barrierfreeInfo)
-                                            .wtcltId(wfcltId)
-                                            .build();
-                                    placeService.createPlace(command);
-                                    break;
-                                }
-                            } else if (name.equals(faclNm)) { //위, 경도 없을 때, 이름 일치만 체크
-                                CreatePlaceCommand command = CreatePlaceCommand.builder()
-                                        .placeName(name)
-                                        .address(fullAddressRoad)
-                                        .latitude(frontLat)
-                                        .longitude(frontLon)
-                                        .poiId(id)
-                                        .category(category)
-                                        .type(true)
-//                                        .barrierFree(barrierfreeInfo)
-                                        .wtcltId(wfcltId)
-                                        .build();
-                                placeService.createPlace(command);
-                                break;
-                            }
-                        }
-                    } catch (ParseException e) {
-                        throw new RuntimeException(e);
-                    }
-                } else if (responseEntity.getStatusCode() == HttpStatus.NO_CONTENT) {
-                    log.error(responseEntity.getStatusCode().toString() + " : "+searchKeyword);
-                } else {
-                    throw new CustomException(ErrorCode.NO_AVAILABLE_API);
-                }
+                getTmapPlace(placeInfo);
             }
 
 //            setBarrierfreeInfo();
@@ -195,11 +127,12 @@ public class BarrierFreeConstructor {
         List<String> WtcltIdList = placeRepository.findWtcltIdByType();
 
         for (String wtcltId : WtcltIdList) {
+            if (wtcltId == null) continue;
+
             UriComponents publicDataDetailPlaceUri = UriComponentsBuilder
                     .fromHttpUrl("https://www.bokjiro.go.kr/ssis-tbu/getFacInfoOpenApiJpEvalInfoList.do")
                     .queryParam("serviceKey", serviceKey)
                     .queryParam("wfcltId", wtcltId) /*장애인편의시설용도구분코드코드표 참조*/
-//                    .queryParam("wfcltId", place.getWtcltId()) /*장애인편의시설용도구분코드코드표 참조*/
                     .queryParam("SG_APIM", "2ug8Dm9qNBfD32JLZGPN64f3EoTlkpD8kSOHWfXpyrY")
                     .build();
 
@@ -258,10 +191,6 @@ public class BarrierFreeConstructor {
             place.updateBarrierFree(new String(beforeSort));
         }
 
-//        System.out.println("------------------------우리에게 없는 배리어프리 기구 출력------------------------------");
-//        for (Map<String, String> data : etcData) {
-//            System.out.println("wfcid: " + data.keySet() + ", data: " + data.values());
-//        }
     }
 
     private Map<String, String> getCategoryMap() {
@@ -270,35 +199,35 @@ public class BarrierFreeConstructor {
         categoryMap.put("UC0A13", "화장실"); //2개
 
 //        categoryMap.put("UC0B01", "음식점"); //95개
-        categoryMap.put("UC0B02", "음식점"); //1개
-
-        categoryMap.put("UC0F01", "병원");
-        categoryMap.put("UC0F03", "병원");
-        categoryMap.put("UC0F02", "병원");
-        categoryMap.put("UC0A14", "병원");
-        categoryMap.put("UC0A06", "병원");
-
-        categoryMap.put("UC0J01", "문화");
-        categoryMap.put("UC0C02", "문화");
-        categoryMap.put("UC0G09", "문화");
-        categoryMap.put("UC0T02", "문화");
-        categoryMap.put("UC0C03", "문화");
-        categoryMap.put("UC0T01", "문화");
-        categoryMap.put("UC0A07", "문화");
-        categoryMap.put("UC0C01", "문화");
-        categoryMap.put("UC0C04", "문화");
-        categoryMap.put("UC0C05", "문화");
-        categoryMap.put("UC0R01", "문화");
-        categoryMap.put("UC0J02", "문화");
-
-        categoryMap.put("UC0A05", "편의");
-        categoryMap.put("UC0A01", "편의");
-        categoryMap.put("UC0N01", "편의");
-        categoryMap.put("UC0R02", "편의");
-        categoryMap.put("UC0E01", "편의");
-
-        categoryMap.put("UC0L01", "숙박");
-        categoryMap.put("UC0L02", "숙박");
+//        categoryMap.put("UC0B02", "음식점"); //1개
+//
+//        categoryMap.put("UC0F01", "병원");
+//        categoryMap.put("UC0F03", "병원");
+//        categoryMap.put("UC0F02", "병원");
+//        categoryMap.put("UC0A14", "병원");
+//        categoryMap.put("UC0A06", "병원");
+//
+//        categoryMap.put("UC0J01", "문화");
+//        categoryMap.put("UC0C02", "문화");
+//        categoryMap.put("UC0G09", "문화");
+//        categoryMap.put("UC0T02", "문화");
+//        categoryMap.put("UC0C03", "문화");
+//        categoryMap.put("UC0T01", "문화");
+//        categoryMap.put("UC0A07", "문화");
+//        categoryMap.put("UC0C01", "문화");
+//        categoryMap.put("UC0C04", "문화");
+//        categoryMap.put("UC0C05", "문화");
+//        categoryMap.put("UC0R01", "문화");
+//        categoryMap.put("UC0J02", "문화");
+//
+//        categoryMap.put("UC0A05", "편의");
+//        categoryMap.put("UC0A01", "편의");
+//        categoryMap.put("UC0N01", "편의");
+//        categoryMap.put("UC0R02", "편의");
+//        categoryMap.put("UC0E01", "편의");
+//
+//        categoryMap.put("UC0L01", "숙박");
+//        categoryMap.put("UC0L02", "숙박");
         return categoryMap;
     }
 
@@ -306,5 +235,138 @@ public class BarrierFreeConstructor {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
+    }
+
+    private void getTmapPlace(Map<String, String> placeInfo) {
+        String searchKeyword = placeInfo.get("searchKeyword");
+        String faclLng = placeInfo.get("faclLng");
+        String faclLat = placeInfo.get("faclLat");
+        String category = placeInfo.get("category");
+        String wfcltId = placeInfo.getOrDefault("wfcltId", null);
+        String barrierFree = placeInfo.getOrDefault("barrierFree", null);
+
+        //장애시설의 이름을 tmap에 검색하여 실제로 존재하는 장소인지 검증
+        HttpHeaders headers = setHttpHeaders();
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(headers);
+        RestTemplate restTemplate = new RestTemplate();
+        UriComponents uri = UriComponentsBuilder
+                .fromHttpUrl("https://apis.openapi.sk.com/tmap/pois")
+                .queryParam("version", 1)
+                .queryParam("searchKeyword", searchKeyword)
+                .queryParam("count", 10)
+                .queryParam("resCoordType", "WGS84GEO")
+                .queryParam("reqCoordType", "WGS84GEO")
+                .queryParam("centerLon", faclLng)
+                .queryParam("centerLat", faclLat)
+                .queryParam("appKey", tmapAppkey)
+                .build();
+
+        ResponseEntity<String> responseEntity =
+                restTemplate.exchange(uri.toString(), HttpMethod.GET, entity, String.class);
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            //성공
+
+            JSONParser parser = new JSONParser();
+            try {
+                JSONObject object = (JSONObject) parser.parse(responseEntity.getBody());
+                JSONObject searchPoiInfo = (JSONObject) object.get("searchPoiInfo");
+                JSONObject pois = (JSONObject) searchPoiInfo.get("pois");
+                JSONArray poiArr = (JSONArray) pois.get("poi");
+
+                for (int i = 0; i < poiArr.size(); i++) {
+                    JSONObject poi = (JSONObject) poiArr.get(i);
+                    JSONObject newAddressList = (JSONObject) poi.get("newAddressList");
+                    JSONArray newAddress = (JSONArray) newAddressList.get("newAddress");
+                    if (newAddress == null || newAddress.isEmpty()) continue;
+                    JSONObject address = (JSONObject) newAddress.get(0);
+                    String fullAddressRoad = (String) address.get("fullAddressRoad");
+
+                    String name = (String) poi.get("name");
+                    String frontLat = (String) poi.get("frontLat");
+                    String frontLon = (String) poi.get("frontLon");
+                    String id = (String) poi.get("id");
+
+                    //위, 경도가 있을 때
+                    if (!faclLat.isEmpty() && !faclLng.isEmpty()) {
+                        String subFaclLat = faclLat.substring(0, 5); //공공데이터 위경도
+                        String subFaclLng = faclLng.substring(0, 5);
+                        String subFrontLat = frontLat.substring(0, 5); //티맵 위경도
+                        String subFrontLon = frontLon.substring(0, 5);
+                        // 위, 경도, 시설명 첫자리 일치 여부 확인
+                        if (subFaclLat.equals(subFrontLat) && subFaclLng.equals(subFrontLon) && searchKeyword.substring(0, 1).equals(name.substring(0, 1))) {
+                            createPlace(name, fullAddressRoad, frontLat, frontLon, id, category, wfcltId, barrierFree);
+                            break;
+                        }
+                    } else if (name.equals(searchKeyword)) { //위, 경도 없을 때, 이름 일치만 체크
+                        createPlace(name, fullAddressRoad, frontLat, frontLon, id, category, wfcltId, barrierFree);
+                        break;
+                    }
+                }
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (responseEntity.getStatusCode() == HttpStatus.NO_CONTENT) {
+            log.error(responseEntity.getStatusCode().toString() + " : "+searchKeyword);
+        } else {
+            throw new CustomException(ErrorCode.NO_AVAILABLE_API);
+        }
+    }
+
+    private void createPlace(String name, String fullAddressRoad, String frontLat, String frontLon, String id, String category, String wfcltId, String barrierFree) {
+        CreatePlaceCommand command = CreatePlaceCommand.builder()
+                .placeName(name)
+                .address(fullAddressRoad)
+                .latitude(frontLat)
+                .longitude(frontLon)
+                .poiId(id)
+                .category(category)
+                .type(true)
+                .barrierFree(barrierFree)
+                .wtcltId(wfcltId)
+                .build();
+        placeService.createPlace(command);
+    }
+
+    private Workbook getExcelSheets() throws IOException {
+        Resource resource = new ClassPathResource("data/wheelchair_test.xls");
+        String filePath = resource.getFile().getAbsolutePath();
+//        String filePath = "C:/Users/SYJ/PJT/wheelchair_test.xls";
+
+        String fileExtsn = FilenameUtils.getExtension(
+                filePath.substring(26)); // 파일 Original 이름 불러오기 ex) 전문가.xlsx
+
+        Workbook workbook = null;
+        try {
+            // 엑셀 97 - 2003 까지는 HSSF(xls),  엑셀 2007 이상은 XSSF(xlsx)
+            if (fileExtsn.equals("xls")) {
+                workbook = new HSSFWorkbook(new FileInputStream(filePath));
+            } else {
+                workbook = new XSSFWorkbook(new FileInputStream(filePath));
+            }
+        } catch (IOException e) {
+            throw new CustomException(ErrorCode.ABNORMAL_FILE_READ);
+        }
+        return workbook;
+    }
+
+    public void saveElectricWheelchairExcel() throws IOException {
+        Sheet sheet = getExcelSheets().getSheetAt(0);// 첫 번째 시트만 읽기
+        Iterator<Row> rowIterator = sheet.iterator();
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            String searchKeyword = row.getCell(0).getStringCellValue();
+            String faclLat = String.valueOf(row.getCell(1).getNumericCellValue());
+            String faclLng = String.valueOf(row.getCell(2).getNumericCellValue());
+            System.out.println(searchKeyword + ", " + faclLat + ", " + faclLng);
+
+            Map<String, String> placeInfo = new HashMap<>();
+            placeInfo.put("searchKeyword", searchKeyword);
+            placeInfo.put("faclLat", faclLat);
+            placeInfo.put("faclLng", faclLng);
+            placeInfo.put("category", "휠체어 충전소");
+    //        placeInfo.put("barrierFree", "f?");
+            getTmapPlace(placeInfo);
+        }
+//                places.add(new Place(placeName, latitude, longitude));
     }
 }

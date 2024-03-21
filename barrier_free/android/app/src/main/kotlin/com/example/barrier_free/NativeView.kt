@@ -1,4 +1,4 @@
-package com.example.barrier_free
+package com.barrier_free
 
 import android.content.Context
 import android.graphics.Color
@@ -10,7 +10,7 @@ import android.widget.TextView
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.platform.PlatformView
 import com.skt.Tmap.TMapView
-import com.example.barrier_free.BuildConfig
+import com.barrier_free.BuildConfig
 
 internal class NativeView(
         activity: FlutterActivity,

@@ -1,11 +1,9 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/component/facility_button.dart';
 import 'package:barrier_free/const/color.dart';
-import 'package:barrier_free/screen/mypage/mypage_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
-
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -24,15 +22,9 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     _originController = TextEditingController();
-    _getCurrentPosition().then((_) {
-      _updateMapPosition(
-          _currentPosition!.latitude, _currentPosition!.longitude);
-    }).catchError((error) {
-      print('위치 정보 가져오기 실패:$error');
-    });
+    _getCurrentPosition();
+    // print(_currentPosition);
   }
-
-
 
   Future<void> _getCurrentPosition() async {
     bool serviceEnabled;
@@ -62,10 +54,12 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {
       _currentPosition = position;
     });
+    print(_currentPosition);
 
+    _updateMapPosition(position.latitude, position.longitude);
   }
 
-  void _updateMapPosition(double latitude, double longitude) async{
+  void _updateMapPosition(double latitude, double longitude) async {
     //네이티브로 코드 전송
     try {
 
@@ -75,16 +69,17 @@ class _MapScreenState extends State<MapScreen> {
       });
       print('===============Result: $result===============');
     } on PlatformException catch (e) {
-      print("===============Failed to set location: '${e.message}'.===============");
+      print(
+          "===============Failed to set location: '${e.message}'.===============");
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    GlobalKey mykey = GlobalKey();
     return Scaffold(
       appBar: CustomAppBar(
-        title: '베프',
+        title: '베프.',
         titleStyle: TextStyle(
           fontFamily: 'LogoFont',
           fontSize: 32.0,
@@ -92,57 +87,45 @@ class _MapScreenState extends State<MapScreen> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: Container(
-              width: 400.0,
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                  border: Border.all(color: mainOrange, width: 2.5),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 2,
-                        blurRadius: 4,
-                        offset: Offset(3, 3))
-                  ]),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 20.0),
-                        hintText: '검색어를 입력해주세요.',
-                        hintStyle: TextStyle(
-                            color: mainGray, fontSize: 18.0),
-                        border: OutlineInputBorder(borderSide: BorderSide.none),
-                      ),
-                      textCapitalization: TextCapitalization.words,
-                      controller: _originController,
-                      onChanged: (value) {
-                        print(value);
-                      },
+          Container(
+            width: 400.0,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                border: Border.all(color: mainOrange, width: 2.5),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 2,
+                      blurRadius: 4,
+                      offset: Offset(3, 3))
+                ]),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                      hintText: '검색어를 입력해주세요.',
+                      hintStyle: TextStyle(
+                          color: mainGray, fontWeight: FontWeight.w600),
+                      border: OutlineInputBorder(borderSide: BorderSide.none),
                     ),
+                    textCapitalization: TextCapitalization.words,
+                    controller: _originController,
+                    onChanged: (value) {
+                      print(value);
+                    },
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10.0), // 패딩 추가
-                    child: InkWell(
-                      onTap: () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(builder: (context) => MyPageScreen()),
-                        // );
-                      },
-                      child: Icon(
-                        Icons.search,
-                        color: mainOrange,
-                        size: 40.0,
-                      ),
-                    ),
+                ),
+                IconButton(
+                  onPressed: () {},
+                  icon: Icon(
+                    Icons.search,
+                    color: mainOrange,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           SizedBox(
@@ -152,8 +135,15 @@ class _MapScreenState extends State<MapScreen> {
             child: Stack(
               children: [
                 AndroidView(
+                  key: mykey,
                   viewType: 'showTMap',
-                  creationParams: {},
+                  // 위치 정보가 설정되어 있는지 확인 후 전달
+                  creationParams: _currentPosition != null
+                      ? <String, dynamic>{
+                          'longitude': _currentPosition!.longitude,
+                          'latitude': _currentPosition!.latitude,
+                        }
+                      : null,
                   creationParamsCodec: StandardMessageCodec(),
                 ),
                 Positioned(

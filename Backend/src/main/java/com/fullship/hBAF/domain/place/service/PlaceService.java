@@ -12,19 +12,22 @@ import com.fullship.hBAF.global.api.service.TMapApiService;
 import com.fullship.hBAF.global.api.service.command.SearchPathToTransitCommand;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.*;
 
 import com.uber.h3core.H3Core;
 import com.uber.h3core.util.GeoCoord;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.commons.math3.util.Precision;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.fullship.hBAF.util.H3.daejeonH3Index;
 
 @Slf4j
 @Service
@@ -34,6 +37,7 @@ public class PlaceService {
 
   private final PlaceRepository placeRepository;
   private final TMapApiService tMapApiService;
+  private final ImageRepository imageRepository;
 
   public String useTransitPath(SearchPathToTransitCommand command) throws ParseException {
     List<TransitPathForm> list = tMapApiService.searchPathToTransit(command);
@@ -57,28 +61,29 @@ public class PlaceService {
 
     @Transactional(readOnly = false)
     public Long createPlace(CreatePlaceCommand command){
-        //poiId를 통해 존재확인
-        if(placeRepository.existsByPoiId(command.getPoiId())){
-            return null;
+      //poiId를 통해 존재확인
+      if (placeRepository.existsByPoiId(command.getPoiId())) {
+        return null;
 //      throw new IllegalStateException("이미 존재하는 장소 :" + command.getPoiId()+" "+command.getPlaceName());
-        }
-        Place newPlace = Place.createNewPlace(
-                command.getPlaceName(),
-                command.getAddress(),
-                command.getLatitude(),
-                command.getLongitude(),
-                command.getPoiId(),
-                command.getCategory(),
-                command.getBarrierFree(),
-                command.getType()
-        );
+      }
+      Place newPlace = Place.createNewPlace(
+              command.getPlaceName(),
+              command.getAddress(),
+              command.getLatitude(),
+              command.getLongitude(),
+              command.getPoiId(),
+              command.getCategory(),
+              command.getBarrierFree(),
+              command.getWtcltId(),
+              command.getType()
+      );
 
-        if (command.getType()){
-            newPlace.insertWtcltId(command.getWtcltId());
-        }
-        //검색결과를 기반으로 save함
-        return placeRepository.save(newPlace).getId();
-        }
+      if (command.getType()) {
+        newPlace.insertWtcltId(command.getWtcltId());
+      }
+      //검색결과를 기반으로 save함
+      return placeRepository.save(newPlace).getId();
+    }
 
   @Transactional(readOnly = false)
   public Long updatePlaceImageUrl(UpdatePlaceImageCommand command){
@@ -202,7 +207,6 @@ public class PlaceService {
 
     return Precision.round(s, 3);
   }
-}
   /**
    * 장애인 시설 카테고리별 불러오기
    * @param category

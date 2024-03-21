@@ -44,7 +44,7 @@ public class BookmarkPlaceService {
                 "",
                 "",
                 "",
-                0L
+                false
         );
         placeRepository.save(place);
         BookmarkPlaceResponseCommand responseCommand = BookmarkPlaceResponseCommand.builder()

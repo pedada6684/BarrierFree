@@ -41,7 +41,7 @@ public class Place {
           String category,
           String barrierFree,
           String wtcltId,
-          boolean type
+          Boolean type
   ){
     Place place = new Place();
     place.placeName = placeName;

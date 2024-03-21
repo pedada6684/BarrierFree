@@ -285,7 +285,8 @@ public class BarrierFreeConstructor {
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
-    public void saveBusInfo() throws UnsupportedEncodingException {
+    @Order(1)
+    public void saveBusInfo() {
         dataApiService.saveBusInfo();
     }
 
@@ -348,5 +349,12 @@ public class BarrierFreeConstructor {
 
     dataApiService.saveSubway();
   }
+
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional
+    @Order(5)
+    public void uberTest() throws IOException, LineUndefinedException {
+        H3.setH3Index();
+    }
 
 }

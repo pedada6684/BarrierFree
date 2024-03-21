@@ -55,6 +55,14 @@ dependencies {
 	implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '2.41.0'
 	//aws
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+	//uber h3
+	implementation 'com.uber:h3:3.7.0'
+
+//	testImplementation group: 'com.h2database', name: 'h2', version: '2.1.214'
+
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc' // Jdbc, Driver
+	implementation 'com.h2database:h2'
 }
 
 tasks.named('test') {

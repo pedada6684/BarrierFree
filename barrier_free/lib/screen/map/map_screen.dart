@@ -1,6 +1,7 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/component/facility_button.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/services/place_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -15,6 +16,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   static const platform = MethodChannel('com.barrier_free/tmap');
   late TextEditingController _originController = TextEditingController();
+  late List<dynamic> places = [];
 
   Position? _currentPosition;
 
@@ -23,6 +25,7 @@ class _MapScreenState extends State<MapScreen> {
     super.initState();
     _originController = TextEditingController();
     _getCurrentPosition();
+    _loadPlaces();
     // print(_currentPosition);
   }
 
@@ -57,6 +60,15 @@ class _MapScreenState extends State<MapScreen> {
     print(_currentPosition);
 
     _updateMapPosition(position.latitude, position.longitude);
+  }
+
+  _loadPlaces() async {
+    try {
+      places = await PlaceService().fetchPlacesByCategory('화장실');
+      setState(() {});
+    } catch (e) {
+      print('=================장소 불러오다가 에러 발생함 $e=================}');
+    }
   }
 
   void _updateMapPosition(double latitude, double longitude) async {

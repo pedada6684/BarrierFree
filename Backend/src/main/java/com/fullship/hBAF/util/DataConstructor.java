@@ -30,6 +30,7 @@ public class DataConstructor {
 //        dataApiService.saveSubway();
 //        H3.setH3Index();
 //        barrierFreeConstructor.saveBarrierFree();
+//        barrierFreeConstructor.saveElectricWheelchairExcel();
 //        barrierFreeConstructor.setBarrierfreeInfo();
     }
 }

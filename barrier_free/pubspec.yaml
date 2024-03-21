@@ -71,7 +71,6 @@ flutter:
 
   assets:
     - .env
-    - assets/image
 
   fonts:
     - family: LogoFont

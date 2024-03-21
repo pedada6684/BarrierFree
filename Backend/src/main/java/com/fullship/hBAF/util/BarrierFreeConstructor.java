@@ -4,10 +4,10 @@ import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.domain.place.repository.PlaceRepository;
 import com.fullship.hBAF.domain.place.service.PlaceService;
 import com.fullship.hBAF.domain.place.service.command.CreatePlaceCommand;
-import com.fullship.hBAF.domain.place.service.command.UpdatePlaceImageCommand;
 import com.fullship.hBAF.global.api.service.DataApiService;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
+import com.uber.h3core.exceptions.LineUndefinedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
@@ -17,6 +17,7 @@ import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,8 +35,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.*;
 
 @Component
@@ -277,26 +276,6 @@ public class BarrierFreeConstructor {
 //        }
     }
 
-    private HttpHeaders setHttpHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        return headers;
-    }
-
-    @EventListener(ApplicationReadyEvent.class)
-    @Transactional
-    @Order(1)
-    public void saveBusInfo() {
-        dataApiService.saveBusInfo();
-    }
-
-    @EventListener(ApplicationReadyEvent.class)
-    @Transactional
-    @Order(2)
-    public void saveBusRouteInfo() {
-        dataApiService.saveRoute();
-    }
-
     private Map<String, String> getCategoryMap() {
         Map<String, String> categoryMap = new HashMap<>();
 
@@ -334,21 +313,42 @@ public class BarrierFreeConstructor {
         categoryMap.put("UC0L02", "숙박");
         return categoryMap;
     }
-    @EventListener(ApplicationReadyEvent.class)
-    @Transactional
-    @Order(3)
-    public void saveBusStop(){
 
-        dataApiService.saveBusStop();
+    private HttpHeaders setHttpHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
     }
 
-  @EventListener(ApplicationReadyEvent.class)
-  @Transactional
-  @Order(4)
-  public void saveSubway(){
-
-    dataApiService.saveSubway();
-  }
+//    @EventListener(ApplicationReadyEvent.class)
+//    @Transactional
+//    @Order(1)
+//    public void saveBusInfo() {
+//        dataApiService.saveBusInfo();
+//    }
+//
+//    @EventListener(ApplicationReadyEvent.class)
+//    @Transactional
+//    @Order(2)
+//    public void saveBusRouteInfo() {
+//        dataApiService.saveRoute();
+//    }
+//
+//
+//    @EventListener(ApplicationReadyEvent.class)
+//    @Transactional
+//    @Order(3)
+//    public void saveBusStop(){
+//
+//        dataApiService.saveBusStop();
+//    }
+//
+//    @EventListener(ApplicationReadyEvent.class)
+//    @Transactional
+//    @Order(4)
+//    public void saveSubway(){
+//        dataApiService.saveSubway();
+//    }
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional

@@ -19,7 +19,7 @@ public class Review {
 
     private String content;
 
-    private Long like;
+    private Long feedback;
 
     private LocalDateTime regDate;
 
@@ -32,13 +32,13 @@ public class Review {
     public static Review createToReview(
             Member member,
             String content,
-            Long like,
+            Long feedback,
             String poiId
     ){
         Review review = new Review();
         review.member = member;
         review.content = content;
-        review.like = like;
+        review.feedback = feedback;
         review.regDate = LocalDateTime.now();
         review.modifyDate = LocalDateTime.now();
         review.status = 0L;
@@ -49,12 +49,12 @@ public class Review {
 
     public void modifyReview(
             String content,
-            Long like
+            Long feedback
     ){
         if(content!=null)
             this.content=content;
-        if(like!=null)
-            this.like=like;
+        if(feedback!=null)
+            this.feedback=feedback;
         this.modifyDate = LocalDateTime.now();
     }
 

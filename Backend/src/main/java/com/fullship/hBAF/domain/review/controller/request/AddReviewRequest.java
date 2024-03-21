@@ -7,7 +7,7 @@ public class AddReviewRequest {
 
     Long memberId;
     String content;
-    Long like;
+    Long feedback;
     String poiId;
 
 }

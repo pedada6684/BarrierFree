@@ -32,7 +32,7 @@ public class ReviewService {
                 .memberId(member.getId())
                 .nickname(member.getNickname())
                 .content(review.getContent())
-                .like(review.getLike())
+                .feedback(review.getFeedback())
                 .regDate(review.getRegDate())
                 .modifyDate(review.getModifyDate())
                 .status(review.getStatus())
@@ -43,7 +43,7 @@ public class ReviewService {
                 .memberId(responseCommand.getMemberId())
                 .nickname(responseCommand.getNickname())
                 .content(responseCommand.getContent())
-                .like(responseCommand.getLike())
+                .feedback(responseCommand.getFeedback())
                 .regDate(review.getRegDate())
                 .modifyDate(responseCommand.getModifyDate())
                 .status(responseCommand.getStatus())
@@ -65,7 +65,7 @@ public class ReviewService {
                     .memberId(member.getId())
                     .nickname(member.getNickname())
                     .content(review.getContent())
-                    .like(review.getLike())
+                    .feedback(review.getFeedback())
                     .regDate(review.getRegDate())
                     .modifyDate(review.getModifyDate())
                     .status(review.getStatus())
@@ -87,7 +87,7 @@ public class ReviewService {
         Review review = Review.createToReview(
                 member,
                 command.getContent(),
-                command.getLike(),
+                command.getFeedback(),
                 command.getPoiId());
 
         reviewRepository.save(review);
@@ -104,7 +104,7 @@ public class ReviewService {
 
         review.modifyReview(
                 command.getContent(),
-                command.getLike()
+                command.getFeedback()
         );
 
         ModifyReviewResponseCommand responseCommand = ModifyReviewResponseCommand.builder()

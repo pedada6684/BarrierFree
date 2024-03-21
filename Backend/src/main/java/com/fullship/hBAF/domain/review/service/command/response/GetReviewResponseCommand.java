@@ -12,7 +12,7 @@ public class GetReviewResponseCommand {
     Long memberId;
     String nickname;
     String content;
-    Long like;
+    Long feedback;
     LocalDateTime regDate;
     LocalDateTime modifyDate;
     Long status;

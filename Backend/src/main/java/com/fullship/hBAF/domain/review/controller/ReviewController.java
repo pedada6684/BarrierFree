@@ -46,7 +46,7 @@ public class ReviewController {
     public ResponseEntity<AddReviewResponse> addReview(@RequestBody AddReviewRequest request){
 
         AddReviewRequestCommand command = AddReviewRequestCommand.builder()
-                .like(request.getLike())
+                .feedback(request.getFeedback())
                 .content(request.getContent())
                 .memberId(request.getMemberId())
                 .poiId(request.getPoiId())
@@ -63,7 +63,7 @@ public class ReviewController {
         ModifyReviewRequestCommand command = ModifyReviewRequestCommand.builder()
                 .reviewId(request.getReviewId())
                 .content(request.getContent())
-                .like(request.getLike())
+                .feedback(request.getFeedback())
                 .build();
 
         ModifyReviewResponse response = reviewService.modifyReview(command);

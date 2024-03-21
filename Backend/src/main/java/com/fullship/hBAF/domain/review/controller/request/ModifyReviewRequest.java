@@ -7,6 +7,6 @@ public class ModifyReviewRequest {
 
     Long reviewId;
     String content;
-    Long like;
+    Long feedback;
 
 }

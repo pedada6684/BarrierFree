@@ -3,7 +3,6 @@ package com.fullship.hBAF.global;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +14,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class RedisService {
     private final String H3IndexKey = "H3INDEXSET";
-    private final RedisTemplate<String, Long> redisTemplate;
     @Resource(name = "redisTemplate")
     private SetOperations<String, Long> setOperations;
     /**
@@ -27,6 +25,10 @@ public class RedisService {
         for (Long h3Index : h3IndexSet) {
             setOperations.add(H3IndexKey, h3Index);
         }
+//        Set<Long> members = setOperations.members(H3IndexKey);
+//        for (Long member : members) {
+//            log.info("member: " + member);
+//        }
     }
 
     /**

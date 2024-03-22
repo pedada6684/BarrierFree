@@ -30,6 +30,8 @@ import com.fullship.hBAF.global.api.service.GoogleApiService;
 import com.fullship.hBAF.global.api.service.OdSayApiService;
 import com.fullship.hBAF.domain.place.service.command.CreatePlaceCommand;
 import com.fullship.hBAF.domain.place.service.command.UpdatePlaceImageCommand;
+import com.fullship.hBAF.global.RedisService;
+import com.fullship.hBAF.global.api.response.TransitPathForm;
 import com.fullship.hBAF.global.api.service.TMapApiService;
 import com.fullship.hBAF.global.api.service.TagoApiService;
 import com.fullship.hBAF.global.api.response.BusesCurLocation;
@@ -57,8 +59,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
-import static com.fullship.hBAF.util.H3.daejeonH3Index;
-
+@Slf4j
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -76,6 +77,7 @@ public class PlaceService {
   private final MetroInfoRepository metroInfoRepository;
   private final StationStopInfoRepository stationStopInfoRepository;
   private final ImageRepository imageRepository;
+  private final RedisService redisService;
 
   public List<OdSayPath> useTransitPath(OdSayPathCommand command) {
     List<OdSayPath> list = odSayApiService.searchPathToTransit(command);
@@ -274,8 +276,8 @@ public class PlaceService {
         Double.parseDouble(arr[arr.length - 1][0]));
     long lastH3Index = h3.geoToH3(coord.lat, coord.lng, 8);
 
-    int clockIdx = arr.length - 1;
-    if (!daejeonH3Index.containsKey(lastH3Index)) {
+    int clockIdx = arr.length-1;
+    if (!redisService.isContainInRedisH3(lastH3Index))
       clockIdx = findClock(arr);
     }
 
@@ -318,12 +320,11 @@ public class PlaceService {
     while (l < r) {
       int mid = (l + r) >>> 1;
 
-      GeoCoord coord = new GeoCoord(Double.parseDouble(arr[mid][1]),
-          Double.parseDouble(arr[mid][0]));
+      GeoCoord coord = new GeoCoord(Double.parseDouble(arr[mid][1]),Double.parseDouble(arr[mid][0]));
       long findH3Index = h3.geoToH3(coord.lat, coord.lng, 12);
-      if (daejeonH3Index.containsKey(findH3Index)) {
-        l = mid + 1;
-      } else {
+      if(redisService.isContainInRedisH3(findH3Index))
+        l = mid+1;
+      else
         r = mid;
       }
     }

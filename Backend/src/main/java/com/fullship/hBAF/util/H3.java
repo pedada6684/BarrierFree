@@ -1,21 +1,27 @@
 package com.fullship.hBAF.util;
 
+import com.fullship.hBAF.global.RedisService;
 import com.uber.h3core.H3Core;
 import com.uber.h3core.exceptions.LineUndefinedException;
 import com.uber.h3core.util.GeoCoord;
+import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.springframework.stereotype.Component;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+
+@Component
+@RequiredArgsConstructor
 public class H3 {
 
+    private final RedisService redisService;
     public static double xMax, yMax, xMin, yMin;
     public static Map<Long,Double> daejeonH3Index = new HashMap<>();
 
-    public static void setH3Index() throws IOException, LineUndefinedException {
-
+    public void setH3Index() throws IOException, LineUndefinedException {
         H3Core h3 = H3Core.newInstance();
 
         GeoCoord[] daejeonGeo = {
@@ -139,12 +145,12 @@ public class H3 {
 
         }
 
-        try (FileWriter file = new FileWriter("geo_coord.json")) {
-            file.write(jsonArray.toString());
-            System.out.println("JSON 객체를 파일에 저장했습니다.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try (FileWriter file = new FileWriter("geo_coord.json")) {
+//            file.write(jsonArray.toString());
+//            System.out.println("JSON 객체를 파일에 저장했습니다.");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
 //        List<Long> daejeonCompact = h3.compact(daejeonH3Index);
 //
@@ -152,7 +158,7 @@ public class H3 {
 //
 //        System.out.println("max : "+max);
 //        System.out.println("min : "+min);
-
+        redisService.saveH3IndexSet(daejeonH3Index);
     }
 
     public static Map<Long,Double> bfs(Map<Long, Double> map, double Lat, double Lng) throws IOException {
@@ -183,6 +189,4 @@ public class H3 {
         return map;
 
     }
-
-
 }

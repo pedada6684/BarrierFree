@@ -49,6 +49,9 @@ class MainActivity : FlutterActivity() {
                     val longitude = call.argument<Double>("longitude") ?: 0.0
                     val latitude = call.argument<Double>("latitude") ?: 0.0
 
+					Log.d(TAG, "위치 설정: 위도 = $latitude, 경도 = $longitude")
+					TMapActivity.currentInstance?.updateLocation(longitude, latitude)
+					result.success("TMap 위치 업데이트")
                     // 위치 정보 로그 출력
                     Log.d(TAG, "위치 설정: 위도 = $latitude, 경도 = $longitude")
 

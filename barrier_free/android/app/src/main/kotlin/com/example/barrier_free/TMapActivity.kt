@@ -2,6 +2,7 @@ package com.barrier_free
 
 import android.os.Bundle
 import android.widget.FrameLayout
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.BitmapFactory
 import com.barrier_free.BuildConfig
@@ -24,8 +25,6 @@ class TMapActivity : AppCompatActivity() {
 
 	private lateinit var methodChannel: MethodChannel
 
-//    var tmapView: TMapView? = null
-
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_tmap)
@@ -34,12 +33,20 @@ class TMapActivity : AppCompatActivity() {
 
 		tmapView = TMapView(this).apply {
 			setSKTMapApiKey(BuildConfig.TMAP_API_KEY)
+			setTrackingMode(true)
 		}
-		findViewById<FrameLayout>(R.id.tmapContainer).addView(tmapView)
+//		findViewById<FrameLayout>(R.id.tmapContainer).addView(tmapView)
 
-		intent?.extras?.let {
-			updateLocation(it.getDouble("longitude", 0.0), it.getDouble("latitude", 0.0))
+		val tmapContainer = findViewById<FrameLayout>(R.id.tmapContainer)
+		tmapContainer.addView(tmapView)
+
+		//현재 위치로 이동하는 버튼
+		val moveToCurrentLocationButton = Button(this).apply {
+			text = "내 위치로 이동"
+			setOnClickListener { moveToCurrentLocation() }
 		}
+		tmapContainer.addView(moveToCurrentLocationButton)
+
 	}
 
 	fun updateLocation(longitude: Double, latitude: Double) {
@@ -55,15 +62,23 @@ class TMapActivity : AppCompatActivity() {
 			}
 		}
 
-		override fun onDestroy() {
-			super.onDestroy()
-			currentInstance = null // 인스턴스 참조 제거
+	}
+
+	private fun moveToCurrentLocation() {
+		tmapView.locationPoint?.let {
+			tmapView.setCenterPoint(it.longitude, it.latitude)
 		}
+	}
+
+
+	override fun onDestroy() {
+		super.onDestroy()
+		currentInstance = null // 인스턴스 참조 제거
 	}
 
 }
 //    private fun setCurrentLocation(latitude: Double, longitude: Double) {
-//        val markerItem = TMapMarkerItem().apply {
+//        val markerItem = TMapMarkerItem().apply {s
 //            tMapPoint = TMapPoint(longitude, latitude)
 //            name = "현재 위치"
 //            visible = TMapMarkerItem.VISIBLE

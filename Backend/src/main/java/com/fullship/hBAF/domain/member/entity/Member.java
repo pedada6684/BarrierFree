@@ -25,6 +25,7 @@ public class Member {
   private String password;
   private String nickname;
   private String username;
+  private String profileUrl = null;
   private Long role;
   private LocalDateTime regDate;
   private Long status;
@@ -49,5 +50,9 @@ public class Member {
     member.nickname = nickname;
     member.username = username;
     return member;
+  }
+
+  public void updateProfileUrl(String profileUrl){
+    this.profileUrl = profileUrl;
   }
 }

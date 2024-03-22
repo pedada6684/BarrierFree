@@ -11,7 +11,7 @@ class MainActivity : FlutterActivity() {
 
     private val CHANNEL = "com.barrier_free/tmap"
 
-    companion object{
+    companion object {
         private const val TAG = "TMapChannel"
     }
 
@@ -28,6 +28,7 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "showTMap" -> {
                     val intent = Intent(this@MainActivity, TMapActivity::class.java)
+
                     startActivity(intent)
                     result.success("TMap activity 시작")
                 }
@@ -36,23 +37,34 @@ class MainActivity : FlutterActivity() {
                     val intent = Intent(this@MainActivity, TMapActivity::class.java).apply {
                         putExtra("enableTrackingMode", true)
                     }
-//                    startActivity(intent)
-                    result.success("TMap 추적 모드 활성화 요청 날렸음")
+                    startActivity(intent)
                     print(result)
                 }
 
                 "setCurrentLocation" -> {
-                    val longitude = call.argument<Double>("longitude")
-                    val latitude = call.argument<Double>("latitude")
+                    val longitude = call.argument<Double>("longitude") ?: 0.0
+                    val latitude = call.argument<Double>("latitude") ?: 0.0
 
                     Log.d(TAG, "위치 설정: 위도 = $latitude, 경도 = $longitude")
-                    val intent = Intent(this@MainActivity, TMapActivity::class.java).apply {
-                        putExtra("longitude", longitude)
-                        putExtra("latitude", latitude)
-                        putExtra("enableTrackingMode", true) // 추적 모드 활성화를 위한 추가 정보
-                    }
-                    startActivity(intent)
-                    result.success("TMap 위치 설정, 활성화 요청 완")
+
+//                    if (TMapActivity.currentInstance != null) {
+//                        // 현재 실행 중인 TMapActivity가 있으면 위치 업데이트
+//                        TMapActivity.currentInstance?.updateLocation(latitude!!, longitude!!)
+//                        result.success("TMap 위치 업데이트")
+//                    } else {
+//
+//                        val intent = Intent(this@MainActivity, TMapActivity::class.java).apply {
+//                            putExtra("latitude", latitude)
+//                            putExtra("longitude", longitude)
+//                            putExtra("enableTrackingMode", true) // 추적 모드 활성화를 위한 추가 정보
+//                        }
+//
+//                        startActivity(intent)
+//                        result.success("TMap 위치 설정, 활성화 요청 완")
+//                    }
+
+                    NativeViewManager.updateLocation(latitude, longitude)
+                    result.success("TMap 위치 업데이트")
                 }
 
                 else -> result.notImplemented()

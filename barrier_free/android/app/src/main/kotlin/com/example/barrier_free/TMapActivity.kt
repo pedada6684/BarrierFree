@@ -14,51 +14,54 @@ import io.flutter.embedding.android.FlutterEngineProvider
 
 
 class TMapActivity : AppCompatActivity() {
-    //flutter activity에서만 methodchannel 이용가능함
-    private lateinit var tmapView: TMapView
-    private lateinit var methodChannel: MethodChannel
+	//flutter activity에서만 methodchannel 이용가능함
+	private lateinit var tmapView: TMapView
+
+	companion object {
+		@JvmStatic
+		var currentInstance: TMapActivity? = null
+	}
+
+	private lateinit var methodChannel: MethodChannel
 
 //    var tmapView: TMapView? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_tmap)
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+		setContentView(R.layout.activity_tmap)
 
-        tmapView = TMapView(this).apply {
-            setSKTMapApiKey(BuildConfig.TMAP_API_KEY)
+		currentInstance = this
 
-        }
-        findViewById<FrameLayout>(R.id.tmapContainer).addView(tmapView)
+		tmapView = TMapView(this).apply {
+			setSKTMapApiKey(BuildConfig.TMAP_API_KEY)
+		}
+		findViewById<FrameLayout>(R.id.tmapContainer).addView(tmapView)
 
-        intent?.let {
-            val longitude = it.getDoubleExtra("longitude", 0.0)
-            val latitude = it.getDoubleExtra("latitude", 0.0)
-            if (latitude != 0.0 && longitude != 0.0) {
-                tmapView.setLocationPoint(longitude, latitude)
-                tmapView.setCenterPoint(longitude, latitude)
-            }
-        }
-//        val flutterEngine = (application as FlutterEngineProvider).provideFlutterEngine(this)
-//
-//        if (flutterEngine != null) {
-//            methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.barrier_free/tmap")
-//            methodChannel.setMethodCallHandler { call, result ->
-//                if (call.method == "setCurrentLocation") {
-//                    val latitude = call.argument<Double>("latitude") ?: 0.0
-//                    val longitude = call.argument<Double>("longitude") ?: 0.0
-//                    runOnUiThread {
-//                        tmapView.setLocationPoint(longitude, latitude)
-//                        tmapView.setCenterPoint(longitude, latitude)
-//                    }
-//                    result.success("지도의 위치가 업데이트 되었습니다.")
-//                } else {
-//                    result.notImplemented()
-//                }
-//            }
-//        }
-    }
+		intent?.extras?.let {
+			updateLocation(it.getDouble("longitude", 0.0), it.getDouble("latitude", 0.0))
+		}
+	}
 
+	fun updateLocation(longitude: Double, latitude: Double) {
+		// 위치 업데이트 로직
+//		if (latitude != 0.0 && longitude != 0.0) {
+//			tmapView.setLocationPoint(longitude, latitude)
+//			tmapView.setCenterPoint(longitude, latitude)
+//		}
+		runOnUiThread {
+			if (::tmapView.isInitialized) {
+				tmapView.setLocationPoint(longitude, latitude)
+				tmapView.setCenterPoint(longitude, latitude)
+			}
+		}
 
+		override fun onDestroy() {
+			super.onDestroy()
+			currentInstance = null // 인스턴스 참조 제거
+		}
+	}
+
+}
 //    private fun setCurrentLocation(latitude: Double, longitude: Double) {
 //        val markerItem = TMapMarkerItem().apply {
 //            tMapPoint = TMapPoint(longitude, latitude)
@@ -76,4 +79,3 @@ class TMapActivity : AppCompatActivity() {
 //        tmapView.setLocationPoint(longitude, latitude)
 //        tmapView.setCenterPoint(longitude, latitude)//화면 중심 마커로 이동
 //        tmapView.setTrackingMode(true)
-}

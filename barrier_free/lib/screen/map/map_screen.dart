@@ -1,6 +1,7 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/component/facility_button.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/screen/search/search_screen.dart';
 import 'package:barrier_free/services/place_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -99,45 +100,60 @@ class _MapScreenState extends State<MapScreen> {
       ),
       body: Column(
         children: [
-          Container(
-            width: 400.0,
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                border: Border.all(color: mainOrange, width: 2.5),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
-                      spreadRadius: 2,
-                      blurRadius: 4,
-                      offset: Offset(3, 3))
-                ]),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
-                      hintText: '검색어를 입력해주세요.',
-                      hintStyle: TextStyle(
-                          color: mainGray, fontWeight: FontWeight.w600),
-                      border: OutlineInputBorder(borderSide: BorderSide.none),
+          // 검색 바 영역
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: Container(
+              width: 400.0,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                  border: Border.all(color: mainOrange, width: 2.5),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 2,
+                        blurRadius: 4,
+                        offset: Offset(3, 3))
+                  ]),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      // 검색어 입력 필드
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 20.0),
+                        hintText: '검색어를 입력해주세요.',
+                        hintStyle: TextStyle(
+                            color: mainGray, fontSize: 18.0),
+                        border: OutlineInputBorder(borderSide: BorderSide.none),
+                      ),
+                      textCapitalization: TextCapitalization.words,
+                      controller: _originController,
+                      onChanged: (value) {
+                        print(value);
+                      },
                     ),
-                    textCapitalization: TextCapitalization.words,
-                    controller: _originController,
-                    onChanged: (value) {
-                      print(value);
-                    },
                   ),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.search,
-                    color: mainOrange,
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10.0), // 패딩 추가
+                    child: InkWell(
+                      onTap: () {
+                        // 검색 버튼 클릭 시 액션
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => SearchScreen()),
+                        );
+                      },
+                      child: Icon(
+                        Icons.search,
+                        color: mainOrange,
+                        size: 40.0,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           SizedBox(

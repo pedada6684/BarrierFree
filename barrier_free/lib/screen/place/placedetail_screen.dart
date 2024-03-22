@@ -11,10 +11,11 @@ class PlaceDetailScreen extends StatefulWidget {
 }
 
 class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
-  static const platform = MethodChannel('com.example.barrier_free/tmap');
+  static const platform = MethodChannel('com.barrier_free/tmap');
 
   @override
   Widget build(BuildContext context) {
+    GlobalKey mykey = GlobalKey();
     return Scaffold(
       appBar: AppBar(
         title: Text('장소 상세'),
@@ -93,8 +94,12 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                 width: MediaQuery.of(context).size.width*0.9,
                 height: MediaQuery.of(context).size.width*0.9,
                 child: AndroidView(
+                  key: mykey,
                   viewType: 'showTMap',
-                  creationParams: {},
+                  creationParams: {
+                    'longitude': 127.2981911,
+                    'latitude': 36.3553177,
+                  },
                   creationParamsCodec: StandardMessageCodec(),
                 ),
               ),

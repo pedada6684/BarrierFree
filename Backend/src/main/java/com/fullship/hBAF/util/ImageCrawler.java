@@ -28,11 +28,8 @@ import java.util.List;
 @Transactional
 @Slf4j
 public class ImageCrawler {
-    private final AmazonS3Client amazonS3Client;
     private final PlaceService placeService;
-
-    @Value("${cloud.aws.bucket}")
-    private String bucket;
+    private final ImageUtil imageUtil;
 
     /**
      * 베리어프리 장소 썸네일 이미지 업데이트 메서드
@@ -72,9 +69,8 @@ public class ImageCrawler {
         for (WebElement element : elements) {
             String src = element.getAttribute("src");
             String alt = element.getAttribute("alt");
-            if (alt.equals(searchKey)){
-                //이미지 S3 저장
-                return uploadImageToS3(src, alt);
+            if (alt.equals(searchKey)){ //이미지 S3 저장
+                return imageUtil.uploadImageToS3(src, "ThumbNail",alt);
             }else { // 검색결과가 매칭되지 않으면 저장하지 않음
                 log.info("NOT MATCH");
                 log.info("alt: " + alt);
@@ -82,46 +78,5 @@ public class ImageCrawler {
             }
         }
         return null;
-    }
-
-    /**
-     * 이미지 로컬 저장 함수
-     *
-     * @param src  이미지 소스 url
-     * @param name 이미지 이름 (alt)
-     */
-    private URL uploadImageToS3(String src, String name){
-        //이미지 저장
-        HttpURLConnection conn = null;
-        try {
-            URL imgUrl = new URL(src);
-            conn = (HttpURLConnection) imgUrl.openConnection();
-            BufferedImage bufferedImage = ImageIO.read(conn.getInputStream());
-            ByteArrayOutputStream imageOutPut = new ByteArrayOutputStream();
-
-            ImageIO.write(bufferedImage, "png", imageOutPut);
-            byte[] bytes = imageOutPut.toByteArray();
-
-            // 같은 이름일 경우 덮어쓰기 위하여 (썸네일은 하나만 존재해야함)
-            // String imageName = UUID.randomUUID().toString().replace("-", "") + StringUtils.cleanPath(name);
-            String imageName = name;
-            // set metadata
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType("image/png");
-            metadata.setContentLength(bytes.length);
-            InputStream imaInputStream = new ByteArrayInputStream(bytes);
-            amazonS3Client.putObject(
-                    bucket,
-                    "ThumbNail/"+imageName,
-                    imaInputStream,
-                    metadata
-            );
-            return amazonS3Client.getUrl(bucket, "ThumbNail/"+imageName);
-        } catch (IOException e) {
-
-            throw new RuntimeException(e);
-        } finally {
-            conn.disconnect();
-        }
     }
 }

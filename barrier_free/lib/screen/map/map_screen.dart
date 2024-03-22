@@ -75,11 +75,11 @@ class _MapScreenState extends State<MapScreen> {
     //네이티브로 코드 전송
     try {
 
-      final String result = await platform.invokeMethod('setCurrentLocation', {
+      await platform.invokeMethod('setCurrentLocation', {
         'latitude': latitude,
         'longitude': longitude,
       });
-      print('===============Result: $result===============');
+      // print('===============Result: $result===============');
     } on PlatformException catch (e) {
       print(
           "===============Failed to set location: '${e.message}'.===============");

@@ -35,7 +35,7 @@ class _MyPlaceScreenState extends State<MyPlaceScreen> {
     PlaceItem(
       icon: Icons.business,
       title: '회사',
-      address: '대전광역시 유성구',
+      address: '장소를 설정해주세요.',
       builder: (context) => MyPlaceScreen(),
     ),
     // 추가 항목들을 이곳에 추가할 수 있습니다.
@@ -50,6 +50,14 @@ class _MyPlaceScreenState extends State<MyPlaceScreen> {
         children: [
           ..._buildListItems(),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // 플로팅 액션 버튼을 눌렀을 때의 동작 구현
+        },
+        backgroundColor: mainOrange, // 배경색 설정
+        foregroundColor: Colors.white, // 아이콘 색상 설정
+        child: Icon(Icons.add), // 아이콘은 추가할 기능에 맞게 변경 가능
       ),
     );
   }

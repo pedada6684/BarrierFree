@@ -52,16 +52,16 @@ internal class NativeView(
 
         tmapView.removeMarkerItem("currentLocationMarker")
 
-        tmapView.setLocationPoint(longitude, latitude)
-        tmapView.setCenterPoint(longitude, latitude)
+		tmapView.setLocationPoint(longitude, latitude)
+		tmapView.setCenterPoint(longitude, latitude)
 
-        //현재 위치에 마커 추가하기
-        val markerItem = TMapMarkerItem().apply {
-            tMapPoint = TMapPoint(latitude, longitude)// 마커 위치
-            name = "현재 위치"
-            visible = TMapMarkerItem.VISIBLE
+		//현재 위치에 마커 추가하기
+		val markerItem = TMapMarkerItem().apply {
+			tMapPoint = TMapPoint(longitude, latitude)// 마커 위치
+			name = "현재 위치"
+			visible = TMapMarkerItem.VISIBLE
 
-            //아이콘
+			//아이콘
 //            val bitmap = BitmapFactory.decodeResource(context?.resources, R.drawable.icon)
 //            icon = bitmap
 

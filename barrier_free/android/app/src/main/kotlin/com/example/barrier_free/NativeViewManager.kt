@@ -13,7 +13,7 @@ internal object NativeViewManager {
         nativeView = null
     }
 
-    internal fun updateLocation(latitude: Double, longitude: Double) {
+    internal fun updateLocation(longitude: Double, latitude: Double) {
         nativeView?.updateLocation(longitude, latitude)
     }
 }

@@ -1,6 +1,6 @@
 package com.fullship.hBAF.util;
 
-import com.fullship.hBAF.global.RedisService;
+import com.fullship.hBAF.global.H3.service.H3IndexService;
 import com.uber.h3core.H3Core;
 import com.uber.h3core.exceptions.LineUndefinedException;
 import com.uber.h3core.util.GeoCoord;
@@ -9,7 +9,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Component;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
@@ -17,7 +16,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class H3 {
 
-    private final RedisService redisService;
+    private final H3IndexService h3IndexService;
     public static double xMax, yMax, xMin, yMin;
     public static Map<Long,Double> daejeonH3Index = new HashMap<>();
 
@@ -158,7 +157,7 @@ public class H3 {
 //
 //        System.out.println("max : "+max);
 //        System.out.println("min : "+min);
-        redisService.saveH3IndexSet(daejeonH3Index);
+        h3IndexService.saveH3IndexSet(daejeonH3Index);
     }
 
     public static Map<Long,Double> bfs(Map<Long, Double> map, double Lat, double Lng) throws IOException {

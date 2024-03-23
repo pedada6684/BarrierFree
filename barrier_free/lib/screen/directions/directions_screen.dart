@@ -1,6 +1,5 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
-import 'package:barrier_free/services/location_service.dart';
 import 'package:flutter/material.dart';
 
 class DirectionsScreen extends StatefulWidget {
@@ -59,37 +58,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () async {
-                      if (_originController.text.isNotEmpty) {
-                        try {
-                          final locationService = LocationService();
-                          final originPlace = await locationService
-                              .getPlace(_originController.text);
-                          final originLat =
-                              await originPlace['geometry']['location']['lat'];
-                          final originLng =
-                              await originPlace['geometry']['location']['lng'];
-
-                          final destinationPlace = await locationService
-                              .getPlace(_destinationController.text);
-                          final destinationLat =
-                              destinationPlace['geometry']['location']['lat'];
-                          final destinationLng =
-                              destinationPlace['geometry']['location']['lng'];
-
-                          print('===================출발지 위도: $originLat, 출발지 경도: $originLng===================');
-                          print('===================도착지 위도: $destinationLat, 도착지 경도: $destinationLng===================');
-
-
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('경로를 찾을 수 없습니다.'),
-                            ),
-                          );
-                        }
-                      }
-                    },
+                    onPressed: (){},
                     icon: Icon(
                       Icons.search,
                       color: Colors.white,

@@ -37,6 +37,7 @@ public class PathSearchToTrafficRequest {
                   + "&SY=" + startY
                   + "&EX=" + endX
                   + "&EY=" + endY)
+          .requestBody(createRequestBody())
           .build();
     } catch (Exception e) {
       throw new CustomException(ErrorCode.URI_SYNTAX_ERROR);

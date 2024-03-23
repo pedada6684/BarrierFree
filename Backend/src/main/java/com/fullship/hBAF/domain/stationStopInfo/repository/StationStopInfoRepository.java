@@ -12,5 +12,6 @@ import org.springframework.stereotype.Repository;
 public interface StationStopInfoRepository extends JpaRepository<StationStopInfo,Long> {
 
   @Query("SELECT s FROM StationStopInfo s WHERE s.arrTime > :futureTime And s.metroInfoId in :metroList")
-  List<StationStopInfo> findByTimeAndMetroInfo(@Param("futureTime") LocalTime futureTime, @Param("metroList") List<Integer> metroIdList);
+  List<StationStopInfo> findByTimeAndMetroInfo(@Param("futureTime") String futureTime, @Param("metroList") List<Integer> metroIdList);
+
 }

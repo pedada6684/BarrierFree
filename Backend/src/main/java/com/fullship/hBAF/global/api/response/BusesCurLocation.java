@@ -7,10 +7,8 @@ import lombok.Data;
 @Builder
 public class BusesCurLocation {
 
-  String busNodeId;
+  String localStationId;
   String dir;
   String arsId;
-  String gpsLati;
-  String gpsLong;
   String license;
 }

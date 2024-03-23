@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -13,6 +14,7 @@ import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
 
 @Data
+@Slf4j
 @Builder
 public class WheelPathForm {
 
@@ -28,6 +30,7 @@ public class WheelPathForm {
 
   public static WheelPathForm jsonToO(ResponseEntity<String> result) {
     List<String[]> geoCode = new ArrayList<>();
+    log.info("result = {}", result.getBody());
     try {
       JSONParser parser = new JSONParser();
       JSONObject object = (JSONObject) parser.parse(result.getBody());
@@ -73,6 +76,7 @@ public class WheelPathForm {
               .build();
       return form;
     } catch (ParseException p) {
+      log.error("Parsing 실패");
       throw new CustomException(ErrorCode.JSON_PARSE_IMPOSSIBLE);
     }
   }

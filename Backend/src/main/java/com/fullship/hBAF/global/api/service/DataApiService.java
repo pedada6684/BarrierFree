@@ -19,6 +19,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.StringTokenizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -158,18 +159,23 @@ public class DataApiService {
 
       for (Object arrItem : arrItems) {
         JSONObject item = (JSONObject) arrItem;
+
+        String routeType = (String) item.get("routetp");
+        String busNo = item.get("routeno").toString();
+        if (routeType.equals("첨단버스") || routeType.equals("급행버스") || routeType.equals("마을버스")) {
+          busNo = routeType.substring(0, 2) + busNo;
+        }
         BusRouteInfo busRouteInfo = BusRouteInfo.createBusRouteInfo(
-            String.valueOf(item.get("routeno")),
-            ((String) item.get("routeid")).substring(3),
-            (String) item.get("routetp")
-        );
+            busNo, ((String) item.get("routeid")).substring(3),
+            routeType);
 
         busRouteInfoRepository.save(busRouteInfo);
 
       }
 
     } catch (ParseException e) {
-      throw new RuntimeException(e);
+      throw new CustomException(ErrorCode.JSON_PARSE_IMPOSSIBLE);
+
     }
 
   }
@@ -179,50 +185,61 @@ public class DataApiService {
     try {
       List<BusRouteInfo> busRouteInfos = busRouteInfoRepository.findAll();
       for (BusRouteInfo busRouteInfo : busRouteInfos) {
+        BusRouteInfo info = busRouteInfoRepository.findBusRouteInfoByPublicBusId(
+            busRouteInfo.getPublicBusId());
+        if (info.getBusId() != null) {
+          continue;
+        }
+
+        String purpose = busRouteInfo.getPurpose();
+        String busNo = busRouteInfo.getBusNo();
+        if (purpose.equals("급행버스") || purpose.equals("마을버스")) {
+          busNo = busNo.substring(2);
+        }
+
+        /* 계룡 버스 확인 */
+        int CID = 3000;
+        if (info.getPublicBusId().substring(0, 4).equals("6969")) {
+          CID = 3010;
+        }
+
         URI uri = UriComponentsBuilder
             .fromHttpUrl("https://api.odsay.com/v1/api/searchBusLane")
             .queryParam("apiKey", URLEncoder.encode(odSayKey, StandardCharsets.UTF_8))
             .queryParam("lang", 0)
             .queryParam("busNo",
-                URLEncoder.encode(busRouteInfo.getBusNo(), StandardCharsets.UTF_8))
-            .queryParam("CID", 3000)
+                URLEncoder.encode(busNo, StandardCharsets.UTF_8))
+            .queryParam("CID", CID)
             .build(true).toUri();
 
         ResponseEntity<String> response = apiService.get(uri, setHttpHeaders(), String.class);
 
         JSONParser parser = new JSONParser();
         JSONObject object = (JSONObject) parser.parse(response.getBody());
-        log.info("busNo= {}", busRouteInfo.getBusNo());
-        log.info("route= {}", object);
-        /* 계룡 버스 예외 */
-        if ((long) ((JSONObject) object.get("result")).get("totalCount") == 0) {
-          uri = UriComponentsBuilder
-              .fromHttpUrl("https://api.odsay.com/v1/api/searchBusLane")
-              .queryParam("apiKey", URLEncoder.encode(odSayKey, StandardCharsets.UTF_8))
-              .queryParam("lang", 0)
-              .queryParam("busNo",
-                  URLEncoder.encode(busRouteInfo.getBusNo(), StandardCharsets.UTF_8))
-              .queryParam("CID", 3010)
-              .build(true).toUri();
-          response = apiService.get(uri, setHttpHeaders(), String.class);
-          object = (JSONObject) parser.parse(response.getBody());
-        }
-
-        log.info("route= {}", object);
         JSONObject result = (JSONObject) object.get("result");
-        JSONObject lane = (JSONObject) ((JSONArray) result.get("lane")).get(0);
-        log.info("laneInfo= {}", lane);
-        busRouteInfo.updateBusRouteInfo(
-            lane.get("busID").toString(),
-            lane.get("busStartPoint").toString(),
-            lane.get("busEndPoint").toString(),
-            lane.get("busFirstTime").toString(),
-            lane.get("busLastTime").toString(),
-            lane.get("busInterval").toString()
-        );
+        JSONArray lanes = (JSONArray) result.get("lane");
+        for (int j = 0; j < lanes.size(); j++) {
+          JSONObject lane = (JSONObject) ((JSONArray) result.get("lane")).get(j);
+          String lbId = ((String) lane.get("localBusID"));
+          log.info("localBusId = {}", lbId);
+
+          if (lbId.equals("0")) {
+            continue;
+          }
+
+          BusRouteInfo routeInfo = busRouteInfoRepository.findBusRouteInfoByPublicBusId(
+              ((String) lane.get("localBusID")).substring(3));
+
+          routeInfo.updateBusRouteInfo(
+              lane.get("busID").toString(),
+              lane.get("busStartPoint").toString(),
+              lane.get("busEndPoint").toString(),
+              lane.get("busFirstTime").toString(),
+              lane.get("busLastTime").toString());
+        }
       }
     } catch (ParseException e) {
-      throw new RuntimeException(e);
+      throw new CustomException(ErrorCode.JSON_PARSE_IMPOSSIBLE);
     }
   }
 
@@ -244,8 +261,6 @@ public class DataApiService {
       try {
         JSONParser parser = new JSONParser();
         JSONObject object = (JSONObject) parser.parse(response.getBody());
-        System.out.println(busId);
-        log.info("stopInfo= {}", object);
         JSONObject result = (JSONObject) object.get("result");
         JSONArray stations = (JSONArray) result.get("station");
 
@@ -266,7 +281,7 @@ public class DataApiService {
           busStopRepository.save(busInfo);
         }
       } catch (ParseException e) {
-        throw new RuntimeException(e);
+        throw new CustomException(ErrorCode.JSON_PARSE_IMPOSSIBLE);
       }
     }
   }
@@ -274,7 +289,6 @@ public class DataApiService {
   @Transactional(readOnly = false)
   public void saveSubway() {
     String fileName = "metroTimeTable.xls";
-
     Workbook workbook = getSheets(fileName);
     int metroNo = 0;
     for (int idx = 0; idx < 4; idx++) {
@@ -303,14 +317,14 @@ public class DataApiService {
             idx < 2
         );
         metroInfoRepository.save(metroInfo);
-
         for (int r = 5; r < 27; r++) {
-          LocalTime arrTime = (LocalTime) checkCell(workSheet.getRow(r).getCell(c));
-          if (arrTime == null) {
+          Object o = checkCell(workSheet.getRow(r).getCell(c));
+          System.out.println(o);
+          if (o == null || o.equals("") || o.equals("false")) {
             continue;
           }
           StationStopInfo stationStopInfo = StationStopInfo.createStationStopInfo(
-              r - 4, metroNo + c - 1, arrTime);
+              r - 4, metroNo + c - 1, o.toString());
           stationStopInfoRepository.save(stationStopInfo);
         }
       }
@@ -376,9 +390,9 @@ public class DataApiService {
     return value;
   }
 
-  private static String arsSplit(String str){
+  private static String arsSplit(String str) {
     StringTokenizer st = new StringTokenizer(str, "-");
-    if(st.countTokens() <= 1){
+    if (st.countTokens() <= 1) {
       return str;
     }
     return st.nextToken() + st.nextToken();

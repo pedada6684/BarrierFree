@@ -24,7 +24,7 @@ public class PathSearchToWheelRequest {
         .startX(startGeo[0])
         .startY(startGeo[1])
         .endX(endGeo[0])
-        .endY(endGeo[0])
+        .endY(endGeo[1])
         .build()
         .createForWheel();
   }

@@ -1,10 +1,13 @@
 package com.fullship.hBAF.global.api.response;
 
+import com.fullship.hBAF.global.response.ErrorCode;
+import com.fullship.hBAF.global.response.exception.CustomException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -12,6 +15,7 @@ import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
 
 @Data
+@Slf4j
 @Builder
 public class PathGeoCode {
 
@@ -25,6 +29,7 @@ public class PathGeoCode {
     try {
       JSONParser parser = new JSONParser();
       JSONObject object = (JSONObject) parser.parse(response.getBody());
+      log.info("pathResult = {}", object);
       JSONObject result = (JSONObject) object.get("result");
       JSONArray lanes = (JSONArray) result.get("lane");
       for (Object o : lanes) {
@@ -48,7 +53,7 @@ public class PathGeoCode {
       }
       return pathGeoCodes;
     } catch (ParseException e) {
-      throw new RuntimeException(e);
+      throw new CustomException(ErrorCode.JSON_PARSE_IMPOSSIBLE);
     }
 
   }

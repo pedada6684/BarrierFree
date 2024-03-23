@@ -24,7 +24,6 @@ public class BusRouteInfo {
   String endPoint;
   String firstTime;
   String lastTime;
-  String busInterval;
 
   @OneToMany
   List<BusStop> busStopInfo = new ArrayList<>();
@@ -43,12 +42,11 @@ public class BusRouteInfo {
   }
 
   public void updateBusRouteInfo(String busId, String startPoint, String endPoint, String firstTime,
-      String lastTime, String busInterval) {
+      String lastTime) {
     this.busId = busId;
     this.startPoint = startPoint;
     this.endPoint = endPoint;
     this.firstTime = firstTime;
     this.lastTime = lastTime;
-    this.busInterval = busInterval;
   }
 }

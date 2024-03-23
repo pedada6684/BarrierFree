@@ -76,17 +76,13 @@ public class TagoApiService {
       NodeList dir = document.getElementsByTagName("DIR");
       NodeList arsId = document.getElementsByTagName("BUS_STOP_ID");
       NodeList license = document.getElementsByTagName("PLATE_NO");
-      NodeList gpsLati = document.getElementsByTagName("GPS_LATI");
-      NodeList gpsLong = document.getElementsByTagName("GPS_Long");
 
       List<BusesCurLocation> list = new ArrayList<>();
       for (int i = 0; i < itemList.getLength(); i++) {
         BusesCurLocation command = BusesCurLocation.builder()
-            .busNodeId(busNodeId.item(i).getTextContent())
+            .localStationId(busNodeId.item(i).getTextContent())
             .dir(dir.item(i).getTextContent())
             .arsId(arsId.item(i).getTextContent())
-            .gpsLati(gpsLati.item(i).getTextContent())
-            .gpsLong(gpsLong.item(i).getTextContent())
             .license(license.item(i).getTextContent())
             .build();
 

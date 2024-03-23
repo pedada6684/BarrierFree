@@ -1,5 +1,7 @@
 package com.fullship.hBAF.global.api.response;
 
+import com.fullship.hBAF.global.response.ErrorCode;
+import com.fullship.hBAF.global.response.exception.CustomException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
@@ -44,7 +46,7 @@ public class TaxiPathForm {
       System.out.println("}");
       return TaxiPathForm.builder().geoCode(geoCode).build();
     } catch (ParseException e) {
-      throw new RuntimeException(e);
+      throw new CustomException(ErrorCode.JSON_PARSE_IMPOSSIBLE);
     }
   }
 }

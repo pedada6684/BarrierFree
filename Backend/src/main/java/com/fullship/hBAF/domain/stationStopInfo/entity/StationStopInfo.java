@@ -19,10 +19,10 @@ public class StationStopInfo {
 
   private int metroInfoId;
 
-  private LocalTime arrTime;
+  private String arrTime;
 
   public static StationStopInfo createStationStopInfo(int subwayInfoId, int metroInfoId,
-      LocalTime arrTime) {
+      String arrTime) {
     StationStopInfo stationStopInfo = new StationStopInfo();
     stationStopInfo.subwayInfoId = subwayInfoId;
     stationStopInfo.metroInfoId = metroInfoId;

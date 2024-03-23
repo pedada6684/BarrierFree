@@ -33,6 +33,7 @@ public class TMapApiService {
   }
 
   public WheelPathForm searchPathToWheel(SearchPathToWheelCommand command) {
+    log.info("requestBody ={}", command.getRequestBody());
     ResponseEntity<String> responseEntity =
         apiService.post(command.getUri(), setHttpHeaders(), command.getRequestBody(), String.class);
 

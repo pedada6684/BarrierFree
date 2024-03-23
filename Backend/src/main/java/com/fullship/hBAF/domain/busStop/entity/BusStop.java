@@ -17,9 +17,9 @@ public class BusStop {
   String busId;
   String busNo;
   String stopId;
-  String stationName;
-  String stationDistance;
-  String stationDirection;
+  String stopName;
+  String stopDistance;
+  String stopDirection;
   String arsId;
   String localStationId;
   String geoLng;
@@ -29,9 +29,9 @@ public class BusStop {
       String busId,
       String busNo,
       String stopId,
-      String stationName,
-      String stationDistance,
-      String stationDirection,
+      String stopName,
+      String stopDistance,
+      String stopDirection,
       String arsId,
       String localStationId,
       String geoLng,
@@ -40,9 +40,9 @@ public class BusStop {
     busStopInfo.busId = busId;
     busStopInfo.busNo = busNo;
     busStopInfo.stopId = stopId;
-    busStopInfo.stationName = stationName;
-    busStopInfo.stationDistance = stationDistance;
-    busStopInfo.stationDirection = stationDirection;
+    busStopInfo.stopName = stopName;
+    busStopInfo.stopDistance = stopDistance;
+    busStopInfo.stopDirection = stopDirection;
     busStopInfo.arsId = arsId;
     busStopInfo.localStationId = localStationId;
     busStopInfo.geoLng = geoLng;

@@ -59,12 +59,15 @@ public class OdSayApiService {
   public List<PathGeoCode> getOdSayGeoCode(OdSayGeoCommand command) {
     URI uri;
     try {
-      uri = new URI(command.getUri() + "&apiKey=" + URLEncoder.encode(apiKey,
-          StandardCharsets.UTF_8) + command.getMapObj());
+      uri = new URI(command.getUri()
+          + "&apiKey="
+          + URLEncoder.encode(apiKey, StandardCharsets.UTF_8)
+          + "&mapObject="
+          + URLEncoder.encode(command.getMapObj(), StandardCharsets.UTF_8));
     } catch (Exception e) {
       throw new CustomException(ErrorCode.URI_SYNTAX_ERROR);
     }
-
+    log.info("uri = {}", uri);
     ResponseEntity<String> responseEntity =
         apiService.get(uri, setHttpHeaders(), String.class);
 

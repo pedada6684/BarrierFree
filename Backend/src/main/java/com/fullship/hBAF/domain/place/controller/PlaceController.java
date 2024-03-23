@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.text.ParseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -53,7 +54,7 @@ public class PlaceController {
   })
   public ResponseEntity<?> searchPathByTransit(@RequestBody PathSearchToTrafficRequest requestDto) {
     OdSayPathCommand command = requestDto.createForSearch();
-    return getResponseEntity(SuccessCode.OK, odSayApiService.searchPathToTransit(command));
+    return getResponseEntity(SuccessCode.OK, placeService.useTransitPath(command));
   }
 
   @PostMapping("/path/taxi")

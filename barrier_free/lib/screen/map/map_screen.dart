@@ -1,6 +1,8 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/component/facility_button.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/screen/search/mapresult_screen.dart';
+import 'package:barrier_free/services/location_service.dart';
 import 'package:barrier_free/services/search_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -16,24 +18,40 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-
   late TextEditingController _originController = TextEditingController();
   late List<dynamic> places = [];
   late List<dynamic> searchResults = [];
+  late Position _currentPosition;
 
   @override
   void initState() {
     super.initState();
     _originController = TextEditingController();
+    _initializeLocation();
+  }
+
+  void _initializeLocation() async {
+    await LocationService().getCurrentPosition();
+    setState(() {
+      _currentPosition = LocationService().currentPosition!;
+    });
   }
 
   Future<void> _search() async {
     if (_originController.text.isNotEmpty) {
       try {
         final result = await fetchSearchResults(_originController.text);
-        setState(() {
-          searchResults = result;
-        });
+        // setState(() {
+        //   searchResults = result;
+        // });
+        //Bottomsheet
+        // _showModalBottomSheet(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MapResultScreen(searchResults: result, keyWord: _originController.text),
+          ),
+        );
         print(
             '=================================================================');
         print(result);
@@ -43,26 +61,6 @@ class _MapScreenState extends State<MapScreen> {
       }
     }
   }
-
-  Future<void> _getCurrentPosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('위치 서비스가 활성화 되어 있지 않습니다.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      //거절일경우
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error('위치 권한을 설정에서 허가해주세요,');
-    }
-  }
-
   // _loadPlaces() async {
   //   try {
   //     places = await PlaceService().fetchPlacesByCategory('화장실');
@@ -74,7 +72,6 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     final appKey = dotenv.env['APP_KEY'];
 
     return FutureBuilder<Position>(

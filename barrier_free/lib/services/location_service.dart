@@ -1,68 +1,41 @@
-// import 'dart:async';
-//
-// import 'package:flutter_dotenv/flutter_dotenv.dart';
-// import 'package:http/http.dart' as http;
-// import 'dart:convert' as convert;
-//
-// class LocationService {
-//   final String key = dotenv.env['appKey']!;
-//
-//   Future<String> getPlaceId(String input) async {
-//     final String url =
-//         'https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=$input&inputtype=textquery&key=$key';
-//
-//     var response = await http.get(Uri.parse(url));
-//     var json = convert.jsonDecode(response.body);
-//     print('플레이스 아이디');
-//     print(json);
-//     var placeId = json['candidates'][0]['place_id'] as String;
-//
-//     return placeId;
-//   }
-//
-//   Future<Map<String, dynamic>> getPlace(String input) async {
-//     final placeId = await getPlaceId(input);
-//     final String url =
-//         'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&language=ko&key=$key';
-//     var response = await http.get(Uri.parse(url));
-//     var json = convert.jsonDecode(response.body);
-//     var result = json['result'] as Map<String, dynamic>;
-//
-//     print(result);
-//     print(response.body);
-//     return result;
-//   }
-//
-//   Future<Map<String, dynamic>> getDirections(
-//       String origin, String destination) async {
-//     final String url =
-//         'https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$destination&language=ko&key=$key';
-//
-//     var response = await http.get(Uri.parse(url));
-//     var json = convert.jsonDecode(response.body);
-//     print(response.body);
-//     if (json['routes'].isEmpty) {
-//       throw Exception("No routes found");
-//     }
-//     var route = json['routes'][0];
-//     if (route['legs'].isEmpty) {
-//       throw Exception("No legs found in the route");
-//     }
-//     var leg = route['legs'][0];
-//     var results = {
-//       'bounds_ne': route['bounds']['northeast'],
-//       'bounds_sw': route['bounds']['southwest'],
-//       'start_location': leg['start_location'],
-//       'end_location': leg['end_location'],
-//       'polyline': route['overview_polyline']['points'],
-//       'polyline_decoded':
-//           PolylinePoints().decodePolyline(route['overview_polyline']['points']),
-//     };
-//
-//     print('---------------------------------------');
-//     print(response.body);
-//     print(results);
-//     return results;
-//   }
-// }
-//
+// 내 현재 위치 받아오기
+import 'package:geolocator/geolocator.dart';
+
+class LocationService {
+  static final LocationService _instance = LocationService._internal();
+
+  factory LocationService() {
+    return _instance;
+  }
+
+  LocationService._internal();
+
+  Position? _currentPosition;
+
+  Position? get currentPosition => _currentPosition;
+
+  Future<void> getCurrentPosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw '위치 서비스가 활성화 되어 있지 않습니다.';
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
+        throw '위치 서비스 권한이 거부되었습니다.';
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw '위치 권한을 설정에서 허가해주세요.';
+    }
+
+    _currentPosition = await Geolocator.getCurrentPosition();
+  }
+}

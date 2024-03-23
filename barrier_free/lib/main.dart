@@ -7,11 +7,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'screen/map/map_screen.dart';
+import 'services/location_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   dotenv.load();
+
+  await LocationService().getCurrentPosition();
   runApp(MyApp());
 }
 

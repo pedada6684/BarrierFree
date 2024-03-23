@@ -1,6 +1,6 @@
 import 'package:barrier_free/component/appBar.dart';
+import 'package:barrier_free/component/map_markers.dart';
 import 'package:barrier_free/services/location_service.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
@@ -32,10 +32,12 @@ class _MapResultScreenState extends State<MapResultScreen> {
 
   void _initializeMarkers() {
     _markerPositions = widget.searchResults.map<Position>((result) {
+      // print(result['y']);
+      // print(result['x']);
       // API에서 반환된 위치 데이터
       return Position(
-        latitude: double.parse(result['y']),
-        longitude: double.parse(result['x']),
+        latitude: double.parse(result['y'].toString()),
+        longitude: double.parse(result['x'].toString()),
         timestamp: DateTime.now(),
         accuracy: 0,
         altitude: 0,
@@ -44,6 +46,7 @@ class _MapResultScreenState extends State<MapResultScreen> {
         speedAccuracy: 0,
         altitudeAccuracy: 0,
         headingAccuracy: 0,
+        floor: 0,
       );
     }).toList();
   }
@@ -52,6 +55,7 @@ class _MapResultScreenState extends State<MapResultScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true, // 전체 화면으로 확장 가능
+      barrierColor: Colors.transparent, // 뒤에 화면 어두워지는거 수정, 백드롭 클릭 닫는 기능 비활성됨
       builder: (BuildContext context) {
         return Padding(
           padding: const EdgeInsets.all(8.0),
@@ -95,24 +99,74 @@ class _MapResultScreenState extends State<MapResultScreen> {
       );
     }
 
-
-
     return Scaffold(
       appBar: CustomAppBar(title: widget.keyWord),
       body: Column(
         children: [
           Expanded(
-            child: KakaoMapView(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              kakaoMapKey: appKey!,
-              lat: currentPosition!.latitude,
-              lng: currentPosition!.longitude,
-              showZoomControl: true,
+            child: Stack(
+              children: [
+                KakaoMapView(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  kakaoMapKey: appKey!,
+                  lat: currentPosition!.latitude,
+                  lng: currentPosition!.longitude,
+                  showZoomControl: true,
+                  customScript: generateMarkerScript(widget.searchResults),
+                ),
+                _buildToggleButton(),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+  //
+  Widget _buildToggleButton() {
+    return Positioned(
+      bottom: 20,
+      child: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              barrierColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+              ),
+              builder: (context) => _buildBottomSheet());
+        },
+        child: Icon(Icons.list),
+      ),
+    );
+  }
+
+  Widget _buildBottomSheet() {
+    return DraggableScrollableSheet(
+      expand: false,
+      builder: (BuildContext context, ScrollController scrollController) {
+        return Container(
+          padding: const EdgeInsets.all(8.0),
+          child: ListView.separated(
+            controller: scrollController,
+            itemCount: widget.searchResults.length,
+            separatorBuilder: (context, index) => Divider(height: 1),
+            itemBuilder: (BuildContext context, int index) {
+              return ListTile(
+                title: Text(widget.searchResults[index]['place_name']),
+                onTap: () {
+                  // 마커로 이동
+                },
+              );
+            },
+          ),
+        );
+      },
+      initialChildSize: 0.3,
+      minChildSize: 0.3,
+      maxChildSize: 0.8,
     );
   }
 }

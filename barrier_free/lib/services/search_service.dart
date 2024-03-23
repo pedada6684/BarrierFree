@@ -16,6 +16,7 @@ Future<List<dynamic>> fetchSearchResults(String keyword) async {
 
   if (response.statusCode == 200) {
     Map<String, dynamic> data = json.decode(response.body);
+    print(data);
     return data['documents'];
   } else {
     throw Exception('검색 결과 불러오기 실패');

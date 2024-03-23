@@ -41,11 +41,6 @@ class _MapScreenState extends State<MapScreen> {
     if (_originController.text.isNotEmpty) {
       try {
         final result = await fetchSearchResults(_originController.text);
-        // setState(() {
-        //   searchResults = result;
-        // });
-        //Bottomsheet
-        // _showModalBottomSheet(context);
         Navigator.push(
           context,
           MaterialPageRoute(

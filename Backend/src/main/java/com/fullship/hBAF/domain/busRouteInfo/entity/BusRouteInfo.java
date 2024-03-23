@@ -1,44 +1,52 @@
 package com.fullship.hBAF.domain.busRouteInfo.entity;
 
-import com.fullship.hBAF.domain.busStopInfo.entity.BusStopInfo;
+import com.fullship.hBAF.domain.busStop.entity.BusStop;
 import jakarta.persistence.*;
+import java.util.List;
 import lombok.Getter;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
 public class BusRouteInfo {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  Long id;
+  /* 간단 정보 */
+  String busNo;
+  String publicBusId;
+  String purpose;
+  /* 세부 정보 */
+  String busId;
+  String startPoint;
+  String endPoint;
+  String firstTime;
+  String lastTime;
 
-    String routeNo;
-    String busNo;
-    String purpose;
-    String startTime;
-    String startStop;
+  @OneToMany
+  List<BusStop> busStopInfo = new ArrayList<>();
 
-    @OneToMany
-    List<BusStopInfo> busStopInfo = new ArrayList<>();
+  public static BusRouteInfo createBusRouteInfo(
+      String busNo,
+      String publicBusId,
+      String purpose
+  ) {
+    BusRouteInfo busRouteInfo = new BusRouteInfo();
+    busRouteInfo.busNo = busNo;
+    busRouteInfo.publicBusId = publicBusId;
+    busRouteInfo.purpose = purpose;
 
-    public static BusRouteInfo createBusRouteInfo(
-            String routeNo,
-            String busNo,
-            String purpose,
-            String startTime,
-            String startStop
-    ){
-        BusRouteInfo busRouteInfo = new BusRouteInfo();
-        busRouteInfo.routeNo=routeNo;
-        busRouteInfo.busNo=busNo;
-        busRouteInfo.purpose=purpose;
-        busRouteInfo.startTime=startTime;
-        busRouteInfo.startStop=startStop;
+    return busRouteInfo;
+  }
 
-        return busRouteInfo;
-    }
-
+  public void updateBusRouteInfo(String busId, String startPoint, String endPoint, String firstTime,
+      String lastTime) {
+    this.busId = busId;
+    this.startPoint = startPoint;
+    this.endPoint = endPoint;
+    this.firstTime = firstTime;
+    this.lastTime = lastTime;
+  }
 }

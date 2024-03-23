@@ -27,6 +27,7 @@ out/
 !**/src/test/**/out/
 application-secret.yml
 application.yml
+metroTimeTable.xls
 
 ### NetBeans ###
 /nbproject/private/

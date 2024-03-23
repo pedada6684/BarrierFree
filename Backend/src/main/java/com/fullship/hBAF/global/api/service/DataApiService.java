@@ -4,21 +4,25 @@ import com.fullship.hBAF.domain.busInfo.entity.BusInfo;
 import com.fullship.hBAF.domain.busInfo.repository.BusInfoRepository;
 import com.fullship.hBAF.domain.busRouteInfo.entity.BusRouteInfo;
 import com.fullship.hBAF.domain.busRouteInfo.repository.BusRouteInfoRepository;
-import com.fullship.hBAF.domain.busStopInfo.entity.BusStopInfo;
-import com.fullship.hBAF.domain.busStopInfo.repository.BusStopRepository;
+import com.fullship.hBAF.domain.busStop.entity.BusStop;
+import com.fullship.hBAF.domain.busStop.repository.BusStopRepository;
 import com.fullship.hBAF.domain.metroInfo.entity.MetroInfo;
 import com.fullship.hBAF.domain.metroInfo.repository.MetroInfoRepository;
 import com.fullship.hBAF.domain.stationInfo.entity.StationInfo;
 import com.fullship.hBAF.domain.stationInfo.repository.StationInfoRepository;
 import com.fullship.hBAF.domain.stationStopInfo.entity.StationStopInfo;
 import com.fullship.hBAF.domain.stationStopInfo.repository.StationStopInfoRepository;
-import com.fullship.hBAF.global.api.response.BusesCurLocation;
-import com.fullship.hBAF.global.api.service.command.BusesCurLocationCommand;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.StringTokenizer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -35,7 +39,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
@@ -47,11 +50,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class DataApiService {
@@ -70,6 +72,9 @@ public class DataApiService {
   @Value("${api.data.route.key}")
   private String routeKey;
 
+  @Value(("${api.data.bus.key}"))
+  private String odSayKey;
+
   private HttpHeaders setHttpHeaders() {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
@@ -78,8 +83,8 @@ public class DataApiService {
 
   @Transactional(readOnly = false)
   public void saveBusInfo() {
-
     try {
+      /* 전체 페이지 개수 구하기 위한 API 호출 */
       UriComponents uriComponents = UriComponentsBuilder
           .fromHttpUrl("http://openapitraffic.daejeon.go.kr/api/rest/busreginfo/getBusRegInfoAll")
           .queryParam("serviceKey", dataLicenseKey)
@@ -93,10 +98,11 @@ public class DataApiService {
       DocumentBuilder builder = factory.newDocumentBuilder();
 
       Document document = builder.parse(
-          new InputSource(new StringReader(response.getBody().toString())));
+          new InputSource(new StringReader(response.getBody())));
       document.getDocumentElement().normalize();
       NodeList itemPageCnt = document.getElementsByTagName("itemPageCnt");
 
+      /* 페이지 변경하며 API 호출 */
       for (int i = 1; i <= Integer.parseInt(itemPageCnt.item(0).getTextContent()); i++) {
         uriComponents = UriComponentsBuilder
             .fromHttpUrl("http://openapitraffic.daejeon.go.kr/api/rest/busreginfo/getBusRegInfoAll")
@@ -105,22 +111,25 @@ public class DataApiService {
             .build(true);
         response = apiService.get(uriComponents.toUri(), setHttpHeaders(), String.class);
 
-        document = builder.parse(new InputSource(new StringReader(response.getBody().toString())));
+        document = builder.parse(new InputSource(new StringReader(response.getBody())));
         document.getDocumentElement().normalize();
         NodeList busType = document.getElementsByTagName("BUS_TYPE");
-        NodeList carRegNo = document.getElementsByTagName("CAR_REG_NO");
+        NodeList routeId = document.getElementsByTagName("ROUTE_CD");
+        NodeList busRegNo = document.getElementsByTagName("CAR_REG_NO");
         for (int j = 0; j < busType.getLength(); j++) {
-          BusInfo busInfoByLicense = busInfoRepository.findBusInfoByLicense(
-              carRegNo.item(j).getTextContent());
+          BusInfo busInfoByLicense = busInfoRepository.findBusInfoByBusRegNo(
+              busRegNo.item(j).getTextContent());
           if (busInfoByLicense != null) {
             continue;
           }
-          BusInfo busInfo = BusInfo.createBusInfo(carRegNo.item(j).getTextContent(),
-              busType.item(j).getTextContent());
+          BusInfo busInfo =
+              BusInfo.createBusInfo(
+                  busRegNo.item(j).getTextContent(),
+                  busType.item(j).getTextContent(),
+                  routeId.item(j).getTextContent());
           busInfoRepository.save(busInfo);
         }
       }
-
     } catch (ParserConfigurationException | IOException | SAXException e) {
       throw new RuntimeException(e);
     }
@@ -129,7 +138,6 @@ public class DataApiService {
 
   @Transactional(readOnly = false)
   public void saveRoute() {
-
     try {
       UriComponents uriComponents = UriComponentsBuilder
           .fromHttpUrl("http://apis.data.go.kr/1613000/BusRouteInfoInqireService/getRouteNoList")
@@ -149,153 +157,139 @@ public class DataApiService {
       JSONObject items = (JSONObject) body.get("items");
       JSONArray arrItems = (JSONArray) items.get("item");
 
-      for (int i = 0; i < arrItems.size(); i++) {
-        JSONObject item = (JSONObject) arrItems.get(i);
-        String startvehicletime;
-        if (item.get("startvehicletime") instanceof Long) {
-          startvehicletime = String.valueOf(item.get("startvehicletime"));
-        } else {
-          startvehicletime = (String) item.get("startvehicletime");
+      for (Object arrItem : arrItems) {
+        JSONObject item = (JSONObject) arrItem;
+
+        String routeType = (String) item.get("routetp");
+        String busNo = item.get("routeno").toString();
+        if (routeType.equals("첨단버스") || routeType.equals("급행버스") || routeType.equals("마을버스")) {
+          busNo = routeType.substring(0, 2) + busNo;
         }
         BusRouteInfo busRouteInfo = BusRouteInfo.createBusRouteInfo(
-            (String) item.get("routeid"),
-            String.valueOf(item.get("routeno")),
-            (String) item.get("routetp"),
-            startvehicletime,
-            (String) item.get("startnodenm")
-        );
+            busNo, ((String) item.get("routeid")).substring(3),
+            routeType);
 
         busRouteInfoRepository.save(busRouteInfo);
 
       }
 
     } catch (ParseException e) {
-      throw new RuntimeException(e);
+      throw new CustomException(ErrorCode.JSON_PARSE_IMPOSSIBLE);
+
     }
 
   }
 
   @Transactional(readOnly = false)
-  public void saveBusStop() {
-    List<BusRouteInfo> busRouteInfoList = busRouteInfoRepository.findAll();
-    System.out.println(busRouteInfoList.size());
+  public void saveDetailRoute() {
     try {
-
-      for (BusRouteInfo i : busRouteInfoList) {
-        UriComponents uriComponents = UriComponentsBuilder
-            .fromHttpUrl(
-                "http://openapitraffic.daejeon.go.kr/api/rest/busRouteInfo/getStaionByRoute")
-            .queryParam("serviceKey", routeKey)
-            .queryParam("busRouteId", i.getRouteNo().substring(3))
-            .build(true);
-        System.out.println(uriComponents.toUri());
-        ResponseEntity<String> response = apiService.get(uriComponents.toUri(), setHttpHeaders(),
-            String.class);
-
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-
-        Document document = builder.parse(
-            new InputSource(new StringReader(response.getBody().toString())));
-        document.getDocumentElement().normalize();
-        NodeList itemList = document.getElementsByTagName("itemList");
-        NodeList busStopName = document.getElementsByTagName("BUSSTOP_NM");
-        NodeList busStopSeq = document.getElementsByTagName("BUSSTOP_SEQ");
-        NodeList busStopType = document.getElementsByTagName("BUSSTOP_TP");
-        NodeList busStopNo = document.getElementsByTagName("BUS_NODE_ID");
-        NodeList busStopArsNo = document.getElementsByTagName("BUS_STOP_ID");
-        NodeList busStopLat = document.getElementsByTagName("GPS_LATI");
-        NodeList busStopLong = document.getElementsByTagName("GPS_LONG");
-
-        int max = 0;
-        for (int j = 0; j < itemList.getLength(); j++) {
-          String str;
-          int num = 0;
-          if (!Objects.equals(str = busStopType.item(j).getTextContent(), " ")) {
-            num = Integer.parseInt(str);
-          }
-          max = Math.max(max, num);
-          BusStopInfo busStopInfo = BusStopInfo.createBusStopInfo(
-              busStopName.item(j).getTextContent(),
-              busStopSeq.item(j).getTextContent(),
-              String.valueOf(max),
-              busStopNo.item(j).getTextContent(),
-              busStopArsNo.item(j).getTextContent(),
-              i.getRouteNo().substring(3),
-              i.getBusNo(),
-              busStopLat.item(j).getTextContent(),
-              busStopLong.item(j).getTextContent());
-          busStopRepository.save(busStopInfo);
-          if (max == 2) {
-            max++;
-          }
-          busRouteInfoRepository.getReferenceById(i.getId()).getBusStopInfo().add(busStopInfo);
+      List<BusRouteInfo> busRouteInfos = busRouteInfoRepository.findAll();
+      for (BusRouteInfo busRouteInfo : busRouteInfos) {
+        BusRouteInfo info = busRouteInfoRepository.findBusRouteInfoByPublicBusId(
+            busRouteInfo.getPublicBusId());
+        if (info.getBusId() != null) {
+          continue;
         }
-        break;
+
+        String purpose = busRouteInfo.getPurpose();
+        String busNo = busRouteInfo.getBusNo();
+        if (purpose.equals("급행버스") || purpose.equals("마을버스")) {
+          busNo = busNo.substring(2);
+        }
+
+        /* 계룡 버스 확인 */
+        int CID = 3000;
+        if (info.getPublicBusId().substring(0, 4).equals("6969")) {
+          CID = 3010;
+        }
+
+        URI uri = UriComponentsBuilder
+            .fromHttpUrl("https://api.odsay.com/v1/api/searchBusLane")
+            .queryParam("apiKey", URLEncoder.encode(odSayKey, StandardCharsets.UTF_8))
+            .queryParam("lang", 0)
+            .queryParam("busNo",
+                URLEncoder.encode(busNo, StandardCharsets.UTF_8))
+            .queryParam("CID", CID)
+            .build(true).toUri();
+
+        ResponseEntity<String> response = apiService.get(uri, setHttpHeaders(), String.class);
+
+        JSONParser parser = new JSONParser();
+        JSONObject object = (JSONObject) parser.parse(response.getBody());
+        JSONObject result = (JSONObject) object.get("result");
+        JSONArray lanes = (JSONArray) result.get("lane");
+        for (int j = 0; j < lanes.size(); j++) {
+          JSONObject lane = (JSONObject) ((JSONArray) result.get("lane")).get(j);
+          String lbId = ((String) lane.get("localBusID"));
+          log.info("localBusId = {}", lbId);
+
+          if (lbId.equals("0")) {
+            continue;
+          }
+
+          BusRouteInfo routeInfo = busRouteInfoRepository.findBusRouteInfoByPublicBusId(
+              ((String) lane.get("localBusID")).substring(3));
+
+          routeInfo.updateBusRouteInfo(
+              lane.get("busID").toString(),
+              lane.get("busStartPoint").toString(),
+              lane.get("busEndPoint").toString(),
+              lane.get("busFirstTime").toString(),
+              lane.get("busLastTime").toString());
+        }
       }
-
-    } catch (ParserConfigurationException | IOException | SAXException e) {
-      throw new RuntimeException(e);
+    } catch (ParseException e) {
+      throw new CustomException(ErrorCode.JSON_PARSE_IMPOSSIBLE);
     }
-
   }
 
-  @Transactional(readOnly = true)
-  public BusesCurLocation findBusesOnRouteName(String routeName, String direction) {
+  @Transactional(readOnly = false)
+  public void saveStopInfo() {
+    List<BusRouteInfo> busRouteInfos = busRouteInfoRepository.findAll();
+    for (BusRouteInfo busRouteInfo : busRouteInfos) {
+      String busId = busRouteInfo.getBusId();
+      String busNo = busRouteInfo.getBusNo();
+      URI uri;
+      uri = UriComponentsBuilder
+          .fromHttpUrl("https://api.odsay.com/v1/api/busLaneDetail")
+          .queryParam("apiKey", URLEncoder.encode(odSayKey, StandardCharsets.UTF_8))
+          .queryParam("lang", 0)
+          .queryParam("busID", busId)
+          .build(true).toUri();
 
-    try {
+      ResponseEntity<String> response = apiService.get(uri, setHttpHeaders(), String.class);
+      try {
+        JSONParser parser = new JSONParser();
+        JSONObject object = (JSONObject) parser.parse(response.getBody());
+        JSONObject result = (JSONObject) object.get("result");
+        JSONArray stations = (JSONArray) result.get("station");
 
-      UriComponents uriComponents = UriComponentsBuilder
-          .fromHttpUrl("http://openapitraffic.daejeon.go.kr/api/rest/busposinfo/getBusPosByRtid")
-          .queryParam("serviceKey", routeKey)
-          .queryParam("busRouteId", routeName)
-          .build(true);
-
-      ResponseEntity<String> response = apiService.get(uriComponents.toUri(), setHttpHeaders(),
-          String.class);
-
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      DocumentBuilder builder = factory.newDocumentBuilder();
-
-      Document document = builder.parse(
-          new InputSource(new StringReader(response.getBody().toString())));
-      document.getDocumentElement().normalize();
-      NodeList itemList = document.getElementsByTagName("itemList");
-      NodeList busNodeId = document.getElementsByTagName("BUS_NODE_ID");
-      NodeList dir = document.getElementsByTagName("DIR");
-      NodeList plateNo = document.getElementsByTagName("PLATE_NO");
-
-      List<BusesCurLocationCommand> list = new ArrayList<>();
-      for (int i = 0; i < itemList.getLength(); i++) {
-        BusesCurLocationCommand command = BusesCurLocationCommand.builder()
-            .busNodeId(busNodeId.item(i).getTextContent())
-            .dir(dir.item(i).getTextContent())
-            .license(plateNo.item(i).getTextContent())
-            .build();
-
-        if (!direction.equals(command.getDir())) {
-          continue;
+        for (Object o : stations) {
+          JSONObject station = (JSONObject) o;
+          String arsId = station.get("arsID") == null ? "0" : station.get("arsID").toString();
+          BusStop busInfo = BusStop.createBusInfo(
+              busId, busNo,
+              station.get("stationID").toString(),
+              station.get("stationName").toString(),
+              station.get("stationDistance").toString(),
+              station.get("stationDirection").toString(),
+              arsSplit(arsId),
+              station.get("localStationID").toString(),
+              station.get("x").toString(),
+              station.get("y").toString()
+          );
+          busStopRepository.save(busInfo);
         }
-        if (busInfoRepository.findBusInfoByLicense(command.getLicense()) == null) {
-          continue;
-        }
-        list.add(command);
+      } catch (ParseException e) {
+        throw new CustomException(ErrorCode.JSON_PARSE_IMPOSSIBLE);
       }
-
-      BusesCurLocation busesCurLocation = BusesCurLocation.builder()
-          .list(list)
-          .build();
-
-      return busesCurLocation;
-    } catch (ParserConfigurationException | IOException | SAXException e) {
-      throw new CustomException(ErrorCode.NO_AVAILABLE_API);
     }
-
   }
 
   @Transactional(readOnly = false)
   public void saveSubway() {
-    Workbook workbook = getSheets();
+    String fileName = "metroTimeTable.xls";
+    Workbook workbook = getSheets(fileName);
     int metroNo = 0;
     for (int idx = 0; idx < 4; idx++) {
       // 파일 내 idx 번째 시트
@@ -320,17 +314,17 @@ public class DataApiService {
             String.valueOf((int) metroNoRow.getCell(c).getNumericCellValue()),
             startNameRow.getCell(c).getStringCellValue(),
             endNameRow.getCell(c).getStringCellValue(),
-            idx < 2 ? true : false
+            idx < 2
         );
         metroInfoRepository.save(metroInfo);
-
         for (int r = 5; r < 27; r++) {
-          String arrTime = (String) checkCell(workSheet.getRow(r).getCell(c));
-          if (arrTime == null) {
+          Object o = checkCell(workSheet.getRow(r).getCell(c));
+          System.out.println(o);
+          if (o == null || o.equals("") || o.equals("false")) {
             continue;
           }
           StationStopInfo stationStopInfo = StationStopInfo.createStationStopInfo(
-              r - 4, metroNo + c - 1, arrTime);
+              r - 4, metroNo + c - 1, o.toString());
           stationStopInfoRepository.save(stationStopInfo);
         }
       }
@@ -339,19 +333,16 @@ public class DataApiService {
     }
   }
 
-  private Workbook getSheets() {
-    String filePath = "C:/Users/Jaesin/Downloads/metroTimeTable.xls";
+  private Workbook getSheets(String fileName) {
+    String fileExtsn = FilenameUtils.getExtension(fileName); // 파일 Original 이름 불러오기 ex) 전문가.xlsx
 
-    String fileExtsn = FilenameUtils.getExtension(
-        filePath.substring(26)); // 파일 Original 이름 불러오기 ex) 전문가.xlsx
-
-    Workbook workbook = null;
+    Workbook workbook;
     try {
       // 엑셀 97 - 2003 까지는 HSSF(xls),  엑셀 2007 이상은 XSSF(xlsx)
       if (fileExtsn.equals("xls")) {
-        workbook = new HSSFWorkbook(new FileInputStream(filePath));
+        workbook = new HSSFWorkbook(getClass().getClassLoader().getResourceAsStream(fileName));
       } else {
-        workbook = new XSSFWorkbook(new FileInputStream(filePath));
+        workbook = new XSSFWorkbook(getClass().getClassLoader().getResourceAsStream(fileName));
       }
     } catch (IOException e) {
       throw new CustomException(ErrorCode.ABNORMAL_FILE_READ);
@@ -361,7 +352,7 @@ public class DataApiService {
 
   public Object checkCell(Cell cell) {
     SimpleDateFormat formatter = new SimpleDateFormat("hh:mm");
-    String value = "";
+    Object value;
     if (cell == null) {
       return null;
     } else {
@@ -372,7 +363,7 @@ public class DataApiService {
           break;
         case NUMERIC:
           if (HSSFDateUtil.isCellDateFormatted(cell)) { // 숫자- 날짜 타입이다.
-            value = formatter.format(cell.getDateCellValue());
+            return LocalTime.parse(formatter.format(cell.getDateCellValue()));
           } else {
             double numericCellValue = cell.getNumericCellValue();
             if (numericCellValue == Math.rint(numericCellValue)) {
@@ -396,8 +387,14 @@ public class DataApiService {
           break;
       }
     }
-
     return value;
   }
 
+  private static String arsSplit(String str) {
+    StringTokenizer st = new StringTokenizer(str, "-");
+    if (st.countTokens() <= 1) {
+      return str;
+    }
+    return st.nextToken() + st.nextToken();
+  }
 }

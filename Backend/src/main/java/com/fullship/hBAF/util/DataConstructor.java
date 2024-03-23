@@ -26,11 +26,13 @@ public class DataConstructor {
     public void dataConstructor() throws LineUndefinedException, IOException, ParserConfigurationException, SAXException, ParseException {
 //        dataApiService.saveBusInfo();
 //        dataApiService.saveRoute();
-//        dataApiService.saveBusStop();
+//        dataApiService.saveDetailRoute();
+//        dataApiService.saveStopInfo();
 //        dataApiService.saveSubway();
 //        H3.setH3Index();
 //        barrierFreeConstructor.saveBarrierFree();
 //        barrierFreeConstructor.saveElectricWheelchairExcel();
 //        barrierFreeConstructor.setBarrierfreeInfo();
     }
+
 }

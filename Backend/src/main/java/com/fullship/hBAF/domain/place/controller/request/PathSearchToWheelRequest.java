@@ -1,6 +1,5 @@
 package com.fullship.hBAF.domain.place.controller.request;
 
-import com.fullship.hBAF.global.api.response.TransitPathForm.Legs;
 import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
@@ -10,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.http.ResponseEntity;
 
 @Data
 @Builder
@@ -21,12 +19,12 @@ public class PathSearchToWheelRequest {
   private String endX;
   private String endY;
 
-  public static SearchPathToWheelCommand createForWheel(Legs legs) {
+  public static SearchPathToWheelCommand createForWheel(String[] startGeo, String[] endGeo) {
     return PathSearchToWheelRequest.builder()
-        .startX(legs.getStartLon())
-        .startY(legs.getStartLat())
-        .endX(legs.getEndLon())
-        .endY(legs.getEndLat())
+        .startX(startGeo[0])
+        .startY(startGeo[1])
+        .endX(endGeo[0])
+        .endY(endGeo[1])
         .build()
         .createForWheel();
   }
@@ -42,7 +40,7 @@ public class PathSearchToWheelRequest {
     }
   }
 
-  public Map createRequestBody() {
+  public Map<String, Object> createRequestBody() {
     Map<String, Object> map = new HashMap<>();
     map.put("startX", startX);
     map.put("startY", startY);

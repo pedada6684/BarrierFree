@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class SearchPathToTransitCommand {
+public class SearchPathToTrafficCommand {
 
   private URI uri;
   private Map<String, Object> requestBody;

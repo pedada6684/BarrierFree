@@ -11,6 +11,7 @@ import 'screen/map/map_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
+  dotenv.load();
   runApp(MyApp());
 }
 

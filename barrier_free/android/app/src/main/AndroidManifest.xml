@@ -8,7 +8,8 @@
     <application
         android:label="barrier_free"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true"> <!--http 프로토콜 예외 발생 조치-->
         <activity
             android:name=".MainActivity"
             android:exported="true"

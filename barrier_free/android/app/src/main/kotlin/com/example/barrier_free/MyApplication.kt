@@ -1,4 +1,5 @@
-package com.example.barrier_free
+package com.barrier_free
+
 import androidx.multidex.MultiDexApplication
 
 class MyApplication : MultiDexApplication(){

@@ -62,8 +62,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
-        def tmapApiKey = localProperties['TMAP_API_KEY']
-        buildConfigField "String", "TMAP_API_KEY", "\"${tmapApiKey}\""
+
 
     }
 
@@ -99,6 +98,5 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     // TMap SDK
-    implementation files('libs/com.skt.Tmap_1.75.jar')
     implementation 'com.android.support:multidex:2.0.1'
 }

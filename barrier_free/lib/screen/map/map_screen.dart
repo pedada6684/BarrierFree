@@ -171,6 +171,7 @@ class _MapScreenState extends State<MapScreen> {
                         kakaoMapKey: appKey!,
                         lat: position.latitude,
                         lng: position.longitude,
+                        markerImageURL: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
                         showZoomControl: false,
                         showMapTypeControl: false,
                       ),

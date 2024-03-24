@@ -1,5 +1,6 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/component/map_markers.dart';
+import 'package:barrier_free/component/mapsearch_result_list.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/services/location_service.dart';
 import 'package:flutter/material.dart';
@@ -78,6 +79,7 @@ class _MapResultScreenState extends State<MapResultScreen> {
                   kakaoMapKey: appKey!,
                   lat: currentPosition!.latitude,
                   lng: currentPosition!.longitude,
+                  markerImageURL: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
                   showZoomControl: false,
                   showMapTypeControl: false,
                   customScript: generateMarkerScript(widget.searchResults) +
@@ -93,7 +95,7 @@ class _MapResultScreenState extends State<MapResultScreen> {
                     topLeft: Radius.circular(30.0),
                   ),
                   minHeight: 72.0,
-                  maxHeight: MediaQuery.of(context).size.height,
+                  maxHeight: MediaQuery.of(context).size.height * 0.7,
                 ),
               ],
             ),
@@ -104,54 +106,7 @@ class _MapResultScreenState extends State<MapResultScreen> {
   }
 
   Widget _buildPanel() {
-    return ListView(
-      children: [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            '검색 결과',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 18.0,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        const SizedBox(
-          height: 8.0,
-        ),
-        ...widget.searchResults.map(
-          (result) {
-            String categoryName = result['category_name'];
-            List<String> categoryDetail = categoryName.split('>');
-            String categoryReal = categoryDetail.length > 1
-                ? categoryDetail[1].trim()
-                : categoryName;
-
-            return ListTile(
-              title: Text(
-                result['place_name'],
-                style: const TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(categoryReal),
-                  Text(result['road_address_name'] ?? '주소 정보 없음'),
-                  Text('${result['phone']}'),
-                ],
-              ),
-              onTap: () {
-                // 장소 이름 눌렀을 때 로직 구현하기
-              },
-            );
-          },
-        ),
-      ],
-    );
+    return MapSearchResultList(searchResults: widget.searchResults);
   }
 
   Widget _buildCollapsedPanel() {

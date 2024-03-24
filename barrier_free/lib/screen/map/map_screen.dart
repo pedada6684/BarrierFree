@@ -3,6 +3,7 @@ import 'package:barrier_free/component/facility_button.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/screen/search/mapresult_screen.dart';
 import 'package:barrier_free/services/location_service.dart';
+import 'package:barrier_free/services/place_service.dart';
 import 'package:barrier_free/services/search_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -58,14 +59,14 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // _loadPlaces() async {
-  //   try {
-  //     places = await PlaceService().fetchPlacesByCategory('화장실');
-  //     setState(() {});
-  //   } catch (e) {
-  //     print('=================장소 불러오다가 에러 발생함 $e=================}');
-  //   }
-  // }
+  _loadPlaces() async {
+    try {
+      places = await PlaceService().fetchPlacesByCategory('화장실');
+      setState(() {});
+    } catch (e) {
+      print('=================장소 불러오다가 에러 발생함 $e=================}');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +117,7 @@ class _MapScreenState extends State<MapScreen> {
             body: Column(
               children: [
                 Container(
-                  width: 400.0,
+                  width: MediaQuery.of(context).size.width * 0.8,
                   decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.all(Radius.circular(30.0)),

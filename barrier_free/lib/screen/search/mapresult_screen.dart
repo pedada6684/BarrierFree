@@ -1,5 +1,6 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/component/map_markers.dart';
+import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -54,9 +55,18 @@ class _MapResultScreenState extends State<MapResultScreen> {
   void _showModalBottomSheet() {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // 전체 화면으로 확장 가능
-      barrierColor: Colors.transparent, // 뒤에 화면 어두워지는거 수정, 백드롭 클릭 닫는 기능 비활성됨
+      isDismissible: true,
+      isScrollControlled: true,
+      // 전체 화면으로 확장 가능
+      barrierColor: Colors.transparent,
+      backgroundColor: Colors.white,
       builder: (BuildContext context) {
+        double statusBarHeight = MediaQuery.of(context).padding.top;
+        double appBarHeight = AppBar().preferredSize.height;
+        double maxHeight = 1.0 -
+            ((statusBarHeight + appBarHeight) /
+                MediaQuery.of(context).size.height);
+
         return Padding(
           padding: const EdgeInsets.all(8.0),
           child: DraggableScrollableSheet(
@@ -80,7 +90,7 @@ class _MapResultScreenState extends State<MapResultScreen> {
             },
             initialChildSize: 0.3,
             minChildSize: 0.3,
-            maxChildSize: 0.8,
+            maxChildSize: maxHeight,
           ),
         );
       },
@@ -108,12 +118,13 @@ class _MapResultScreenState extends State<MapResultScreen> {
               children: [
                 KakaoMapView(
                   width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
+                  height: MediaQuery.of(context).size.height-AppBar().preferredSize.height,
                   kakaoMapKey: appKey!,
                   lat: currentPosition!.latitude,
                   lng: currentPosition!.longitude,
-                  showZoomControl: true,
-                  customScript: generateMarkerScript(widget.searchResults),
+                  showZoomControl: false,
+                  showMapTypeControl: false,
+                  customScript: generateMarkerScript(widget.searchResults)+generateBoundsScript(widget.searchResults),
                 ),
                 _buildToggleButton(),
               ],
@@ -123,50 +134,69 @@ class _MapResultScreenState extends State<MapResultScreen> {
       ),
     );
   }
+
   //
   Widget _buildToggleButton() {
+    double pWidth = MediaQuery.of(context).size.width * 0.32;
     return Positioned(
       bottom: 20,
-      child: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              barrierColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
-              ),
-              builder: (context) => _buildBottomSheet());
-        },
-        child: Icon(Icons.list),
+      //0으로 했더니 화면 꽉채워서 양옆으로 공간주기
+      left: pWidth,
+      right: pWidth,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 10), // 좌우, 상하 패딩 조절
+        decoration: BoxDecoration(
+          color: Colors.white, // 배경색
+          borderRadius: BorderRadius.circular(30), // 모서리 둥글게
+          boxShadow: [
+            // 그림자 효과
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: InkWell(
+          onTap: () => _showModalBottomSheet(),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min, // Row를 최소 크기로 설정
+            children: [
+              Icon(Icons.list, color: mainOrange), // 아이콘
+              SizedBox(width: 10), // 아이콘과 텍스트 사이의 공간
+              Text('목록보기', style: TextStyle(fontSize: 16)), // 텍스트
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildBottomSheet() {
-    return DraggableScrollableSheet(
-      expand: false,
-      builder: (BuildContext context, ScrollController scrollController) {
-        return Container(
-          padding: const EdgeInsets.all(8.0),
-          child: ListView.separated(
-            controller: scrollController,
-            itemCount: widget.searchResults.length,
-            separatorBuilder: (context, index) => Divider(height: 1),
-            itemBuilder: (BuildContext context, int index) {
-              return ListTile(
-                title: Text(widget.searchResults[index]['place_name']),
-                onTap: () {
-                  // 마커로 이동
-                },
-              );
-            },
-          ),
-        );
-      },
-      initialChildSize: 0.3,
-      minChildSize: 0.3,
-      maxChildSize: 0.8,
-    );
-  }
+//   Widget _buildBottomSheet() {
+//     return DraggableScrollableSheet(
+//       expand: false,
+//       builder: (BuildContext context, ScrollController scrollController) {
+//         return Container(
+//           padding: const EdgeInsets.all(8.0),
+//           child: ListView.separated(
+//             controller: scrollController,
+//             itemCount: widget.searchResults.length,
+//             separatorBuilder: (context, index) => Divider(height: 1),
+//             itemBuilder: (BuildContext context, int index) {
+//               return ListTile(
+//                 title: Text(widget.searchResults[index]['place_name']),
+//                 onTap: () {
+//                   // 마커로 이동
+//                 },
+//               );
+//             },
+//           ),
+//         );
+//       },
+//       initialChildSize: 0.3,
+//       minChildSize: 0.3,
+//       maxChildSize: 1.0,
+//     );
+//   }
 }

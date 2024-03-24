@@ -44,7 +44,8 @@ class _MapScreenState extends State<MapScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MapResultScreen(searchResults: result, keyWord: _originController.text),
+            builder: (context) => MapResultScreen(
+                searchResults: result, keyWord: _originController.text),
           ),
         );
         print(
@@ -56,6 +57,7 @@ class _MapScreenState extends State<MapScreen> {
       }
     }
   }
+
   // _loadPlaces() async {
   //   try {
   //     places = await PlaceService().fetchPlacesByCategory('화장실');
@@ -168,7 +170,8 @@ class _MapScreenState extends State<MapScreen> {
                         kakaoMapKey: appKey!,
                         lat: position.latitude,
                         lng: position.longitude,
-                        showZoomControl: true,
+                        showZoomControl: false,
+                        showMapTypeControl: false,
                       ),
                       Positioned(
                         top: 8.0, // 위치 조정 가능

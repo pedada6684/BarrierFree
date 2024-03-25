@@ -1,5 +1,6 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/component/facility_button.dart';
+import 'package:barrier_free/component/map_markers.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/screen/search/mapresult_screen.dart';
 import 'package:barrier_free/services/location_service.dart';
@@ -20,15 +21,22 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   late TextEditingController _originController = TextEditingController();
-  late List<dynamic> places = [];
+  late List<dynamic> allPlaces = [];
+  late List<dynamic> filteredPlaces = [];
   late List<dynamic> searchResults = [];
   late Position _currentPosition;
+
+  String customScript = '';
 
   @override
   void initState() {
     super.initState();
     _originController = TextEditingController();
+    //초기화
+    allPlaces = [];
+    filteredPlaces = [];
     _initializeLocation();
+    _loadPlaces();
   }
 
   void _initializeLocation() async {
@@ -59,13 +67,20 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  _loadPlaces() async {
-    try {
-      places = await PlaceService().fetchPlacesByCategory('화장실');
-      setState(() {});
-    } catch (e) {
-      print('=================장소 불러오다가 에러 발생함 $e=================}');
-    }
+  void _loadPlaces() async {
+    //전체 배리어프리 장소 리스트
+    allPlaces = await PlaceService().fetchPlacesByCategory('전체');
+    setState(() {});
+  }
+
+  void _onCategoryFiltered(String category) {
+    //선택한 버튼 카테고리로 장소 필터링
+    List<dynamic> filteredPlaces =
+        allPlaces.where((place) => place['category'] == category).toList();
+
+    print(filteredPlaces);
+
+    //필터링 장소로 업데이트
   }
 
   @override
@@ -77,7 +92,7 @@ class _MapScreenState extends State<MapScreen> {
           Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Column(
+          return const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               //로딩화면 맵 불러올때까지 로딩
@@ -104,10 +119,10 @@ class _MapScreenState extends State<MapScreen> {
         } else {
           final position = snapshot.data!;
           if (appKey == null) {
-            return Text('환경 변수에서 앱 키를 불러올 수 없습니다.');
+            return const Text('환경 변수에서 앱 키를 불러올 수 없습니다.');
           }
           return Scaffold(
-            appBar: CustomAppBar(
+            appBar: const CustomAppBar(
               title: '베프.',
               titleStyle: TextStyle(
                 fontFamily: 'LogoFont',
@@ -120,20 +135,21 @@ class _MapScreenState extends State<MapScreen> {
                   width: MediaQuery.of(context).size.width * 0.8,
                   decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(30.0)),
                       border: Border.all(color: mainOrange, width: 2.5),
                       boxShadow: [
                         BoxShadow(
                             color: Colors.grey.withOpacity(0.5),
                             spreadRadius: 2,
                             blurRadius: 4,
-                            offset: Offset(3, 3))
+                            offset: const Offset(3, 3))
                       ]),
                   child: Row(
                     children: [
                       Expanded(
                         child: TextField(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             contentPadding:
                                 EdgeInsets.symmetric(horizontal: 16.0),
                             hintText: '검색어를 입력해주세요.',
@@ -151,7 +167,7 @@ class _MapScreenState extends State<MapScreen> {
                       ),
                       IconButton(
                         onPressed: _search,
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.search,
                           color: mainOrange,
                         ),
@@ -159,7 +175,7 @@ class _MapScreenState extends State<MapScreen> {
                     ],
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 16.0,
                 ),
                 Expanded(
@@ -171,7 +187,8 @@ class _MapScreenState extends State<MapScreen> {
                         kakaoMapKey: appKey!,
                         lat: position.latitude,
                         lng: position.longitude,
-                        markerImageURL: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                        markerImageURL:
+                            'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
                         showZoomControl: false,
                         showMapTypeControl: false,
                       ),
@@ -180,7 +197,7 @@ class _MapScreenState extends State<MapScreen> {
                         left: 0,
                         right: 0,
                         child: CustomFacilityButton(
-                          onFeatureSelected: (String) {},
+                          onFeatureSelected: _onCategoryFiltered,
                         ),
                       ),
                     ],

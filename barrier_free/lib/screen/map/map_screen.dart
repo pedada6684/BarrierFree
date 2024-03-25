@@ -74,13 +74,29 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _onCategoryFiltered(String category) {
-    //선택한 버튼 카테고리로 장소 필터링
+    // 선택한 버튼 카테고리로 장소 필터링
     List<dynamic> filteredPlaces =
-        allPlaces.where((place) => place['category'] == category).toList();
+    allPlaces.where((place) => place['category'] == category).toList();
 
-    print(filteredPlaces);
+    // JavaScript 코드를 생성하여 마커를 업데이트
+    String script = """
+    var markers = []; // 마커 배열 초기화
+    var bounds = new kakao.maps.LatLngBounds(); // 지도 범위 객체 생성
+    
+    ${filteredPlaces.map((place) => '''
+    var position = new kakao.maps.LatLng(${place['lat']}, ${place['lon']}); // 위치 객체 생성
+    var marker = new kakao.maps.Marker({ position: position }); // 마커 객체 생성
+    marker.setMap(map); // 마커를 지도에 표시
+    markers.push(marker); // 마커 배열에 추가
+    bounds.extend(position); // 지도 범위를 마커 위치로 확장
+    ''').join('')}
+    
+    map.setBounds(bounds); // 지도 범위를 마커들이 포함되도록 조정
+  """;
 
-    //필터링 장소로 업데이트
+    setState(() {
+      customScript = script; // 최종적으로 생성된 스크립트를 상태에 저장
+    });
   }
 
   @override
@@ -191,6 +207,7 @@ class _MapScreenState extends State<MapScreen> {
                             'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
                         showZoomControl: false,
                         showMapTypeControl: false,
+                        customScript: customScript,
                       ),
                       Positioned(
                         top: 8.0, // 위치 조정 가능

@@ -188,6 +188,8 @@ class _MapScreenState extends State<MapScreen> {
                           Icons.search,
                           color: mainOrange,
                         ),
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
                       ),
                     ],
                   ),

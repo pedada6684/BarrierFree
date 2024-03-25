@@ -28,6 +28,7 @@ out/
 application-secret.yml
 application.yml
 metroTimeTable.xls
+local.properties
 
 ### NetBeans ###
 /nbproject/private/

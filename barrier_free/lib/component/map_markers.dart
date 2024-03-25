@@ -29,17 +29,17 @@ String generateMarkerScript(List<dynamic> searchResults) {
   return markerScript;
 }
 
-// ...
+String generateBoundsScript(List<dynamic> searchResults) {
+  String pointsScript = searchResults.map((result) {
+    return "new kakao.maps.LatLng(${result['y']}, ${result['x']})";
+  }).join(", ");
 
-// KakaoMapView(
-// width: MediaQuery.of(context).size.width,
-// height: 400,
-// kakaoMapKey: kakaoMapKey,
-// lat: 33.450701,
-// lng: 126.570667,
-// customScript: generateMarkerScript(searchResults),
-// onTapMarker: (message) {
-// ScaffoldMessenger.of(context)
-//     .showSnackBar(SnackBar(content: Text(message.message)));
-// },
-// );
+  return """
+    var bounds = new kakao.maps.LatLngBounds();
+    var points = [$pointsScript];
+    for (var i = 0; i < points.length; i++) {
+      bounds.extend(points[i]);
+    }
+    map.setBounds(bounds);
+  """;
+}

@@ -15,11 +15,15 @@ class CustomFacilityButton extends StatelessWidget {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: <Widget>[
+          //휠체어 충전소, 화장실, 음식점, 병원, 문화, 편의, 숙박
           _buildFacilityButton(context, '즐겨찾기', onFeatureSelected),
           _buildFacilityButton(context, '휠체어 충전소', onFeatureSelected),
           _buildFacilityButton(context, '화장실', onFeatureSelected),
           _buildFacilityButton(context, '음식점', onFeatureSelected),
-          _buildFacilityButton(context, '카페', onFeatureSelected),
+          _buildFacilityButton(context, '병원', onFeatureSelected),
+          _buildFacilityButton(context, '문화', onFeatureSelected),
+          _buildFacilityButton(context, '편의', onFeatureSelected),
+          _buildFacilityButton(context, '숙박', onFeatureSelected),
         ],
       ),
     );

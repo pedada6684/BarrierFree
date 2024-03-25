@@ -1,9 +1,7 @@
 import 'package:barrier_free/component/appBar.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/screen/place/placedetail_screen.dart';
+import 'package:flutter/material.dart';
 
 class PlaceItem {
   final String title;
@@ -29,14 +27,13 @@ class _SearchScreenState extends State<SearchScreen> {
     PlaceItem(
       title: '삼성화재 유성연수원',
       address: '대전광역시 유성구',
-      builder: (context) => PlaceDetailScreen(),
+      builder: (context) => PlaceDetailScreen(placeDetail: {}, placeCategory: '',),
     ),
     PlaceItem(
       title: '하이테이블',
       address: '대전광역시 유성구',
-      builder: (context) => PlaceDetailScreen(),
+      builder: (context) => PlaceDetailScreen(placeDetail: {}, placeCategory: '',),
     ),
-    // 추가 항목들을 이곳에 추가할 수 있습니다.
   ];
 
   // 위치 정보를 입력받는 텍스트 필드 컨트롤러

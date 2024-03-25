@@ -1,10 +1,16 @@
 import 'package:barrier_free/component/appBar.dart';
-import 'package:flutter/material.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:kakaomap_webview/kakaomap_webview.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
-  const PlaceDetailScreen({super.key});
+  final Map<String, dynamic> placeDetail;
+  final String placeCategory;
+
+  const PlaceDetailScreen(
+      {super.key, required this.placeDetail, required this.placeCategory});
 
   @override
   State<PlaceDetailScreen> createState() => _PlaceDetailScreenState();
@@ -15,11 +21,10 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    GlobalKey mykey = GlobalKey();
+    final appKey = dotenv.env['APP_KEY'];
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('장소 상세'),
-      ),
+      appBar: CustomAppBar(title: '장소 상세'),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 30.0),
@@ -29,7 +34,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               Row(
                 children: [
                   Text(
-                    '삼성화재 유성연수원',
+                    widget.placeDetail['place_name'],
                     style: TextStyle(
                       fontSize: 20.0,
                       fontWeight: FontWeight.bold,
@@ -38,7 +43,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   ),
                   SizedBox(width: 10.0), // 공백
                   Text(
-                    '편의 시설',
+                    widget.placeCategory,
                     style: TextStyle(
                       fontSize: 12.0,
                       color: mainGray,
@@ -91,16 +96,18 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               SizedBox(height: 20.0),
               // 지도 위젯
               Container(
-                width: MediaQuery.of(context).size.width*0.9,
-                height: MediaQuery.of(context).size.width*0.9,
-                child: AndroidView(
-                  key: mykey,
-                  viewType: 'showTMap',
-                  creationParams: {
-                    'longitude': 127.2981911,
-                    'latitude': 36.3553177,
-                  },
-                  creationParamsCodec: StandardMessageCodec(),
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: MediaQuery.of(context).size.width * 0.9,
+                child: KakaoMapView(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: MediaQuery.of(context).size.height * 0.8,
+                  kakaoMapKey: appKey!,
+                  lat: double.tryParse(widget.placeDetail['y'].toString()) ??
+                      0.0,
+                  lng: double.tryParse(widget.placeDetail['x'].toString()) ??
+                      0.0,
+                  showZoomControl: false,
+                  showMapTypeControl: false,
                 ),
               ),
               SizedBox(height: 20.0),
@@ -113,7 +120,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   ),
                   SizedBox(width: 5.0),
                   Text(
-                    '대전 서구 문정로',
+                    widget.placeDetail['road_address_name'],
                     style: TextStyle(
                       fontSize: 14.0,
                       color: mainGray,
@@ -125,13 +132,13 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               Row(
                 children: [
                   Icon(
-                    Icons.access_time,
+                    Icons.web_asset_outlined,
                     color: mainGray,
                     size: 16.0,
                   ),
                   SizedBox(width: 5.0),
                   Text(
-                    '이용시간',
+                    widget.placeDetail['place_url'],
                     style: TextStyle(
                       fontSize: 14.0,
                       color: mainGray,
@@ -149,7 +156,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   ),
                   SizedBox(width: 5.0),
                   Text(
-                    '1588-1588',
+                    widget.placeDetail['phone'],
                     style: TextStyle(
                       fontSize: 14.0,
                       color: mainGray,
@@ -219,11 +226,12 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               SizedBox(height: 20.0),
               Row(
                 children: [
-                  CircleAvatar(
-                    // 사용자 프로필 이미지
-                    backgroundImage: AssetImage('assets/images/profile_image.png'),
-                    radius: 20, // 원의 반지름
-                  ),
+                  // CircleAvatar(
+                  //   // 사용자 프로필 이미지
+                  //   backgroundImage:
+                  //       AssetImage('assets/images/profile_image.png'),
+                  //   radius: 20, // 원의 반지름
+                  // ),
                   SizedBox(width: 10), // 간격
                   Text(
                     '민지',
@@ -251,10 +259,13 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         ElevatedButton(
                           onPressed: () {},
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xffffffff), // 배경 투명
-                            side: BorderSide(color: mainOrange, width: 1), // 테두리 오렌지
+                            backgroundColor: Color(0xffffffff),
+                            // 배경 투명
+                            side: BorderSide(color: mainOrange, width: 1),
+                            // 테두리 오렌지
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10), // 테두리 반경 10px
+                              borderRadius:
+                                  BorderRadius.circular(10), // 테두리 반경 10px
                             ),
                           ),
                           child: Row(
@@ -268,12 +279,14 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                 ),
                               ),
                               SizedBox(width: 10),
-                              Icon(Icons.thumb_up_alt_outlined, color: mainOrange), // 아이콘
+                              Icon(Icons.thumb_up_alt_outlined,
+                                  color: mainOrange), // 아이콘
                             ],
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10.0, horizontal: 5.0),
                           child: Text(
                             '엘레베이터가 있긴 한데, 휠체어가 들어가지 않네요.',
                             style: TextStyle(

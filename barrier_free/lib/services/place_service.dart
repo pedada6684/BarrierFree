@@ -7,13 +7,13 @@ class PlaceService {
   static const String _baseUrl = 'https://hbaf.site/api/place';
 
   Future<List<dynamic>> fetchPlacesByCategory(String category) async {
-    final response = await http.get(Uri.parse('$_baseUrl/list?category=화장실'));
+    final response = await http.get(Uri.parse('$_baseUrl/list?category=전체'));
 
     if (response.statusCode == 200) {
       final String decodedBody =
           utf8.decode(response.bodyBytes); //Map<String, dynamic>형태로 온다 data 형태로 return해줘야함
       final Map<String, dynamic> parsedJson = json.decode(decodedBody);
-      print(decodedBody);
+      // print(decodedBody);
       print(parsedJson);
       return parsedJson['data'];
     } else {

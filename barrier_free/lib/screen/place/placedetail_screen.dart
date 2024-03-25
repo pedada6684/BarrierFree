@@ -19,8 +19,11 @@ class PlaceDetailScreen extends StatefulWidget {
 class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   static const platform = MethodChannel('com.barrier_free/tmap');
 
+  bool isStarFilled = false;
+
   @override
   Widget build(BuildContext context) {
+
     final appKey = dotenv.env['APP_KEY'];
 
     return Scaffold(
@@ -89,6 +92,25 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
+                    ),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isStarFilled = !isStarFilled; // 상태를 반전시킴 (토글)
+                      });
+                    },
+                    icon: isStarFilled
+                        ? Icon(
+                      Icons.star,
+                      color: mainOrange,
+                      size: 30.0,
+                    )
+                        : Icon(
+                      Icons.star_border,
+                      color: mainOrange,
+                      size: 30.0,
                     ),
                   ),
                 ],

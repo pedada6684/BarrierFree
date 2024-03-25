@@ -1,23 +1,22 @@
 package com.fullship.hBAF.domain.member.controller;
 
+import com.fullship.hBAF.domain.member.controller.request.NaverLoginRequest;
+import com.fullship.hBAF.domain.member.controller.request.UpdateProfileImgRequest;
+import com.fullship.hBAF.domain.member.controller.response.UpdateProfileResponse;
 import com.fullship.hBAF.domain.member.service.MemberService;
+import com.fullship.hBAF.global.auth.jwt.AuthToken;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
-@Controller
+@Slf4j
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/member")
 @Tag(name = "Member 컨트롤러", description = "사용자 API 입니다.")
@@ -25,32 +24,23 @@ public class MemberController {
 
   private final MemberService memberService;
 
-  @Value("${oauth.naver.url.base}")
-  String baseUrl;
-  @Value("${oauth.naver.url.callback}")
-  String redirectUrl;
-  @Value("${oauth.naver.client-id}")
-  String clientId;
+  @PostMapping("/naverLogin")
+  public ResponseEntity<AuthToken> naverLogin(NaverLoginRequest request){
+    log.info("NaverLoginRequest: " + request);
+    AuthToken authToken = memberService.login(request.toCommand());
 
-
-  @GetMapping("/test")
-  public String test(Model model){
-    return "test1";
+    return new ResponseEntity<>(authToken, HttpStatus.OK);
   }
 
-  @GetMapping("/login")
-  public void test(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String url = getNaverAuthorizeUrl("authorize");
-    response.sendRedirect(url);
-  }
-  public String getNaverAuthorizeUrl(String type) throws UnsupportedEncodingException {
-    UriComponents uriComponents = UriComponentsBuilder
-            .fromUriString(baseUrl + "/" + type)
-            .queryParam("response_type", "code")
-            .queryParam("client_id", clientId)
-            .queryParam("redirect_uri", URLEncoder.encode(redirectUrl, "UTF-8"))
-            .queryParam("state", URLEncoder.encode("1234", "UTF-8"))
+  @PostMapping("/profile")
+  public ResponseEntity<UpdateProfileResponse> updateProfileImg(@ModelAttribute UpdateProfileImgRequest request){
+    log.info("UpdateProfileRequest: " + request);
+    //유저 아이디 검증 메서드 하나 추가해야함 with jwt
+    String profileImgUrl = memberService.updateProfileImg(request.toCommand());
+
+    UpdateProfileResponse response = UpdateProfileResponse.builder()
+            .profileImgUrl(profileImgUrl)
             .build();
-    return uriComponents.toString();
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }

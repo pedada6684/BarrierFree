@@ -1,9 +1,11 @@
 import 'package:barrier_free/component/bottomBar.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/directions/directions_screen.dart';
 import 'package:barrier_free/screen/mypage/mypage_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'screen/map/map_screen.dart';
@@ -15,7 +17,12 @@ void main() async {
   dotenv.load();
 
   await LocationService().getCurrentPosition();
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create:(context)=>UserProvider(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {

@@ -1,5 +1,6 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/screen/login/login_screen.dart';
 import 'package:barrier_free/screen/mypage/myplace_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -15,15 +16,16 @@ class MyPageScreen extends StatefulWidget {
 
 class _MyPageScreenState extends State<MyPageScreen> {
   final Map<String, Widget Function(BuildContext)> menuItems = {
-    '내 장소': (context) => MyPlaceScreen(),
-    '즐겨찾기': (context) => MyFavoriteScreen(),
-    '게시글': (context) => MyReviewScreen(),
+    '내 장소': (context) => const MyPlaceScreen(),
+    '즐겨찾기': (context) => const MyFavoriteScreen(),
+    '게시글': (context) => const MyReviewScreen(),
+    '로그인': (context) => const LoginScreen(),
   };
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: '마이페이지'),
+      appBar: const CustomAppBar(title: '마이페이지'),
       body: ListView(
         children: [
           _buildTopSection(),
@@ -48,12 +50,12 @@ class _MyPageScreenState extends State<MyPageScreen> {
   }
 
   Widget _buildUserInfo() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
+    return const Padding(
+      padding: EdgeInsets.all(8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: const [
+        children: [
           //유저 닉네임마다 달라질 것
           Text(
             '배프 님,\n환영합니다.',

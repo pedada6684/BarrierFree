@@ -1,9 +1,7 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/component/facility_button.dart';
-import 'package:barrier_free/component/map_markers.dart';
 import 'package:barrier_free/const/color.dart';
-import 'package:barrier_free/screen/search/mapresult_screen.dart';
-import 'package:barrier_free/screen/search/search_screen.dart';
+import 'package:barrier_free/screen/map/mapresult_screen.dart';
 import 'package:barrier_free/services/location_service.dart';
 import 'package:barrier_free/services/place_service.dart';
 import 'package:barrier_free/services/search_service.dart';
@@ -191,8 +189,6 @@ class _MapScreenState extends State<MapScreen> {
                           Icons.search,
                           color: mainOrange,
                         ),
-                        splashColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
                       ),
                     ],
                   ),

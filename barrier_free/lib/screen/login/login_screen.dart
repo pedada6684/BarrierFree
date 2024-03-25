@@ -1,8 +1,9 @@
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/login/login_platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
-import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,6 +28,9 @@ class _LoginScreenState extends State<LoginScreen> {
         //네이버로 로그인
         _loginPlatform = LoginPlatform.naver;
       });
+
+      Provider.of<UserProvider>(context, listen: false)
+          .signIn(LoginPlatform.naver);
     }
   }
 
@@ -41,6 +45,8 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _loginPlatform = LoginPlatform.none;
     });
+
+    Provider.of<UserProvider>(context, listen: false).signOut();
   }
 
   @override
@@ -50,13 +56,34 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            '베프.',
-            style: TextStyle(
-                fontFamily: 'LogoFont', fontSize: 80.0, color: Colors.white),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '함께가는 길, 장애물 없는 하루',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '베프.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontFamily: 'LogoFont',
+                        fontSize: 100.0,
+                        color: Colors.white),
+                  ),
+                ],
+              ),
+            ],
           ),
           SizedBox(
-            height: 8.0,
+            height: 100.0,
           ),
           _loginButton('naver_login', signInWithNaver),
         ],

@@ -21,6 +21,7 @@ import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -53,6 +54,7 @@ public class BarrierFreeConstructor {
     private String tmapAppkey;
 
     private final PlaceRepository placeRepository;
+    private final ResourceLoader resourceLoader;
     private ArrayList<HashMap<String, String>> etcData = new ArrayList<>();
 
     public void saveBarrierFree() throws IOException,ParserConfigurationException, SAXException {
@@ -126,8 +128,11 @@ public class BarrierFreeConstructor {
     public void setBarrierfreeInfo() throws ParserConfigurationException, IOException, SAXException {
         List<String> WtcltIdList = placeRepository.findWtcltIdByType();
 
+        int cnt = 0;
         for (String wtcltId : WtcltIdList) {
             if (wtcltId == null) continue;
+
+            if (cnt++ == 90) break;
 
             UriComponents publicDataDetailPlaceUri = UriComponentsBuilder
                     .fromHttpUrl("https://www.bokjiro.go.kr/ssis-tbu/getFacInfoOpenApiJpEvalInfoList.do")
@@ -138,7 +143,7 @@ public class BarrierFreeConstructor {
 
             RestTemplate rt = new RestTemplate();
             HttpEntity<?> he = new HttpEntity<>(setHttpHeaders());
-            System.out.println(publicDataDetailPlaceUri.toUri());
+//            System.out.println(publicDataDetailPlaceUri.toUri());
             ResponseEntity<String> resultMap = rt.exchange(publicDataDetailPlaceUri.toUri(), HttpMethod.GET, he, String.class);
 
             InputStream is = new ByteArrayInputStream(Objects.requireNonNull(resultMap.getBody()).getBytes("UTF-8"));
@@ -198,36 +203,36 @@ public class BarrierFreeConstructor {
 
         categoryMap.put("UC0A13", "화장실"); //2개
 
-//        categoryMap.put("UC0B01", "음식점"); //95개
-//        categoryMap.put("UC0B02", "음식점"); //1개
+        categoryMap.put("UC0B01", "음식점"); //95개
+        categoryMap.put("UC0B02", "음식점"); //1개
 //
-//        categoryMap.put("UC0F01", "병원");
-//        categoryMap.put("UC0F03", "병원");
-//        categoryMap.put("UC0F02", "병원");
-//        categoryMap.put("UC0A14", "병원");
-//        categoryMap.put("UC0A06", "병원");
+        categoryMap.put("UC0F01", "병원"); //11개
+        categoryMap.put("UC0F03", "병원"); //0개
+        categoryMap.put("UC0F02", "병원");
+        categoryMap.put("UC0A14", "병원");
+        categoryMap.put("UC0A06", "병원");
 //
-//        categoryMap.put("UC0J01", "문화");
-//        categoryMap.put("UC0C02", "문화");
-//        categoryMap.put("UC0G09", "문화");
-//        categoryMap.put("UC0T02", "문화");
-//        categoryMap.put("UC0C03", "문화");
-//        categoryMap.put("UC0T01", "문화");
-//        categoryMap.put("UC0A07", "문화");
-//        categoryMap.put("UC0C01", "문화");
-//        categoryMap.put("UC0C04", "문화");
-//        categoryMap.put("UC0C05", "문화");
-//        categoryMap.put("UC0R01", "문화");
-//        categoryMap.put("UC0J02", "문화");
+        categoryMap.put("UC0J01", "문화"); //8개
+        categoryMap.put("UC0C02", "문화"); //0개
+        categoryMap.put("UC0G09", "문화");
+        categoryMap.put("UC0T02", "문화");
+        categoryMap.put("UC0C03", "문화");
+        categoryMap.put("UC0T01", "문화");
+        categoryMap.put("UC0A07", "문화");
+        categoryMap.put("UC0C01", "문화");
+        categoryMap.put("UC0C04", "문화");
+        categoryMap.put("UC0C05", "문화");
+        categoryMap.put("UC0R01", "문화");
+        categoryMap.put("UC0J02", "문화");
+
+        categoryMap.put("UC0A05", "편의"); //10개
+        categoryMap.put("UC0A01", "편의");// 158개
+        categoryMap.put("UC0N01", "편의");
+        categoryMap.put("UC0R02", "편의");
+        categoryMap.put("UC0E01", "편의");
 //
-//        categoryMap.put("UC0A05", "편의");
-//        categoryMap.put("UC0A01", "편의");
-//        categoryMap.put("UC0N01", "편의");
-//        categoryMap.put("UC0R02", "편의");
-//        categoryMap.put("UC0E01", "편의");
-//
-//        categoryMap.put("UC0L01", "숙박");
-//        categoryMap.put("UC0L02", "숙박");
+        categoryMap.put("UC0L01", "숙박"); //55개
+        categoryMap.put("UC0L02", "숙박"); //1개
         return categoryMap;
     }
 
@@ -328,7 +333,9 @@ public class BarrierFreeConstructor {
     }
 
     private Workbook getExcelSheets() throws IOException {
-        Resource resource = new ClassPathResource("data/wheelchair_test.xls");
+//        Resource resource = resourceLoader.getResource("classpath:data/wheelchair_test.xls");
+//        InputStream inputStream = resource.getInputStream();
+        Resource resource = new ClassPathResource("data/wheelchair.xls");
         String filePath = resource.getFile().getAbsolutePath();
 //        String filePath = "C:/Users/SYJ/PJT/wheelchair_test.xls";
 

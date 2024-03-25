@@ -11,6 +11,7 @@ import com.fullship.hBAF.domain.busStop.entity.BusStop;
 import com.fullship.hBAF.domain.busStop.repository.BusStopRepository;
 import com.fullship.hBAF.domain.metroInfo.repository.MetroInfoRepository;
 import com.fullship.hBAF.domain.place.controller.response.PlaceListResonse;
+import com.fullship.hBAF.domain.place.controller.response.PlaceResponse;
 import com.fullship.hBAF.domain.place.entity.Image;
 import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.domain.place.repository.ImageRepository;
@@ -383,12 +384,16 @@ public class PlaceService {
 
   /**
    * 장애인 시설 카테고리별 불러오기
-   *
-   * @param category
+   * @param category 장애 편의 시설 카테고리 (휠체어 충전소, 편의 문화, 병원, 음식점, 숙박)
    * @return
    */
-  public List<PlaceListResonse> getPlaceByCategory(String category) {
-    List<Place> placeEntityList = placeRepository.findByCategory(category);
+  public List<PlaceListResonse> getPlaceListByCategory(String category) {
+    List<Place> placeEntityList = new ArrayList<>();
+    if (category.equals("전체")) {
+      placeEntityList = placeRepository.findByType(true);
+    } else {
+      placeEntityList = placeRepository.findByCategory(category);
+    }
 
     List<PlaceListResonse> placeList = new ArrayList<>();
     for (Place place : placeEntityList) {
@@ -396,6 +401,13 @@ public class PlaceService {
     }
 
     return placeList;
+  }
+
+  public PlaceResponse getPlaceDetail(Long placeId) {
+    Place place = placeRepository.findById(placeId)
+            .orElseThrow(() -> new IllegalArgumentException("NOT FOUND PLACE " + placeId));
+
+    return PlaceResponse.from(place);
   }
 
 

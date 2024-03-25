@@ -5,12 +5,14 @@ import static com.fullship.hBAF.global.response.CommonResponseEntity.getResponse
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToTrafficRequest;
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToWheelRequest;
 import com.fullship.hBAF.domain.place.controller.response.PlaceListResonse;
+import com.fullship.hBAF.domain.place.controller.response.PlaceResponse;
 import com.fullship.hBAF.domain.place.service.PlaceService;
 import com.fullship.hBAF.global.api.service.OdSayApiService;
 import com.fullship.hBAF.global.api.service.TMapApiService;
 import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
 import com.fullship.hBAF.global.api.service.command.SearchPathToTrafficCommand;
 import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
+import com.fullship.hBAF.global.response.CommonResponseEntity;
 import com.fullship.hBAF.global.response.SuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +22,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.text.ParseException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +33,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/place")
 @Tag(name = "Place 컨트롤러", description = "장소 API 입니다.")
+@Slf4j
 public class PlaceController {
 
   private final PlaceService placeService;
@@ -69,13 +74,24 @@ public class PlaceController {
   }
 
   @GetMapping("/list")
-  public ResponseEntity<?> getPlaceByCategory(@RequestParam("category") String category) {
-    List<PlaceListResonse> placeList = placeService.getPlaceByCategory(category);
+  @Operation(summary = "장애 편의 시설 목록 불러오기", description = "장애 편의 시설 목록 불러오기")
+  public ResponseEntity<CommonResponseEntity> getPlaceListByCategory(@RequestParam("category") String category) {
+    log.info("장애 편의 시설 카테고리별 불러오기 - 카테고리 : {}", category);
+    List<PlaceListResonse> placeList = placeService.getPlaceListByCategory(category);
     return getResponseEntity(SuccessCode.OK, placeList);
   }
 
+  @GetMapping()
+  @Operation(summary = "장애 편의 시설 상세 정보 불러오기", description = "장애 편의 시설 상세 정보 불러오기")
+  public ResponseEntity<CommonResponseEntity> getPlaceDetail(@RequestParam("placeId") Long placeId) {
+    log.info("장애 편의 시설 상세 정보 불러오기 - 시설 id : {}", placeId);
+    PlaceResponse place = placeService.getPlaceDetail(placeId);
+    return getResponseEntity(SuccessCode.OK, place);
+  }
+
   @GetMapping("/test")
-  public ResponseEntity<?> test()
+  @Operation(summary = "통신 테스트", description = "통신 테스트")
+  public ResponseEntity<CommonResponseEntity> test()
           throws ParseException {
     System.out.println("통신 테스트");
     return getResponseEntity(SuccessCode.OK, "테스트입니다.");

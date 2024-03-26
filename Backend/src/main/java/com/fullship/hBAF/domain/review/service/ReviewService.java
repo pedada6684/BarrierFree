@@ -9,11 +9,14 @@ import com.fullship.hBAF.domain.review.service.command.request.*;
 import com.fullship.hBAF.domain.review.service.command.response.*;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
+import com.fullship.hBAF.util.ImageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +24,7 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final MemberRepository memberRepository;
-
+    private final ImageUtil imageUtil;
 
     public GetReviewResponse getReview(GetReviewRequestCommand command){
 
@@ -37,6 +40,7 @@ public class ReviewService {
                 .modifyDate(review.getModifyDate())
                 .status(review.getStatus())
                 .poiId(review.getPoiId())
+                .img(review.getImgUrl())
                 .build();
 
         GetReviewResponse response  = GetReviewResponse.builder()
@@ -48,6 +52,7 @@ public class ReviewService {
                 .modifyDate(responseCommand.getModifyDate())
                 .status(responseCommand.getStatus())
                 .poiId(responseCommand.getPoiId())
+                .img(responseCommand.getImg())
                 .build();
 
         return response;
@@ -70,6 +75,7 @@ public class ReviewService {
                     .modifyDate(review.getModifyDate())
                     .status(review.getStatus())
                     .poiId(review.getPoiId())
+                    .img(review.getImgUrl())
                     .build();
 
             list.add(responseCommand);
@@ -84,11 +90,17 @@ public class ReviewService {
     public AddReviewResponse addReview(AddReviewRequestCommand command){
         Member member = memberRepository.findById(command.getMemberId()).orElseThrow(() -> new CustomException(ErrorCode.REQUEST_NOT_FOUND));
 
+        List<String> list = new ArrayList<>();
+        for(MultipartFile file : command.getFile())
+            list.add(imageUtil.uploadImageToS3(file,"review", UUID.randomUUID().toString().replace("-", "")+command.getPoiId()).toString());
+
         Review review = Review.createToReview(
                 member,
                 command.getContent(),
                 command.getFeedback(),
-                command.getPoiId());
+                command.getPoiId(),
+                list
+        );
 
         reviewRepository.save(review);
 
@@ -102,9 +114,13 @@ public class ReviewService {
     public ModifyReviewResponse modifyReview(ModifyReviewRequestCommand command){
         Review review = reviewRepository.findById(command.getReviewId()).orElseThrow(() -> new CustomException(ErrorCode.REQUEST_NOT_FOUND));
 
+        List<String> list = new ArrayList<>();
+        for (MultipartFile file : command.getImg())
+            list.add(imageUtil.uploadImageToS3(file, "review", UUID.randomUUID().toString().replace("-", "") + reviewRepository.findById(command.getReviewId()).get().getPoiId()).toString());
         review.modifyReview(
                 command.getContent(),
-                command.getFeedback()
+                command.getFeedback(),
+                list
         );
 
         ModifyReviewResponseCommand responseCommand = ModifyReviewResponseCommand.builder()

@@ -1,5 +1,6 @@
 package com.fullship.hBAF.util;
 
+import com.fullship.hBAF.domain.member.repository.MemberRepository;
 import com.fullship.hBAF.global.api.service.DataApiService;
 import com.uber.h3core.exceptions.LineUndefinedException;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,8 @@ public class DataConstructor {
 
     private final DataApiService dataApiService;
     private final BarrierFreeConstructor barrierFreeConstructor;
+    private final DummyGenerator dummyGenerator;
+    private final MemberRepository memberRepository;
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
@@ -33,6 +36,7 @@ public class DataConstructor {
 //        barrierFreeConstructor.saveElectricWheelchairExcel();
 //        barrierFreeConstructor.saveBarrierFree();
 //        barrierFreeConstructor.setBarrierfreeInfo();
+        dummyGenerator.createDummyMembers();
     }
 
 }

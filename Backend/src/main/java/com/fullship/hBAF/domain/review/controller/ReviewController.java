@@ -20,7 +20,7 @@ public class ReviewController {
 
     @GetMapping
     public ResponseEntity<GetReviewResponse> getReview(@RequestParam Long reviewId){
-
+        System.out.println("******* "+reviewId);
         GetReviewRequestCommand command = GetReviewRequestCommand.builder()
                 .reviewId(reviewId)
                 .build();
@@ -43,13 +43,14 @@ public class ReviewController {
     }
 
     @PostMapping
-    public ResponseEntity<AddReviewResponse> addReview(@RequestBody AddReviewRequest request){
+    public ResponseEntity<AddReviewResponse> addReview(@ModelAttribute AddReviewRequest request){
 
         AddReviewRequestCommand command = AddReviewRequestCommand.builder()
                 .feedback(request.getFeedback())
                 .content(request.getContent())
                 .memberId(request.getMemberId())
                 .poiId(request.getPoiId())
+                .file(request.getImg())
                 .build();
 
         AddReviewResponse response = reviewService.addReview(command);
@@ -58,12 +59,13 @@ public class ReviewController {
     }
 
     @PutMapping
-    public ResponseEntity<ModifyReviewResponse> modifyReview(@RequestBody ModifyReviewRequest request){
+    public ResponseEntity<ModifyReviewResponse> modifyReview(@ModelAttribute ModifyReviewRequest request){
 
         ModifyReviewRequestCommand command = ModifyReviewRequestCommand.builder()
                 .reviewId(request.getReviewId())
                 .content(request.getContent())
                 .feedback(request.getFeedback())
+                .img(request.getImg())
                 .build();
 
         ModifyReviewResponse response = reviewService.modifyReview(command);

@@ -1,5 +1,4 @@
 import 'package:barrier_free/component/appBar.dart';
-import 'package:barrier_free/component/map_markers.dart';
 import 'package:barrier_free/component/mapsearch_result_list.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/services/location_service.dart';
@@ -12,9 +11,14 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 class MapResultScreen extends StatefulWidget {
   final List<dynamic> searchResults;
   final String keyWord;
+  final Position currentPosition;
 
-  const MapResultScreen(
-      {super.key, required this.searchResults, required this.keyWord});
+  const MapResultScreen({
+    super.key,
+    required this.searchResults,
+    required this.keyWord,
+    required this.currentPosition,
+  });
 
   @override
   State<MapResultScreen> createState() => _MapResultScreenState();
@@ -23,6 +27,71 @@ class MapResultScreen extends StatefulWidget {
 class _MapResultScreenState extends State<MapResultScreen> {
   late List<Position> _markerPositions;
   PanelController _panelController = PanelController();
+
+  //마커 누르면 장소 이름 나옴
+  String generateMarkerScript(
+      List<dynamic> searchResults, Position currentPosition) {
+    const double maxDistance = 2000; // 20km
+    String markersScript = "var currentInfowindow = null;\n";
+
+    for (var i = 0; i < searchResults.length; i++) {
+      var result = searchResults[i];
+      markersScript += """
+    
+      var markerPosition${i} = new kakao.maps.LatLng(${result['y']}, ${result['x']});
+      var marker${i} = new kakao.maps.Marker({
+        position: markerPosition${i},
+        map: map
+      });
+      kakao.maps.event.addListener(marker${i}, 'click', function() {
+        var infowindow = new kakao.maps.InfoWindow({
+          content: '<div style="width:150px;text-align:center;padding:6px 0;">${result['place_name']}</div>'
+        });
+        
+        if(currentInfowindow){
+          currentInfowindow.close();
+        }
+        
+      //    if (currentInfowindow === infowindow) {
+      //   infowindow.close();
+      //   currentInfowindow = null;
+      // } else {
+      //   // 새로운 인포윈도우를 엽니다.
+      //   infowindow.open(map, marker${i});
+      //   currentInfowindow = infowindow;
+      // }
+      
+      infowindow.open(map, marker${i});
+      currentInfowindow = infowindow;
+      
+      setTimeout(function() {
+      infowindow.close();
+      currentInfowindow = null;
+      }, 3000);
+      });
+    """;
+    }
+    return markersScript;
+  }
+
+  String generateBoundsScript(Position currentPosition) {
+    // 현재 위치에서의 반경 20km를 위한 바운드 설정
+    double lat = widget.currentPosition.latitude;
+    double lng = widget.currentPosition.longitude;
+    return """
+      var circle = new kakao.maps.Circle({
+        center: new kakao.maps.LatLng($lat, $lng),
+        radius: 20000, // 20km
+        strokeWeight: 1,
+        strokeColor: '#75B8FA',
+        strokeOpacity: 0,
+      });
+      circle.setMap(map);
+      // 바운드를 circle에 맞춤
+      var bounds = circle.getBounds();
+      map.setBounds(bounds);
+    """;
+  }
 
   @override
   void initState() {
@@ -79,11 +148,13 @@ class _MapResultScreenState extends State<MapResultScreen> {
                   kakaoMapKey: appKey!,
                   lat: currentPosition!.latitude,
                   lng: currentPosition!.longitude,
-                  markerImageURL: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                  markerImageURL:
+                      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
                   showZoomControl: false,
                   showMapTypeControl: false,
-                  customScript: generateMarkerScript(widget.searchResults) +
-                      generateBoundsScript(widget.searchResults),
+                  customScript: generateMarkerScript(
+                          widget.searchResults, widget.currentPosition) +
+                      generateBoundsScript(widget.currentPosition),
                 ),
                 _buildToggleButton(),
                 SlidingUpPanel(

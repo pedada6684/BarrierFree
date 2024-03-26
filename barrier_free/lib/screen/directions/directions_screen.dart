@@ -3,7 +3,7 @@ import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/screen/directions/directions_mapresult_screen.dart';
 import 'package:barrier_free/services/search_service.dart';
 import 'package:flutter/material.dart';
-
+import 'package:geolocator/geolocator.dart';
 
 class DirectionsScreen extends StatefulWidget {
   const DirectionsScreen({super.key});
@@ -18,6 +18,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
 
   final _vehicles = ['목발', '휠체어', '전동휠체어'];
   String? _selectedVehicles;
+  Position? _currentPosition;
 
   @override
   void initState() {
@@ -31,7 +32,9 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
   Future<void> _search() async {
     if (_originController.text.isNotEmpty) {
       try {
-        final result = await fetchSearchResults(_originController.text);
+        final result = await fetchSearchResults(
+          _originController.text,
+        );
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -78,7 +81,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                           controller: _originController,
                           decoration: InputDecoration(
                             contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 8.0),
+                                const EdgeInsets.symmetric(horizontal: 8.0),
                             hintText: '출발지를 입력하세요.',
                             hintStyle: TextStyle(
                               color: mainGray,
@@ -92,7 +95,9 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                             ),
                             suffixIcon: IconButton(
                               onPressed: _search,
-                              icon: Icon(Icons.search,),
+                              icon: Icon(
+                                Icons.search,
+                              ),
                             ),
                           ),
                           onChanged: (value) {
@@ -106,7 +111,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                           controller: _destinationController,
                           decoration: InputDecoration(
                             contentPadding:
-                            EdgeInsets.symmetric(horizontal: 8.0),
+                                EdgeInsets.symmetric(horizontal: 8.0),
                             hintText: '도착지를 입력하세요.',
                             hintStyle: TextStyle(
                               color: mainGray,
@@ -120,7 +125,9 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                             ),
                             suffixIcon: IconButton(
                               onPressed: _search,
-                              icon: Icon(Icons.search,),
+                              icon: Icon(
+                                Icons.search,
+                              ),
                             ),
                           ),
                           onChanged: (value) {
@@ -157,9 +164,9 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                     hint: Text('이동방식'),
                     items: _vehicles
                         .map((e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(e),
-                    ))
+                              value: e,
+                              child: Text(e),
+                            ))
                         .toList(),
                     onChanged: (value) {
                       setState(() {

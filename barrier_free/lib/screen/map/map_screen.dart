@@ -55,7 +55,10 @@ class _MapScreenState extends State<MapScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => MapResultScreen(
-                searchResults: result, keyWord: _originController.text),
+              searchResults: result,
+              keyWord: _originController.text,
+              currentPosition: _currentPosition,
+            ),
           ),
         );
         print(
@@ -77,7 +80,7 @@ class _MapScreenState extends State<MapScreen> {
   void _onCategoryFiltered(String category) {
     // 선택한 버튼 카테고리로 장소 필터링
     List<dynamic> filteredPlaces =
-    allPlaces.where((place) => place['category'] == category).toList();
+        allPlaces.where((place) => place['category'] == category).toList();
 
     // JavaScript 코드를 생성하여 마커를 업데이트
     String script = """

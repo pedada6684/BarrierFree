@@ -1,8 +1,10 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/login/login_screen.dart';
 import 'package:barrier_free/screen/mypage/myplace_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'myfavorite_screen.dart';
 import 'myreview_screen.dart';
@@ -15,6 +17,12 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // menuItems['로그아웃'] = (context) => Scaffold();
+  }
+
   final Map<String, Widget Function(BuildContext)> menuItems = {
     '내 장소': (context) => const MyPlaceScreen(),
     '즐겨찾기': (context) => const MyFavoriteScreen(),
@@ -30,6 +38,26 @@ class _MyPageScreenState extends State<MyPageScreen> {
         children: [
           _buildTopSection(),
           ..._buildMenuItems(menuItems),
+          ListTile(
+            leading: const Text(
+              '로그아웃',
+              style: TextStyle(
+                fontSize: 18.0,
+              ),
+            ),
+
+            trailing: const Icon(Icons.arrow_forward_ios, color: mainGray),
+            onTap: () async {
+              //UserProvider로 로그아웃
+              await Provider.of<UserProvider>(context, listen: false).signOut();
+              //마이페이지에 로그인이 필요합니다 띄우기
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => MyPageScreen(),
+                ),
+              );
+            }, // 로그아웃 처리
+          ),
         ],
       ),
     );

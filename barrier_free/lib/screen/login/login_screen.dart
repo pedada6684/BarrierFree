@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/login/login_platform.dart';
+import 'package:barrier_free/screen/mypage/mypage_screen.dart';
+import 'package:barrier_free/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,13 +29,41 @@ class _LoginScreenState extends State<LoginScreen> {
       print(result.account);
       print('=======================================');
 
+      //백으로 정보 전달
+      final response = await sendNaverLoginInfo(result.account);
+      if (response != null) {
+        //토큰 저장 by secure storage
+        final secureStorageService = SecureStorageService();
+        await secureStorageService.saveToken(response);
+      }
+
       setState(() {
         //네이버로 로그인
         _loginPlatform = LoginPlatform.naver;
       });
 
+      //네이버 로그인
       Provider.of<UserProvider>(context, listen: false)
           .signIn(LoginPlatform.naver);
+
+    }
+  }
+
+  Future<String?> sendNaverLoginInfo(NaverAccountResult account) async {
+    final uri = Uri.parse("https://hbaf.site/api/member/naverLogin");
+    //토큰
+    final response = await http.post(uri, body: {
+      'nickname': account.nickname,
+      'name': account.name,
+      'email': account.email,
+      'profileImage': account.profileImage,
+    });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print(data);
     }
   }
 
@@ -47,6 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     Provider.of<UserProvider>(context, listen: false).signOut();
+
   }
 
   @override
@@ -56,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Column(
+          const Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Column(
@@ -82,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
           ),
-          SizedBox(
+          const SizedBox(
             height: 100.0,
           ),
           _loginButton('naver_login', signInWithNaver),

@@ -3,8 +3,9 @@ package com.fullship.hBAF.domain.review.entity;
 import com.fullship.hBAF.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
-
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -29,11 +30,16 @@ public class Review {
 
     private String poiId;
 
+    @ElementCollection
+    @Column(length = 3000)
+    private List<String> imgUrl;
+
     public static Review createToReview(
             Member member,
             String content,
             Long feedback,
-            String poiId
+            String poiId,
+            List<String> list
     ){
         Review review = new Review();
         review.member = member;
@@ -43,18 +49,22 @@ public class Review {
         review.modifyDate = LocalDateTime.now();
         review.status = 0L;
         review.poiId = poiId;
+        review.imgUrl = list;
 
         return review;
     }
 
     public void modifyReview(
             String content,
-            Long feedback
+            Long feedback,
+            List<String> img
     ){
         if(content!=null)
             this.content=content;
         if(feedback!=null)
             this.feedback=feedback;
+        if(img!=null)
+            this.imgUrl=img;
         this.modifyDate = LocalDateTime.now();
     }
 

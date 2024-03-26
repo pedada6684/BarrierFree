@@ -24,6 +24,44 @@ class _MapResultScreenState extends State<MapResultScreen> {
   late List<Position> _markerPositions;
   PanelController _panelController = PanelController();
 
+  //마커 누르면 장소 이름 나옴
+  String generateMarkerScript(List<dynamic> searchResults) {
+    String markersScript = """
+    var currentInfowindow = null;
+    
+    """;
+
+    for (var i = 0; i < searchResults.length; i++) {
+      var result = searchResults[i];
+      markersScript += """
+    
+      var markerPosition${i} = new kakao.maps.LatLng(${result['y']}, ${result['x']});
+      var marker${i} = new kakao.maps.Marker({
+        position: markerPosition${i},
+        map: map
+      });
+      kakao.maps.event.addListener(marker${i}, 'click', function() {
+        var infowindow = new kakao.maps.InfoWindow({
+          content: '<div style="width:150px;text-align:center;padding:6px 0;">${result['place_name']}</div>'
+        });
+        
+        if(currentInfowindow){
+          currentInfowindow.close();
+        }
+         if (currentInfowindow === infowindow) {
+        infowindow.close();
+        currentInfowindow = null;
+      } else {
+        // 새로운 인포윈도우를 엽니다.
+        infowindow.open(map, marker${i});
+        currentInfowindow = infowindow;
+      }
+      });
+    """;
+    }
+    return markersScript;
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -79,11 +117,13 @@ class _MapResultScreenState extends State<MapResultScreen> {
                   kakaoMapKey: appKey!,
                   lat: currentPosition!.latitude,
                   lng: currentPosition!.longitude,
-                  markerImageURL: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                  markerImageURL:
+                      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
                   showZoomControl: false,
                   showMapTypeControl: false,
                   customScript: generateMarkerScript(widget.searchResults) +
-                      generateBoundsScript(widget.searchResults),
+                      generateBoundsScript(widget.searchResults) +
+                      generateMarkerScript(widget.searchResults),
                 ),
                 _buildToggleButton(),
                 SlidingUpPanel(

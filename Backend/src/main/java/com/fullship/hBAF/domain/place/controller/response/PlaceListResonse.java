@@ -12,7 +12,7 @@ public class PlaceListResonse {
     private String placeName;
     private String address;
     private String lat;
-    private String lon;
+    private String lng;
     private String poi;
     private String category;
     private String barrierFree;
@@ -23,7 +23,7 @@ public class PlaceListResonse {
                 .placeName(place.getPlaceName())
                 .address(place.getAddress())
                 .lat(place.getLatitude())
-                .lon(place.getLongitude())
+                .lng(place.getLongitude())
                 .poi(place.getPoiId())
                 .category(place.getCategory())
                 .barrierFree(place.getBarrierFree())

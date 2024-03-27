@@ -72,7 +72,7 @@ public class PlaceController {
     return getResponseEntity(SuccessCode.OK, tMapApiService.searchPathToCar(command));
   }
 
-  @GetMapping("/list")
+  @PostMapping("/list")
   @Operation(summary = "장애 편의 시설 목록 불러오기", description = "장애 편의 시설 목록 불러오기")
   public ResponseEntity<CommonResponseEntity> getPlaceListByCategory(@RequestParam("category") String category) {
     log.info("장애 편의 시설 카테고리별 불러오기 - 카테고리 : {}", category);

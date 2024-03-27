@@ -6,6 +6,7 @@ import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
@@ -19,7 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -56,14 +56,13 @@ public class TagoApiService {
   public List<BusesCurLocation> findBusesByPublicId(String publicBusId, String direction) {
 
     try {
-      UriComponents uriComponents = UriComponentsBuilder
+      URI uri = UriComponentsBuilder
           .fromHttpUrl("http://openapitraffic.daejeon.go.kr/api/rest/busposinfo/getBusPosByRtid")
           .queryParam("serviceKey", routeKey)
           .queryParam("busRouteId", publicBusId)
-          .build(true);
+          .build(true).toUri();
 
-      ResponseEntity<String> response = apiService.get(uriComponents.toUri(), setHttpHeaders(),
-          String.class);
+      ResponseEntity<String> response = apiService.get(uri, setHttpHeaders(), String.class);
 
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();

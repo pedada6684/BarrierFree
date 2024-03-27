@@ -2,6 +2,7 @@ package com.fullship.hBAF.global.api.service;
 
 import com.fullship.hBAF.global.api.response.TaxiPathForm;
 import com.fullship.hBAF.global.api.response.WheelPathForm;
+import com.fullship.hBAF.global.api.service.command.ElevationForPathCommand;
 import com.fullship.hBAF.global.api.service.command.SearchPathToTrafficCommand;
 import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
 import com.fullship.hBAF.global.response.ErrorCode;
@@ -24,6 +25,7 @@ public class TMapApiService {
   private String TMapKey;
 
   private final ApiService<String> apiService;
+  private final GoogleApiService googleApiService;
 
   private HttpHeaders setHttpHeaders() {
     HttpHeaders headers = new HttpHeaders();
@@ -38,6 +40,9 @@ public class TMapApiService {
         apiService.post(command.getUri(), setHttpHeaders(), command.getRequestBody(), String.class);
 
     WheelPathForm wheelPathForm = WheelPathForm.jsonToO(responseEntity);
+
+    ElevationForPathCommand elevation = ElevationForPathCommand.createElevateCommand(wheelPathForm.getGeoCode());
+    wheelPathForm.setGeoCode(googleApiService.elevationForPath(elevation).getGeoCode());
 
     if (responseEntity.getStatusCode() == HttpStatus.OK) {
       return wheelPathForm;

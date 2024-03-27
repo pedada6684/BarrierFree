@@ -72,16 +72,16 @@ public class OdSayPath {
     @Schema(description = "출발 정류장")
     private String startStationName;
     @Schema(description = "출발 좌표")
-    private String[] startGeo;
+    private PointGeoCode startGeo;
     @Schema(description = "도착 정류장")
     private String endStationName;
     @Schema(description = "도착 좌표")
-    private String[] endGeo;
+    private PointGeoCode endGeo;
     /* 경유 정류장 정보 */
     @Schema(description = "경유 정류장")
     private List<String> passStation;
     @Schema(description = "경유 정류장 좌표")
-    private List<String[]> passStationGeo;
+    private List<PointGeoCode> passStationGeo;
     @Schema(description = "버스 정보")
     private List<Bus> busList;
     /* 버스 정류장 정보 */
@@ -127,9 +127,16 @@ public class OdSayPath {
     return SubPath.builder()
         .trafficType(3)
         .startStationName(wheelPath.getStartName())
-        .startGeo(new String[]{wheelPath.getStartLon(), wheelPath.getStartLat()})
+        .startGeo(
+            PointGeoCode.builder()
+                .longitude(wheelPath.getStartLon())
+                .latitude(wheelPath.getStartLat())
+                .build())
         .endStationName(wheelPath.getEndName())
-        .endGeo(new String[]{wheelPath.getEndLon(), wheelPath.getEndLat()})
+        .endGeo(PointGeoCode.builder()
+            .longitude(wheelPath.getEndLon())
+            .latitude(wheelPath.getEndLat())
+            .build())
         .sectionDistance(wheelPath.getTotalDistance())
         .sectionTime(wheelPath.getTotalTime())
         .build();
@@ -156,7 +163,7 @@ public class OdSayPath {
 
         for (Object value : subPaths) {
           List<String> passStation = new ArrayList<>();
-          List<String[]> passStationGeo = new ArrayList<>();
+          List<PointGeoCode> passStationGeo = new ArrayList<>();
           JSONObject passStopList;
           JSONArray stations;
 
@@ -171,7 +178,10 @@ public class OdSayPath {
                 JSONObject station = (JSONObject) element;
                 passStation.add(station.get("stationName").toString());
                 passStationGeo.add(
-                    new String[]{station.get("x").toString(), station.get("y").toString()});
+                    PointGeoCode.builder()
+                        .longitude(station.get("x").toString())
+                        .latitude(station.get("y").toString())
+                        .build());
               }
               subPathList.add(
                   SubPath.builder()
@@ -181,11 +191,11 @@ public class OdSayPath {
                       .wayCode((long) subPath.get("wayCode"))
                       .stationCount((long) subPath.get("stationCount"))
                       .startStationName(subPath.get("startName").toString())
-                      .startGeo(new String[]{subPath.get("startX").toString(),
-                          subPath.get("startY").toString()})
+                      .startGeo(PointGeoCode.builder().longitude(subPath.get("startX").toString())
+                          .latitude(subPath.get("startY").toString()).build())
                       .endStationName(subPath.get("endName").toString())
-                      .endGeo(new String[]{subPath.get("endX").toString(),
-                          subPath.get("endY").toString()})
+                      .endGeo(PointGeoCode.builder().longitude(subPath.get("endX").toString())
+                          .latitude(subPath.get("endY").toString()).build())
                       .passStation(passStation)
                       .passStationGeo(passStationGeo)
                       .build());
@@ -212,7 +222,10 @@ public class OdSayPath {
                 JSONObject station = (JSONObject) stations.get(m);
                 passStation.add(station.get("stationName").toString());
                 passStationGeo.add(
-                    new String[]{station.get("x").toString(), station.get("y").toString()});
+                    PointGeoCode.builder()
+                        .longitude(station.get("x").toString())
+                        .latitude(station.get("y").toString())
+                        .build());
                 passArsId.add(initId(station.get("arsID"), 1));
                 passLocalId.add(initId(station.get("localStationID"), 2));
                 passStationId.add(initId(station.get("stationID"), 3));
@@ -224,11 +237,11 @@ public class OdSayPath {
                       .sectionTime((long) subPath.get("sectionTime"))
                       .stationCount((long) subPath.get("stationCount"))
                       .startStationName(subPath.get("startName").toString())
-                      .startGeo(new String[]{subPath.get("startX").toString(),
-                          subPath.get("startY").toString()})
+                      .startGeo(PointGeoCode.builder().longitude(subPath.get("startX").toString())
+                          .latitude(subPath.get("startY").toString()).build())
                       .endStationName(subPath.get("endName").toString())
-                      .endGeo(new String[]{subPath.get("endX").toString(),
-                          subPath.get("endY").toString()})
+                      .endGeo(PointGeoCode.builder().longitude(subPath.get("endX").toString())
+                          .latitude(subPath.get("endY").toString()).build())
                       .passStation(passStation)
                       .passStationGeo(passStationGeo)
                       .busList(busList)

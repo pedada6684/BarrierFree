@@ -23,6 +23,7 @@ import com.fullship.hBAF.global.api.response.OdSayPath;
 import com.fullship.hBAF.global.api.response.OdSayPath.SubPath;
 import com.fullship.hBAF.global.api.response.OdSayPath.SubPath.Bus;
 import com.fullship.hBAF.global.api.response.PathGeoCode;
+import com.fullship.hBAF.global.api.response.PointGeoCode;
 import com.fullship.hBAF.global.api.response.WheelPathForm;
 import com.fullship.hBAF.global.api.service.OdSayApiService;
 import com.fullship.hBAF.domain.place.service.command.CreatePlaceCommand;
@@ -53,7 +54,6 @@ import java.util.Locale;
 import java.util.Optional;
 
 import static com.fullship.hBAF.util.H3.daejeonH3Index;
-import static java.time.LocalTime.parse;
 
 @Service
 @Slf4j
@@ -114,19 +114,19 @@ public class PlaceService {
         SubPath subPath = list.get(i).getSubPaths().get(j);
         /* WALK 모드 */
         if (subPath.getTrafficType() == 3) {
-          String[] startGeo;
-          String[] endGeo;
+          PointGeoCode startGeo;
+          PointGeoCode endGeo;
           /* 제일 처음에 걷는 경우 */
           if (j == 0) {
-            startGeo = new String[]{command.getRequestBody().get("startX").toString(),
-                command.getRequestBody().get("startY").toString()};
+            startGeo = PointGeoCode.builder().longitude(command.getRequestBody().get("startX").toString())
+                .latitude(command.getRequestBody().get("startY").toString()).build();
             endGeo = list.get(i).getSubPaths().get(j + 1).getStartGeo();
           }
           /* 끝에 걷는 경우 */
           else if (j == list.get(i).getSubPaths().size() - 1) {
             startGeo = list.get(i).getSubPaths().get(j - 1).getEndGeo();
-            endGeo = new String[]{command.getRequestBody().get("endX").toString(),
-                command.getRequestBody().get("endY").toString()};
+            endGeo = PointGeoCode.builder().longitude(command.getRequestBody().get("endX").toString())
+                .latitude(command.getRequestBody().get("endY").toString()).build();
           }
           /* 중간에 걷는 경우 */
           else {
@@ -135,11 +135,10 @@ public class PlaceService {
           }
 
           /* 도보 경로가 없는 경우 */
-          if (startGeo[0].equals(endGeo[0]) && startGeo[1].equals(endGeo[1])) {
+          if (startGeo.getLongitude().equals(endGeo.getLongitude())
+              && startGeo.getLatitude().equals(endGeo.getLatitude())) {
             list.get(i).setGeoCode(setWheelGeoCode(list.get(i).getGeoCode(), null, j));
           } else {
-            System.out.println("*****" + startGeo[0] + "" + startGeo[1]);
-            System.out.println("*****" + endGeo[0] + "" + endGeo[1]);
             WheelPathForm wheelForm = tMapApiService.searchPathToWheel(
                 createForWheel(startGeo, endGeo));
             list.get(i).getSubPaths().set(j, changeSubPathToWheel(wheelForm));
@@ -173,10 +172,9 @@ public class PlaceService {
               }
             }
             // 5. 몇 정류장 전에 있는지 확인
-            for (int k = 0; k < lowFilter.size(); k++) {
-              log.info("lowFilter = {}", lowFilter.get(k));
+            for (BusesCurLocation busesCurLocation : lowFilter) {
               BusStop curBusStop =
-                  busStopRepository.findBusStopByArsIdAndBusId(lowFilter.get(k).getArsId(),
+                  busStopRepository.findBusStopByArsIdAndBusId(busesCurLocation.getArsId(),
                       bus.getBusId());
               long countStop = Math.abs(busStop.getId() - curBusStop.getId());
               list.get(i).getSubPaths().get(j).setBeforeCount(countStop);

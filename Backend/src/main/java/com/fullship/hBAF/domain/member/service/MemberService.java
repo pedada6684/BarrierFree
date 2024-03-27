@@ -12,6 +12,7 @@ import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import com.fullship.hBAF.util.ImageUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional(readOnly = true)
 public class MemberService {
 
@@ -37,8 +39,8 @@ public class MemberService {
   @Transactional(readOnly = false)
   public AuthToken login(NaverLoginCommand command) {
     Member member = memberRepository.findByEmail(command.getEmail())
-            .orElse(// 신규 유저인 경우 회원 가입
-                    joinMember(command.convertToJoinMemberCommand())
+            .orElseGet(// 신규 유저인 경우 회원 가입
+                    ()->joinMember(command.convertToJoinMemberCommand())
             );
     return authTokenGenerator.generate(member.getId());
   }

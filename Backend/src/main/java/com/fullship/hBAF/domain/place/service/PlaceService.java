@@ -53,7 +53,6 @@ import java.util.Locale;
 import java.util.Optional;
 
 import static com.fullship.hBAF.util.H3.daejeonH3Index;
-import static java.time.LocalTime.parse;
 
 @Service
 @Slf4j

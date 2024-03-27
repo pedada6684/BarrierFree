@@ -5,7 +5,6 @@ import static com.fullship.hBAF.global.response.CommonResponseEntity.getResponse
 import com.fullship.hBAF.domain.place.controller.request.GetPlaceListRequest;
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToTrafficRequest;
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToWheelRequest;
-import com.fullship.hBAF.domain.place.controller.response.PlaceListResonse;
 import com.fullship.hBAF.domain.place.controller.response.PlaceListResponse;
 import com.fullship.hBAF.domain.place.controller.response.PlaceResponse;
 import com.fullship.hBAF.domain.place.service.PlaceService;
@@ -13,7 +12,6 @@ import com.fullship.hBAF.global.api.response.OdSayPath;
 import com.fullship.hBAF.global.api.response.TaxiPathForm;
 import com.fullship.hBAF.global.api.response.WheelPathForm;
 import com.fullship.hBAF.domain.place.service.command.Request.GetPlaceListRequestComment;
-import com.fullship.hBAF.global.api.service.OdSayApiService;
 import com.fullship.hBAF.global.api.service.TMapApiService;
 import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
 import com.fullship.hBAF.global.api.service.command.SearchPathToTrafficCommand;
@@ -80,7 +78,7 @@ public class PlaceController {
   @PostMapping("/list")
   @Operation(summary = "장애 편의 시설 목록 불러오기", description = "장애 편의 시설 목록 불러오기")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "카테고리 조회 성공", content = @Content(schema = @Schema(implementation = PlaceListResonse.class))),
+      @ApiResponse(responseCode = "200", description = "카테고리 조회 성공", content = @Content(schema = @Schema(implementation = PlaceListResponse.class))),
       @ApiResponse(responseCode = "400", description = "조회 실패")
   })
   public ResponseEntity<CommonResponseEntity> getPlaceList(@RequestBody GetPlaceListRequest request) {

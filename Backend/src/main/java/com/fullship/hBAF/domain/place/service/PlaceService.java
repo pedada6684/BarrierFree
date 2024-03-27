@@ -172,10 +172,9 @@ public class PlaceService {
               }
             }
             // 5. 몇 정류장 전에 있는지 확인
-            for (int k = 0; k < lowFilter.size(); k++) {
-              log.info("lowFilter = {}", lowFilter.get(k));
+            for (BusesCurLocation busesCurLocation : lowFilter) {
               BusStop curBusStop =
-                  busStopRepository.findBusStopByArsIdAndBusId(lowFilter.get(k).getArsId(),
+                  busStopRepository.findBusStopByArsIdAndBusId(busesCurLocation.getArsId(),
                       bus.getBusId());
               long countStop = Math.abs(busStop.getId() - curBusStop.getId());
               list.get(i).getSubPaths().get(j).setBeforeCount(countStop);

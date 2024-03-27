@@ -1,5 +1,6 @@
 package com.fullship.hBAF.global.api.service.command;
 
+import com.fullship.hBAF.global.api.response.GeoCode;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
@@ -10,10 +11,10 @@ public class ElevationForPathCommand {
 
   private String geoCode;
 
-  public static ElevationForPathCommand createElevateCommand(List<String[]> geoCode) {
+  public static ElevationForPathCommand createElevateCommand(List<GeoCode> geoCode) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < geoCode.size(); i++) {
-      sb.append(geoCode.get(i)[1]).append(",").append(geoCode.get(i)[0]).append("|");
+      sb.append(geoCode.get(i).getLatitude()).append(",").append(geoCode.get(i).getLongitude()).append("|");
     }
 
     return ElevationForPathCommand.builder()

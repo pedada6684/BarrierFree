@@ -1,13 +1,17 @@
 package com.fullship.hBAF.domain.place.controller.response;
 
 
+import com.fullship.hBAF.domain.place.entity.Image;
 import com.fullship.hBAF.domain.place.entity.Place;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Builder
-public class PlaceListResonse {
+public class PlaceListResponse {
     private Long placeId;
     private String placeName;
     private String address;
@@ -16,9 +20,10 @@ public class PlaceListResonse {
     private String poi;
     private String category;
     private String barrierFree;
+    private List<String> img;
 
-    public static PlaceListResonse from(Place place) {
-        return PlaceListResonse.builder()
+    public static PlaceListResponse from(Place place) {
+        return PlaceListResponse.builder()
                 .placeId(place.getId())
                 .placeName(place.getPlaceName())
                 .address(place.getAddress())
@@ -27,6 +32,15 @@ public class PlaceListResonse {
                 .poi(place.getPoiId())
                 .category(place.getCategory())
                 .barrierFree(place.getBarrierFree())
+                .img(createToCommand(place.getImages()))
                 .build();
+    }
+
+    public static List<String> createToCommand(List<Image> list){
+        List<String> result = new ArrayList<>();
+        for(Image img : list)
+            result.add(img.getImageUrl());
+
+        return result;
     }
 }

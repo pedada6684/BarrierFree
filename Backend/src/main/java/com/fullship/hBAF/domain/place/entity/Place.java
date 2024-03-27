@@ -27,7 +27,7 @@ public class Place {
   private String category;
   private String barrierFree;
   private boolean type; // 배리어프리 장소인지 여부
-  private String wtcltId;
+  private String wtcltId; // 배리어프리 조회시 필요한 키 값
 
   @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Image> images;

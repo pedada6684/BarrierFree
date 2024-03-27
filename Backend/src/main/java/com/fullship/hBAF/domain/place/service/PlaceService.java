@@ -5,17 +5,16 @@ import static com.fullship.hBAF.global.api.response.OdSayPath.changeSubPathToWhe
 
 import com.fullship.hBAF.domain.busInfo.entity.BusInfo;
 import com.fullship.hBAF.domain.busInfo.repository.BusInfoRepository;
-import com.fullship.hBAF.domain.busRouteInfo.entity.BusRouteInfo;
-import com.fullship.hBAF.domain.busRouteInfo.repository.BusRouteInfoRepository;
 import com.fullship.hBAF.domain.busStop.entity.BusStop;
 import com.fullship.hBAF.domain.busStop.repository.BusStopRepository;
 import com.fullship.hBAF.domain.metroInfo.repository.MetroInfoRepository;
-import com.fullship.hBAF.domain.place.controller.response.PlaceListResonse;
+import com.fullship.hBAF.domain.place.controller.response.PlaceListResponse;
 import com.fullship.hBAF.domain.place.controller.response.PlaceResponse;
 import com.fullship.hBAF.domain.place.entity.Image;
 import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.domain.place.repository.ImageRepository;
 import com.fullship.hBAF.domain.place.repository.PlaceRepository;
+import com.fullship.hBAF.domain.place.service.command.Request.GetPlaceListRequestComment;
 import com.fullship.hBAF.domain.stationInfo.entity.StationInfo;
 import com.fullship.hBAF.domain.stationInfo.repository.StationInfoRepository;
 import com.fullship.hBAF.domain.stationStopInfo.entity.StationStopInfo;
@@ -384,21 +383,19 @@ public class PlaceService {
 
   /**
    * 장애인 시설 카테고리별 불러오기
-   * @param category 장애 편의 시설 카테고리 (휠체어 충전소, 편의 문화, 병원, 음식점, 숙박)
    * @return
    */
-  public List<PlaceListResonse> getPlaceListByCategory(String category) {
-    List<Place> placeEntityList = new ArrayList<>();
-    if (category.equals("전체")) {
-      placeEntityList = placeRepository.findByType(true);
-    } else {
-      placeEntityList = placeRepository.findByCategory(category);
+  public List<PlaceListResponse> getPlaceList(GetPlaceListRequestComment comment) {
+    List<Place> placeEntityList = placeRepository.findByType(true);
+    double lat = Double.parseDouble(comment.getLat());
+    double lng = Double.parseDouble(comment.getLng());
+
+    List<PlaceListResponse> placeList = new ArrayList<>();
+    for (Place place : placeEntityList) {
+      if(calculateDistance(lat,lng,Double.parseDouble(place.getLatitude()),Double.parseDouble(place.getLongitude()))<=3)
+        placeList.add(PlaceListResponse.from(place));
     }
 
-    List<PlaceListResonse> placeList = new ArrayList<>();
-    for (Place place : placeEntityList) {
-      placeList.add(PlaceListResonse.from(place));
-    }
 
     return placeList;
   }

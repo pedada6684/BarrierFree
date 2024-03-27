@@ -2,11 +2,13 @@ package com.fullship.hBAF.domain.place.controller;
 
 import static com.fullship.hBAF.global.response.CommonResponseEntity.getResponseEntity;
 
+import com.fullship.hBAF.domain.place.controller.request.GetPlaceListRequest;
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToTrafficRequest;
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToWheelRequest;
-import com.fullship.hBAF.domain.place.controller.response.PlaceListResonse;
+import com.fullship.hBAF.domain.place.controller.response.PlaceListResponse;
 import com.fullship.hBAF.domain.place.controller.response.PlaceResponse;
 import com.fullship.hBAF.domain.place.service.PlaceService;
+import com.fullship.hBAF.domain.place.service.command.Request.GetPlaceListRequestComment;
 import com.fullship.hBAF.global.api.service.OdSayApiService;
 import com.fullship.hBAF.global.api.service.TMapApiService;
 import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
@@ -72,11 +74,11 @@ public class PlaceController {
     return getResponseEntity(SuccessCode.OK, tMapApiService.searchPathToCar(command));
   }
 
-  @GetMapping("/list")
+  @PostMapping("/list")
   @Operation(summary = "장애 편의 시설 목록 불러오기", description = "장애 편의 시설 목록 불러오기")
-  public ResponseEntity<CommonResponseEntity> getPlaceListByCategory(@RequestParam("category") String category) {
-    log.info("장애 편의 시설 카테고리별 불러오기 - 카테고리 : {}", category);
-    List<PlaceListResonse> placeList = placeService.getPlaceListByCategory(category);
+  public ResponseEntity<CommonResponseEntity> getPlaceList(@RequestBody GetPlaceListRequest request) {
+
+    List<PlaceListResponse> placeList = placeService.getPlaceList(GetPlaceListRequestComment.builder().lat(request.getLat()).lng(request.getLng()).build());
     return getResponseEntity(SuccessCode.OK, placeList);
   }
 

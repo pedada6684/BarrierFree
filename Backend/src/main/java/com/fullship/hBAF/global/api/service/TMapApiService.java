@@ -41,9 +41,6 @@ public class TMapApiService {
 
     WheelPathForm wheelPathForm = WheelPathForm.jsonToO(responseEntity);
 
-    ElevationForPathCommand elevation = ElevationForPathCommand.createElevateCommand(wheelPathForm.getGeoCode());
-    wheelPathForm.setGeoCode(googleApiService.elevationForPath(elevation).getGeoCode());
-
     if (responseEntity.getStatusCode() == HttpStatus.OK) {
       return wheelPathForm;
     } else {

@@ -27,6 +27,8 @@ public class GoogleApiService {
   @Value("${api.google.key}")
   private String apiKey;
 
+  private final int maxSample = 512;
+
   private HttpHeaders setHttpHeaders() {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
@@ -40,7 +42,7 @@ public class GoogleApiService {
 //            URLEncoder.encode(command.getGeoCode(), StandardCharsets.UTF_8))
         .queryParam("path",
             URLEncoder.encode(command.getGeoCode(), StandardCharsets.UTF_8))
-        .queryParam("samples", 512)
+        .queryParam("samples", command.getSize() * 1.5 < maxSample ? (int)(command.getSize() * 1.5) : maxSample)
         .queryParam("key", URLEncoder.encode(apiKey, StandardCharsets.UTF_8))
         .build(true).toUri();
 

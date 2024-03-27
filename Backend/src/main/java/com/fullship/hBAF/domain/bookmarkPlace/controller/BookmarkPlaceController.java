@@ -4,6 +4,10 @@ import com.fullship.hBAF.domain.bookmarkPlace.controller.request.BookmarkPlaceRe
 import com.fullship.hBAF.domain.bookmarkPlace.controller.response.BookmarkPlaceResponse;
 import com.fullship.hBAF.domain.bookmarkPlace.service.BookmarkPlaceService;
 import com.fullship.hBAF.domain.bookmarkPlace.service.command.request.BookmarkPlaceRequestCommand;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,15 +23,17 @@ public class BookmarkPlaceController {
   private final BookmarkPlaceService bookmarkPlaceService;
 
   @PostMapping
-  public ResponseEntity<BookmarkPlaceResponse> bookmarkPlace(@RequestBody BookmarkPlaceRequest request){
+  @Operation(summary = "북마크 설정 / 해제", description = "poiId를 이용한 북마크 설정 해제")
+  @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = BookmarkPlaceResponse.class)))
+  public ResponseEntity<BookmarkPlaceResponse> bookmarkPlace(@RequestBody BookmarkPlaceRequest request) {
 
     BookmarkPlaceRequestCommand command = BookmarkPlaceRequestCommand.builder()
-            .memberId(request.getMemberId())
-            .placeName(request.getPlaceName())
-            .address(request.getAddress())
-            .longitude(request.getLongitude())
-            .latitude(request.getLatitude())
-            .build();
+        .memberId(request.getMemberId())
+        .placeName(request.getPlaceName())
+        .address(request.getAddress())
+        .longitude(request.getLongitude())
+        .latitude(request.getLatitude())
+        .build();
 
     BookmarkPlaceResponse response = bookmarkPlaceService.bookmark(command);
 

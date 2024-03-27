@@ -47,6 +47,7 @@ dependencies:
   kakaomap_webview: ^0.6.2
   flutter_styled_toast: ^2.0.1
   flutter_secure_storage: ^9.0.0
+  persistent_bottom_nav_bar: ^5.0.2
 
 
 dev_dependencies:

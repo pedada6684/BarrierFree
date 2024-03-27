@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 
 class UserProvider with ChangeNotifier {
 
-
-
   //유저 정보
   String? _nickname;
   String? _email;
@@ -46,6 +44,7 @@ class UserProvider with ChangeNotifier {
 
   //로그아웃
   Future<void> signOut() async {
+
     _loginPlatform = LoginPlatform.none;
     notifyListeners();
     final secureStorageService = SecureStorageService();

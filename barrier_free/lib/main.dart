@@ -1,10 +1,10 @@
-import 'package:barrier_free/component/bottomBar.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/directions/directions_screen.dart';
 import 'package:barrier_free/screen/mypage/mypage_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -31,62 +31,89 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  //지도(MapScreen)가 먼저 뜨도록 index 1로 설정
-  int _selectedIndex = 0;
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  late PersistentTabController _controller;
 
   // 화면 리스트
-  final List<Widget> _screens = [
-    MapScreen(), //지도
-    DirectionsScreen(),
-    MyPageScreen(),
-  ];
+  List<Widget> _buildScreens() {
+    return [
+      MapScreen(), //지도
+      DirectionsScreen(),
+      Container(), //콜택시용 더미 화면
+      MyPageScreen(),
+    ];
+  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    Provider.of<UserProvider>(context, listen: false)
-        .addListener(_onUserProviderChange);
+    _controller = PersistentTabController(initialIndex: 0);
   }
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    Provider.of<UserProvider>(context, listen: false)
-        .removeListener(_onUserProviderChange);
-    super.dispose();
-  }
-
-  void _onUserProviderChange() {
-    //로그인 따라서 _selectedIndex 업데이트 시키기
+  void resetContoller(){
     setState(() {
-      if (Provider.of<UserProvider>(context, listen: false).isLoggedIn()) {
-        setState(() {
-          _selectedIndex = 0;
-        });
-      } else {
-        setState(() {
-          _selectedIndex = 0;
-        });
-      }
+      _controller = PersistentTabController(initialIndex: 0);
     });
   }
 
-  void _onItemTapped(int index) {
-    if (index == 2) {
-      _makePhoneCall('15881668');
+  List<PersistentBottomNavBarItem> _navBarsItems() {
+    return [
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.map, color: Colors.white),
+        title: ("지도"),
+        activeColorPrimary: Colors.white,
+        inactiveColorPrimary: Colors.white,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.directions, color: Colors.white),
+        title: ("길찾기"),
+        activeColorPrimary: Colors.white,
+        inactiveColorPrimary: Colors.white,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.local_taxi, color: Colors.white),
+        title: ("콜택시"),
+        activeColorPrimary: Colors.white,
+        inactiveColorPrimary: Colors.white,
+        onPressed: (context) => _makePhoneCall('15881668'), // 수정된 부분
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.person, color: Colors.white),
+        title: ("마이"),
+        activeColorPrimary: Colors.white,
+        inactiveColorPrimary: Colors.white,
+      ),
+    ];
+  }
+
+  void _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
     } else {
-      if (index < 2) {
-        setState(() {
-          _selectedIndex = index;
-        });
-      } else if (index > 2) {
-        setState(() {
-          _selectedIndex = 2;
-        });
-      }
+      throw '$launchUri를 설치하지 못했습니다.';
     }
   }
+
+  // void _onItemTapped(int index) {
+  //   if (index == 2) {
+  //     _makePhoneCall('15881668');
+  //   } else {
+  //     if (index < 2) {
+  //       setState(() {
+  //         _selectedIndex = index;
+  //       });
+  //     } else if (index > 2) {
+  //       setState(() {
+  //         _selectedIndex = 2;
+  //       });
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -106,27 +133,22 @@ class _MyAppState extends State<MyApp> {
                 fontWeight: FontWeight.bold,
                 fontSize: 22.0)),
       ),
-      home: Scaffold(
-        body: Center(
-          child: _screens.elementAt(_selectedIndex), // 현재 선택된 화면을 표시
-        ),
-        bottomNavigationBar: CustomBottomNavigationBar(
-          selectedIndex: _selectedIndex,
-          onItemSelected: _onItemTapped,
-        ),
+      home: PersistentTabView(
+        context,
+        controller: _controller,
+        screens: _buildScreens(),
+        items: _navBarsItems(),
+        confineInSafeArea: true,
+        backgroundColor: mainOrange,
+        navBarStyle: NavBarStyle.style6,
+        // onItemSelected: (int index) {
+        //   if (index == 3) {
+        //     //마이페이지 탭
+        //     _controller.jumpToTab(0);
+        //   }
+        // },
       ),
+      navigatorKey: navigatorKey,
     );
-  }
-}
-
-void _makePhoneCall(String phoneNumber) async {
-  final Uri launchUri = Uri(
-    scheme: 'tel',
-    path: phoneNumber,
-  );
-  if (await canLaunchUrl(launchUri)) {
-    await launchUrl(launchUri);
-  } else {
-    throw '$launchUri를 설치하지 못했습니다.';
   }
 }

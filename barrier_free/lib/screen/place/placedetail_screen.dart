@@ -17,7 +17,6 @@ class PlaceDetailScreen extends StatefulWidget {
 }
 
 class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
-  static const platform = MethodChannel('com.barrier_free/tmap');
 
   bool isStarFilled = false;
 

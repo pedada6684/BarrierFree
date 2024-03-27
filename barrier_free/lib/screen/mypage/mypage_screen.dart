@@ -2,6 +2,7 @@ import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/login/login_screen.dart';
+import 'package:barrier_free/screen/map/map_screen.dart';
 import 'package:barrier_free/screen/mypage/myplace_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +18,6 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
-  int _selectedIndex = 0;
 
   final Map<String, Widget Function(BuildContext)> menuItems = {
     '내 장소': (context) => const MyPlaceScreen(),
@@ -195,10 +195,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
             ),
             onTap: () async {
               await Provider.of<UserProvider>(context, listen: false).signOut();
-
-              setState(() {
-                _selectedIndex = 0;
-              });
+              Navigator.push(context, MaterialPageRoute(builder: (context)=>MapScreen()));
             },
           ),
         ),

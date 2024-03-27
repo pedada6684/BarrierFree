@@ -18,9 +18,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // LoginPlatform _loginPlatform = LoginPlatform.none;
-  int _selectedIndex = 0;
-
   void signInWithNaver() async {
     final NaverLoginResult result = await FlutterNaverLogin.logIn();
 
@@ -53,10 +50,6 @@ class _LoginScreenState extends State<LoginScreen> {
           .signIn(LoginPlatform.naver);
     }
 
-    setState(() {
-      _selectedIndex = 0;
-    });
-
     onLoginSuccess();
   }
 
@@ -85,20 +78,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void onLoginSuccess() async {
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('로그인 성공'),
-        content: Text('장애물 없는 하루를 시작합니다.'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('확인'),
-          ),
-        ],
-      ),
+    await Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => MapScreen()),
     );
   }
 

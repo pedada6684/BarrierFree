@@ -14,7 +14,7 @@ class LocationService {
 
   Position? get currentPosition => _currentPosition;
 
-  Future<void> getCurrentPosition() async {
+  Future<Position> getCurrentPosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -36,6 +36,6 @@ class LocationService {
       throw '위치 권한을 설정에서 허가해주세요.';
     }
 
-    _currentPosition = await Geolocator.getCurrentPosition();
+    return _currentPosition = await Geolocator.getCurrentPosition();
   }
 }

@@ -4,7 +4,7 @@ String generateMarkerScript(List<dynamic> searchResults) {
   for (var i = 0; i < searchResults.length; i++) {
     var result = searchResults[i];
     markerScript += """
-      var position${i} = new kakao.maps.LatLng(${result['y']}, ${result['x']});
+      var position${i} = new kakao.maps.LatLng(${result['lat']}, ${result['lng']});
       var marker${i} = new kakao.maps.Marker({position: position${i}});
       marker${i}.setMap(map);
       markers.push(marker${i});
@@ -31,7 +31,7 @@ String generateMarkerScript(List<dynamic> searchResults) {
 
 String generateBoundsScript(List<dynamic> searchResults) {
   String pointsScript = searchResults.map((result) {
-    return "new kakao.maps.LatLng(${result['y']}, ${result['x']})";
+    return "new kakao.maps.LatLng(${result['lat']}, ${result['lng']})";
   }).join(", ");
 
   return """

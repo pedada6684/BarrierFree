@@ -64,8 +64,6 @@ public class OdSayPath {
     private long wayCode;
     @Schema(description = "대기 시간")
     private long waitTime;
-    @Schema(description = "세부 경로 이동 좌표")
-    private List<PathGeoCode> pathGeoCodes;
     /* 정류장 정보 */
     @Schema(description = "정류장 개수")
     private long stationCount;

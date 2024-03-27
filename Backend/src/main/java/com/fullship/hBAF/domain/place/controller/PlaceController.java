@@ -64,6 +64,15 @@ public class PlaceController {
     return getResponseEntity(SuccessCode.OK, placeService.useTransitPath(command));
   }
 
+  @PostMapping("/path/wheel/slope")
+  @Operation(summary = "경사도 측정", description = "경로 내 휠체어 경로 경사도 측정")
+  @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = PathGeoCode.class)))
+  public ResponseEntity<CommonResponseEntity> calculateAngleSlope(@RequestBody CalculateAngleRequest requestDto){
+    log.info("PathGeoCodes = {}", requestDto.getPathGeoCodes());
+    AngleSlopeCommand command = requestDto.createForCalculate();
+    return getResponseEntity(SuccessCode.OK, placeService.calculateAngle(command));
+  }
+
   @PostMapping("/path/taxi")
   @Operation(summary = "택시 경로 조회", description = "택시를 이용하는 경로 조회")
   @ApiResponses(value = {

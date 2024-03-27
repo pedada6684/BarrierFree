@@ -14,6 +14,7 @@ import com.fullship.hBAF.domain.place.entity.Image;
 import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.domain.place.repository.ImageRepository;
 import com.fullship.hBAF.domain.place.repository.PlaceRepository;
+import com.fullship.hBAF.domain.place.service.command.Request.AngleSlopeCommand;
 import com.fullship.hBAF.domain.place.service.command.Request.GetPlaceListRequestComment;
 import com.fullship.hBAF.domain.stationInfo.entity.StationInfo;
 import com.fullship.hBAF.domain.stationInfo.repository.StationInfoRepository;
@@ -25,12 +26,14 @@ import com.fullship.hBAF.global.api.response.OdSayPath.SubPath.Bus;
 import com.fullship.hBAF.global.api.response.PathGeoCode;
 import com.fullship.hBAF.global.api.response.PointGeoCode;
 import com.fullship.hBAF.global.api.response.WheelPathForm;
+import com.fullship.hBAF.global.api.service.GoogleApiService;
 import com.fullship.hBAF.global.api.service.OdSayApiService;
 import com.fullship.hBAF.domain.place.service.command.CreatePlaceCommand;
 import com.fullship.hBAF.domain.place.service.command.UpdatePlaceImageCommand;
 import com.fullship.hBAF.global.api.service.TMapApiService;
 import com.fullship.hBAF.global.api.service.TagoApiService;
 import com.fullship.hBAF.global.api.response.BusesCurLocation;
+import com.fullship.hBAF.global.api.service.command.ElevationForPathCommand;
 import com.fullship.hBAF.global.api.service.command.OdSayGeoCommand;
 import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
 import java.time.Duration;
@@ -64,6 +67,7 @@ public class PlaceService {
   private final TMapApiService tMapApiService;
   private final OdSayApiService odSayApiService;
   private final TagoApiService tagoApiService;
+  private final GoogleApiService googleApiService;
   private final BusInfoRepository busInfoRepository;
   private final BusStopRepository busStopRepository;
   private final PlaceRepository placeRepository;
@@ -181,7 +185,7 @@ public class PlaceService {
             }
           }
         }
-        /* 지하철인 경우 */
+        /* SUBWAY 모드 */
         else if (subPath.getTrafficType() == 1) {
           /* 상행 하행 구분 */
           StationInfo sStation = stationInfoRepository.findStationInfoBySubwayName(
@@ -417,5 +421,19 @@ public class PlaceService {
         .trafficType(3)
         .build());
     return origin;
+  }
+
+  public List<PathGeoCode> calculateAngle(AngleSlopeCommand command) {
+    List<PathGeoCode> pathGeoCodes = command.getGeoCodes();
+    log.info("pathGeoCode : ", pathGeoCodes);
+    for(PathGeoCode pathGeoCode : pathGeoCodes){
+      if(pathGeoCode == null)
+        continue;
+      if(pathGeoCode.getTrafficType() == 3){
+        ElevationForPathCommand elevation = ElevationForPathCommand.createElevateCommand(pathGeoCode.getGeoCode());
+        pathGeoCode.setGeoCode(googleApiService.elevationForPath(elevation).getGeoCode());
+      }
+    }
+    return pathGeoCodes;
   }
 }

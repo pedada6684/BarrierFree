@@ -11,8 +11,8 @@ public class SimplifyGeoCode {
    * @param tolerance 허용 거리
    * @return 압축된 좌표
    */
-  public static List<String[]> polyLineSimplify(List<String[]> geoCode, double tolerance) {
-    List<String[]> compressCode = new ArrayList<>();
+  public static List<GeoCode> polyLineSimplify(List<String[]> geoCode, double tolerance) {
+    List<GeoCode> compressCode = new ArrayList<>();
 
     for (int i = 0; i < geoCode.size() - 2; i++) {
       /* 좌표 중복 제거 */
@@ -23,15 +23,16 @@ public class SimplifyGeoCode {
       }
     }
 
-    compressCode.add(geoCode.get(0));
+    int size = geoCode.size() - 1;
+    compressCode.add(GeoCode.builder().longitude(geoCode.get(0)[0]).latitude(geoCode.get(0)[1]).build());
     simplifyPathRecur(geoCode, 0, geoCode.size() - 1, tolerance, compressCode);
-    compressCode.add(geoCode.get(geoCode.size() - 1));
+    compressCode.add(GeoCode.builder().longitude(geoCode.get(size)[0]).latitude(geoCode.get(size)[1]).build());
 
     return compressCode;
   }
 
   private static void simplifyPathRecur(List<String[]> geoCode, int start, int end,
-      double tolerance, List<String[]> compressCode) {
+      double tolerance, List<GeoCode> compressCode) {
     double maxDist = 0;
     int idxFar = 0;
 
@@ -47,7 +48,7 @@ public class SimplifyGeoCode {
       if (start < idxFar) {
         simplifyPathRecur(geoCode, start, idxFar, tolerance, compressCode);
       }
-      compressCode.add(geoCode.get(idxFar));
+      compressCode.add(GeoCode.builder().longitude(geoCode.get(idxFar)[0]).latitude(geoCode.get(idxFar)[1]).build());
       if (idxFar < end - 1) {
         simplifyPathRecur(geoCode, idxFar, end, tolerance, compressCode);
       }

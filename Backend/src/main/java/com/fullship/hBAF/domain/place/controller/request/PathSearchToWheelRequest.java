@@ -1,5 +1,6 @@
 package com.fullship.hBAF.domain.place.controller.request;
 
+import com.fullship.hBAF.global.api.response.PointGeoCode;
 import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
@@ -14,17 +15,17 @@ import lombok.Data;
 @Builder
 public class PathSearchToWheelRequest {
 
-  private String startX;
-  private String startY;
-  private String endX;
-  private String endY;
+  private String startLng;
+  private String startLat;
+  private String endLng;
+  private String endLat;
 
-  public static SearchPathToWheelCommand createForWheel(String[] startGeo, String[] endGeo) {
+  public static SearchPathToWheelCommand createForWheel(PointGeoCode startGeo, PointGeoCode endGeo) {
     return PathSearchToWheelRequest.builder()
-        .startX(startGeo[0])
-        .startY(startGeo[1])
-        .endX(endGeo[0])
-        .endY(endGeo[1])
+        .startLng(startGeo.getLongitude())
+        .startLat(startGeo.getLatitude())
+        .endLng(endGeo.getLongitude())
+        .endLat(endGeo.getLatitude())
         .build()
         .createForWheel();
   }
@@ -42,10 +43,10 @@ public class PathSearchToWheelRequest {
 
   public Map<String, Object> createRequestBody() {
     Map<String, Object> map = new HashMap<>();
-    map.put("startX", startX);
-    map.put("startY", startY);
-    map.put("endX", endX);
-    map.put("endY", endY);
+    map.put("startX", startLng);
+    map.put("startY", startLat);
+    map.put("endX", endLng);
+    map.put("endY", endLat);
     map.put("startName", "출발지");
     map.put("endName", "도착지");
     map.put("searchOption", "30");

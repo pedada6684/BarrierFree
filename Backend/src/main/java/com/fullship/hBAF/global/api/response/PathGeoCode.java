@@ -1,5 +1,7 @@
 package com.fullship.hBAF.global.api.response;
 
+import static com.fullship.hBAF.global.api.response.SimplifyGeoCode.polyLineSimplify;
+
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,7 +24,7 @@ public class PathGeoCode {
   @Schema(description = "경로 구분")
   private long trafficType;
   @Schema(description = "좌표 값")
-  private List<String[]> geoCode;
+  private List<GeoCode> geoCode;
 
   public static List<PathGeoCode> jsonToO(ResponseEntity<String> response) {
     List<PathGeoCode> pathGeoCodes = new ArrayList<>();
@@ -45,7 +47,7 @@ public class PathGeoCode {
               new String[]{graphPos.get("x").toString(), graphPos.get("y").toString()});
         }
 
-        List<String[]> compressCode = polyLineSimplify(geoCode, 0.0005);
+        List<GeoCode> compressCode = polyLineSimplify(geoCode, 0.0005);
 
         pathGeoCodes.add(
             PathGeoCode.builder()

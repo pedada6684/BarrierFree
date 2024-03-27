@@ -18,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 @Builder
 public class WheelPathForm {
 
-  private List<String[]> geoCode;
+  private List<GeoCode> geoCode;
   private long totalDistance;
   private long totalTime;
   private String startName;
@@ -29,7 +29,7 @@ public class WheelPathForm {
   private String endLon;
 
   public static WheelPathForm jsonToO(ResponseEntity<String> result) {
-    List<String[]> geoCode = new ArrayList<>();
+    List<GeoCode> geoCode = new ArrayList<>();
     log.info("result = {}", result.getBody());
     try {
       JSONParser parser = new JSONParser();
@@ -43,18 +43,19 @@ public class WheelPathForm {
 
         for (Object value : coordinates) {
           if (coordinates.get(0) instanceof Double) {
-            geoCode.add(
-                new String[]{String.valueOf(coordinates.get(0)),
-                    String.valueOf(coordinates.get(1))});
+            geoCode.add(GeoCode.builder()
+                .longitude(String.valueOf(coordinates.get(0)))
+                .latitude(String.valueOf(coordinates.get(1))).build());
             break;
           }
           JSONArray coordinate = (JSONArray) value;
-          if (geoCode.get(geoCode.size() - 1)[0].equals(String.valueOf(coordinates.get(0)))
-              && geoCode.get(geoCode.size() - 1)[1].equals(String.valueOf(coordinates.get(1)))) {
+          if (geoCode.get(geoCode.size() - 1).getLongitude().equals(String.valueOf(coordinates.get(0)))
+              && geoCode.get(geoCode.size() - 1).getLatitude().equals(String.valueOf(coordinates.get(1)))) {
             continue;
           }
-          geoCode.add(
-              new String[]{String.valueOf(coordinate.get(0)), String.valueOf(coordinate.get(1))});
+          geoCode.add(GeoCode.builder()
+              .longitude(String.valueOf(coordinate.get(0)))
+              .latitude(String.valueOf(coordinate.get(1))).build());
         }
       }
 

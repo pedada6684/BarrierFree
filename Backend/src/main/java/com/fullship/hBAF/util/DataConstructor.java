@@ -36,7 +36,7 @@ public class DataConstructor {
 //        barrierFreeConstructor.saveElectricWheelchairExcel();
 //        barrierFreeConstructor.saveBarrierFree();
 //        barrierFreeConstructor.setBarrierfreeInfo();
-        dummyGenerator.createDummyMembers();
+//        dummyGenerator.createDummyMembers();
     }
 
 }

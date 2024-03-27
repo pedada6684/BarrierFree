@@ -1,9 +1,7 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/component/facility_button.dart';
-import 'package:barrier_free/component/map_markers.dart';
 import 'package:barrier_free/const/color.dart';
-import 'package:barrier_free/screen/search/mapresult_screen.dart';
-import 'package:barrier_free/screen/search/search_screen.dart';
+import 'package:barrier_free/screen/map/mapresult_screen.dart';
 import 'package:barrier_free/services/location_service.dart';
 import 'package:barrier_free/services/place_service.dart';
 import 'package:barrier_free/services/search_service.dart';
@@ -112,27 +110,30 @@ class _MapScreenState extends State<MapScreen> {
           Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              //로딩화면 맵 불러올때까지 로딩
-              SpinKitPouringHourGlassRefined(
-                color: mainOrange,
-                size: 70.0,
-                duration: Duration(seconds: 2),
-              ),
-              SizedBox(
-                height: 8.0,
-              ),
-              Text(
-                'Loading',
-                style: TextStyle(
-                  fontSize: 22.0,
-                  fontWeight: FontWeight.bold,
+          return Container(
+            color: Colors.white,
+            child: const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                //로딩화면 맵 불러올때까지 로딩
+                SpinKitPouringHourGlassRefined(
                   color: mainOrange,
+                  size: 70.0,
+                  duration: Duration(seconds: 1),
                 ),
-              ),
-            ],
+                SizedBox(
+                  height: 8.0,
+                ),
+                Text(
+                  'Loading',
+                  style: TextStyle(
+                    fontSize: 22.0,
+                    fontWeight: FontWeight.bold,
+                    color: mainOrange,
+                  ),
+                ),
+              ],
+            ),
           ); // 혹은 다른 로딩 표시 위젯을 반환하세요.
         } else if (snapshot.hasError) {
           return Text('위치를 가져오는 중 오류가 발생했습니다: ${snapshot.error}');
@@ -191,8 +192,6 @@ class _MapScreenState extends State<MapScreen> {
                           Icons.search,
                           color: mainOrange,
                         ),
-                        splashColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
                       ),
                     ],
                   ),

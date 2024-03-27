@@ -41,6 +41,7 @@ public class OAuthController {
    * @param cookie refreshToken은 accessToken과 같은 방식으로 Bearer: {token} 형식
    * @return
    */
+
   @GetMapping("/refreshToken")
   public ResponseEntity<AuthToken> authRefreshToken(@CookieValue(value = "refreshToken") Cookie cookie){
     //user refreshToken 검증

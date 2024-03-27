@@ -31,7 +31,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
@@ -47,6 +46,9 @@ dependencies:
   flutter_naver_login: ^1.8.0
   kakaomap_webview: ^0.6.2
   flutter_styled_toast: ^2.0.1
+  flutter_secure_storage: ^9.0.0
+  persistent_bottom_nav_bar: ^5.0.2
+
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +74,7 @@ flutter:
 
   assets:
     - .env
+    - assets/image/
 
   fonts:
     - family: LogoFont

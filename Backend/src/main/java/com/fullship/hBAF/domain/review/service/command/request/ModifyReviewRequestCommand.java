@@ -13,6 +13,6 @@ public class ModifyReviewRequestCommand {
     Long reviewId;
     String content;
     Long feedback;
-    List<MultipartFile> img;
+    List<String> img;
 
 }

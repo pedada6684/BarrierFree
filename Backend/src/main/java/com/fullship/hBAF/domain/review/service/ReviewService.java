@@ -90,16 +90,13 @@ public class ReviewService {
     public AddReviewResponse addReview(AddReviewRequestCommand command){
         Member member = memberRepository.findById(command.getMemberId()).orElseThrow(() -> new CustomException(ErrorCode.REQUEST_NOT_FOUND));
 
-        List<String> list = new ArrayList<>();
-        for(MultipartFile file : command.getFile())
-            list.add(imageUtil.uploadImageToS3(file,"review", UUID.randomUUID().toString().replace("-", "")+command.getPoiId()).toString());
 
         Review review = Review.createToReview(
                 member,
                 command.getContent(),
                 command.getFeedback(),
                 command.getPoiId(),
-                list
+                command.getFile()
         );
 
         reviewRepository.save(review);
@@ -114,14 +111,10 @@ public class ReviewService {
     public ModifyReviewResponse modifyReview(ModifyReviewRequestCommand command){
         Review review = reviewRepository.findById(command.getReviewId()).orElseThrow(() -> new CustomException(ErrorCode.REQUEST_NOT_FOUND));
 
-        List<String> list = new ArrayList<>();
-        for (MultipartFile file : command.getImg())
-            list.add(imageUtil.uploadImageToS3(file, "review", UUID.randomUUID().toString().replace("-", "") + reviewRepository.findById(command.getReviewId()).get().getPoiId()).toString());
         review.modifyReview(
                 command.getContent(),
                 command.getFeedback(),
-                list
-        );
+                command.getImg());
 
         ModifyReviewResponseCommand responseCommand = ModifyReviewResponseCommand.builder()
                 .response("success")

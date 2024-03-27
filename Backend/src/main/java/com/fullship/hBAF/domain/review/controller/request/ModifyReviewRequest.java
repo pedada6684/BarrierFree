@@ -12,6 +12,6 @@ public class ModifyReviewRequest {
     Long reviewId;
     String content;
     Long feedback;
-    List<MultipartFile> img;
+    List<String> img;
 
 }

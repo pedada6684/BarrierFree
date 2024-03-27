@@ -392,7 +392,7 @@ public class PlaceService {
 
     List<PlaceListResponse> placeList = new ArrayList<>();
     for (Place place : placeEntityList) {
-      if(calculateDistance(lat,lng,Double.parseDouble(place.getLatitude()),Double.parseDouble(place.getLongitude()))<=3)
+      if(calculateDistance(lat,lng,Double.parseDouble(place.getLatitude()),Double.parseDouble(place.getLongitude()))<=3000)
         placeList.add(PlaceListResponse.from(place));
     }
 

@@ -19,7 +19,7 @@ void main() async {
   await LocationService().getCurrentPosition();
   runApp(
     ChangeNotifierProvider(
-      create:(context)=>UserProvider(),
+      create: (context) => UserProvider(),
       child: MyApp(),
     ),
   );
@@ -32,14 +32,45 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   //지도(MapScreen)가 먼저 뜨도록 index 1로 설정
-  int _selectedIndex = 1;
+  int _selectedIndex = 0;
 
   // 화면 리스트
   final List<Widget> _screens = [
-    DirectionsScreen(),
     MapScreen(), //지도
+    DirectionsScreen(),
     MyPageScreen(),
   ];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Provider.of<UserProvider>(context, listen: false)
+        .addListener(_onUserProviderChange);
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    Provider.of<UserProvider>(context, listen: false)
+        .removeListener(_onUserProviderChange);
+    super.dispose();
+  }
+
+  void _onUserProviderChange() {
+    //로그인 따라서 _selectedIndex 업데이트 시키기
+    setState(() {
+      if (Provider.of<UserProvider>(context, listen: false).isLoggedIn()) {
+        setState(() {
+          _selectedIndex = 0;
+        });
+      } else {
+        setState(() {
+          _selectedIndex = 0;
+        });
+      }
+    });
+  }
 
   void _onItemTapped(int index) {
     if (index == 2) {
@@ -62,6 +93,9 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        pageTransitionsTheme: PageTransitionsTheme(builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+        }),
         appBarTheme: AppBarTheme(
             centerTitle: true,
             iconTheme: IconThemeData(

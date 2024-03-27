@@ -18,12 +18,12 @@ class CustomBottomNavigationBar extends StatelessWidget {
       backgroundColor: mainOrange,
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: Icon(Icons.directions_bus_outlined, color: Colors.white),
-          label: '길찾기',
-        ),
-        BottomNavigationBarItem(
           icon: Icon(Icons.place_outlined, color: Colors.white),
           label: '지도',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.directions_bus_outlined, color: Colors.white),
+          label: '길찾기',
         ),
         BottomNavigationBarItem(
             icon: Icon(Icons.local_taxi_outlined, color: Colors.white),

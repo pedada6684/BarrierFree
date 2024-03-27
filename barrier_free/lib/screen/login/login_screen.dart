@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/login/login_platform.dart';
-import 'package:barrier_free/screen/mypage/mypage_screen.dart';
+import 'package:barrier_free/screen/map/map_screen.dart';
 import 'package:barrier_free/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
@@ -18,7 +18,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  LoginPlatform _loginPlatform = LoginPlatform.none;
+  // LoginPlatform _loginPlatform = LoginPlatform.none;
+  int _selectedIndex = 0;
 
   void signInWithNaver() async {
     final NaverLoginResult result = await FlutterNaverLogin.logIn();
@@ -29,6 +30,16 @@ class _LoginScreenState extends State<LoginScreen> {
       print(result.account);
       print('=======================================');
 
+      //사용자 정보 받아오기
+      final String? nickname = result.account.nickname;
+      final String? email = result.account.email;
+      final String? profileImageUrl = result.account.profileImage;
+      final String? name = result.account.name;
+
+      //userProvider에 사용자 정보
+      Provider.of<UserProvider>(context, listen: false)
+          .setUser(nickname, email!, profileImageUrl!, name!);
+
       //백으로 정보 전달
       final response = await sendNaverLoginInfo(result.account);
       if (response != null) {
@@ -37,16 +48,16 @@ class _LoginScreenState extends State<LoginScreen> {
         await secureStorageService.saveToken(response);
       }
 
-      setState(() {
-        //네이버로 로그인
-        _loginPlatform = LoginPlatform.naver;
-      });
-
       //네이버 로그인
       Provider.of<UserProvider>(context, listen: false)
           .signIn(LoginPlatform.naver);
-
     }
+
+    setState(() {
+      _selectedIndex = 0;
+    });
+
+    onLoginSuccess();
   }
 
   Future<String?> sendNaverLoginInfo(NaverAccountResult account) async {
@@ -68,56 +79,80 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void signOut() async {
-    switch (_loginPlatform) {
-      case LoginPlatform.naver:
-        await FlutterNaverLogin.logOut();
-        break;
-      case LoginPlatform.none:
-        break;
-    }
-    setState(() {
-      _loginPlatform = LoginPlatform.none;
-    });
+    await FlutterNaverLogin.logOut();
 
     Provider.of<UserProvider>(context, listen: false).signOut();
+  }
 
+  void onLoginSuccess() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('로그인 성공'),
+        content: Text('장애물 없는 하루를 시작합니다.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('확인'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: mainOrange,
+      backgroundColor: Colors.white,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '함께가는 길, 장애물 없는 하루',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22.0,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 60.0,
+                      ),
+                      Text(
+                        '함께가는 길, 장애물 없는 하루',
+                        style: TextStyle(
+                          color: mainOrange,
+                          fontSize: 22.0,
+                          fontWeight: FontWeight.bold,
+                          height: 1,
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    '베프.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontFamily: 'LogoFont',
-                        fontSize: 100.0,
-                        color: Colors.white),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 60.0,
+                      ),
+                      Text(
+                        '베프.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'LogoFont',
+                          fontSize: 100.0,
+                          color: mainOrange,
+                          height: 1,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(
-            height: 100.0,
+          SizedBox(
+            height: 80.0,
           ),
           _loginButton('naver_login', signInWithNaver),
         ],

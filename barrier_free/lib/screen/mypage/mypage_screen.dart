@@ -17,17 +17,12 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // menuItems['로그아웃'] = (context) => Scaffold();
-  }
+  int _selectedIndex = 0;
 
   final Map<String, Widget Function(BuildContext)> menuItems = {
     '내 장소': (context) => const MyPlaceScreen(),
     '즐겨찾기': (context) => const MyFavoriteScreen(),
     '게시글': (context) => const MyReviewScreen(),
-    '로그인': (context) => const LoginScreen(),
   };
 
   @override
@@ -38,26 +33,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
         children: [
           _buildTopSection(),
           ..._buildMenuItems(menuItems),
-          ListTile(
-            leading: const Text(
-              '로그아웃',
-              style: TextStyle(
-                fontSize: 18.0,
-              ),
-            ),
-
-            trailing: const Icon(Icons.arrow_forward_ios, color: mainGray),
-            onTap: () async {
-              //UserProvider로 로그아웃
-              await Provider.of<UserProvider>(context, listen: false).signOut();
-              //마이페이지에 로그인이 필요합니다 띄우기
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => MyPageScreen(),
-                ),
-              );
-            }, // 로그아웃 처리
-          ),
         ],
       ),
     );
@@ -78,73 +53,159 @@ class _MyPageScreenState extends State<MyPageScreen> {
   }
 
   Widget _buildUserInfo() {
-    return const Padding(
-      padding: EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          //유저 닉네임마다 달라질 것
-          Text(
-            '배프 님,\n환영합니다.',
-            style: TextStyle(
-              fontSize: 20.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+    var userProvider = Provider.of<UserProvider>(context);
+    //로그인 여부 체크하기
+    var isLoggedIn = userProvider.isLoggedIn();
+
+    if (isLoggedIn) {
+      var nickname =
+          userProvider.nickname ?? userProvider.name; //닉네임 없을 때 이름으로 보여주기
+      var profileImageUrl = userProvider.profileImage;
+
+      return Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            //유저 닉네임마다 달라질 것
+            Text(
+              '$nickname 님,\n환영합니다.',
+              style: TextStyle(
+                fontSize: 20.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
+            CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.white,
+              backgroundImage:
+                  profileImageUrl != null && profileImageUrl is String
+                      ? NetworkImage(profileImageUrl)
+                      : const AssetImage('assets/image/default_profile.png')
+                          as ImageProvider,
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Center(
+        child: Text(
+          '로그인이 필요합니다.',
+          style: TextStyle(
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.white,
-          ),
-        ],
-      ),
-    );
+        ),
+      );
+    }
   }
 
   Widget _buildEditProfileButton() {
-    return ElevatedButton(
-      onPressed: () {},
-      child: const Text(
-        '프로필 수정하기',
-        style: TextStyle(
-          color: mainOrange,
-          fontWeight: FontWeight.bold,
-          fontSize: 18.0,
+    var userProvider = Provider.of<UserProvider>(context);
+    var isLoggedIn = userProvider.isLoggedIn();
+
+    if (isLoggedIn) {
+      return ElevatedButton(
+        onPressed: () {},
+        child: const Text(
+          '프로필 수정하기',
+          style: TextStyle(
+            color: mainOrange,
+            fontWeight: FontWeight.bold,
+            fontSize: 18.0,
+          ),
         ),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        fixedSize: const Size(300.0, 25.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          fixedSize: const Size(300.0, 25.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      return ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => LoginScreen()));
+        },
+        child: Text(
+          '로그인',
+          style: TextStyle(
+            color: mainOrange,
+            fontWeight: FontWeight.bold,
+            fontSize: 18.0,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          fixedSize: const Size(300.0, 25.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+        ),
+      );
+    }
   }
 
   List<Widget> _buildMenuItems(
       Map<String, Widget Function(BuildContext)> menuItems) {
-    return menuItems.entries
-        .map((MapEntry<String, Widget Function(BuildContext)> entry) {
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ListTile(
-          leading: Text(
-            entry.key,
-            style: const TextStyle(
-              fontSize: 18.0,
+    var userProvider = Provider.of<UserProvider>(context);
+    var isLoggedIn = userProvider.isLoggedIn();
+
+    if (isLoggedIn) {
+      return [
+        ...menuItems.entries
+            .map((MapEntry<String, Widget Function(BuildContext)> entry) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListTile(
+              leading: Text(
+                entry.key,
+                style: const TextStyle(
+                  fontSize: 18.0,
+                ),
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+                color: mainGray,
+              ),
+              onTap: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: entry.value));
+              },
             ),
+          );
+        }).toList(),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ListTile(
+            leading: const Text(
+              '로그아웃',
+              style: TextStyle(
+                fontSize: 18.0,
+              ),
+            ),
+            trailing: const Icon(
+              Icons.arrow_forward_ios,
+              color: mainGray,
+            ),
+            onTap: () async {
+              await Provider.of<UserProvider>(context, listen: false).signOut();
+
+              setState(() {
+                _selectedIndex = 0;
+              });
+            },
           ),
-          trailing: const Icon(
-            Icons.arrow_forward_ios,
-            color: mainGray,
-          ),
-          onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: entry.value));
-          },
         ),
-      );
-    }).toList();
+      ];
+    } else {
+      // 로그인되지 않은 상태에서는 메뉴 비우기
+      return [];
+    }
   }
 }

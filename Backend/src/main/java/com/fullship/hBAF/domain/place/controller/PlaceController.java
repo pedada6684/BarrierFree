@@ -49,7 +49,7 @@ public class PlaceController {
   @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = WheelPathForm.class)))
   public ResponseEntity<CommonResponseEntity> searchPathByWheel(@RequestBody PathSearchToWheelRequest requestDto) {
     SearchPathToWheelCommand command = requestDto.createForWheel();
-    return getResponseEntity(SuccessCode.OK, tMapApiService.searchPathToWheel(command));
+    return getResponseEntity(SuccessCode.OK, placeService.useWheelPath(command));
   }
 
   @PostMapping("/path/transit")
@@ -60,7 +60,7 @@ public class PlaceController {
     return getResponseEntity(SuccessCode.OK, placeService.useTransitPath(command));
   }
 
-  @PostMapping("/path/wheel/slope")
+  @PostMapping("/path/slope")
   @Operation(summary = "경사도 측정", description = "경로 내 휠체어 경로 경사도 측정")
   @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = PathGeoCode.class)))
   public ResponseEntity<CommonResponseEntity> calculateAngleSlope(@RequestBody CalculateAngleRequest requestDto){

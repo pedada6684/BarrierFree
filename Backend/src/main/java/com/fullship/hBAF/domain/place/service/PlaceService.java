@@ -36,6 +36,7 @@ import com.fullship.hBAF.global.api.response.BusesCurLocation;
 import com.fullship.hBAF.global.api.service.command.ElevationForPathCommand;
 import com.fullship.hBAF.global.api.service.command.OdSayGeoCommand;
 import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
+import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -435,5 +436,12 @@ public class PlaceService {
       }
     }
     return pathGeoCodes;
+  }
+
+  public WheelPathForm useWheelPath(SearchPathToWheelCommand command) {
+    WheelPathForm wheelPathForm = tMapApiService.searchPathToWheel(command);
+    ElevationForPathCommand elevation = ElevationForPathCommand.createElevateCommand(wheelPathForm.getGeoCode());
+    wheelPathForm.setGeoCode(googleApiService.elevationForPath(elevation).getGeoCode());
+    return wheelPathForm;
   }
 }

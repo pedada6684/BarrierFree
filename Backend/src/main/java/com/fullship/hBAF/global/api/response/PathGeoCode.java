@@ -45,10 +45,12 @@ public class PathGeoCode {
               new String[]{graphPos.get("x").toString(), graphPos.get("y").toString()});
         }
 
+        List<String[]> compressCode = polyLineSimplify(geoCode, 0.0005);
+
         pathGeoCodes.add(
             PathGeoCode.builder()
                 .trafficType(trafficType == 1 ? 2 : 1)
-                .geoCode(geoCode)
+                .geoCode(compressCode)
                 .build());
       }
       return pathGeoCodes;

@@ -7,6 +7,10 @@ import com.fullship.hBAF.domain.review.controller.response.*;
 import com.fullship.hBAF.domain.review.service.ReviewService;
 import com.fullship.hBAF.domain.review.service.command.request.*;
 import com.fullship.hBAF.util.ImageUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +30,8 @@ public class ReviewController {
     private final ImageUtil imageUtil;
 
     @PostMapping("/img")
+    @Operation(summary = "리뷰 이미지 등록", description = "리뷰 작성 중 등록한 이미지 저장")
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = UploadImgResponse.class)))
     public ResponseEntity<UploadImgResponse> uploadImg(@RequestParam("img") List<MultipartFile> img){
         List<String> list = new ArrayList<>();
         for(MultipartFile i : img) {
@@ -41,6 +47,8 @@ public class ReviewController {
     }
 
     @GetMapping
+    @Operation(summary = "리뷰 세부 조회", description = "reviewId를 이용한 리뷰 세부 조회")
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = GetReviewResponse.class)))
     public ResponseEntity<GetReviewResponse> getReview(@RequestParam("reviewId") Long reviewId){
         GetReviewRequestCommand command = GetReviewRequestCommand.builder()
                 .reviewId(reviewId)
@@ -52,6 +60,8 @@ public class ReviewController {
     }
 
     @GetMapping("/list")
+    @Operation(summary = "리뷰 목록 조회", description = "poiId를 이용한 리뷰 목록 조회")
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = GetAllReviewsByPoiIdResponse.class)))
     public ResponseEntity<GetAllReviewsByPoiIdResponse> getAllReviewsByPoiId(@RequestParam("poiId") String poiId){
 
         GetAllReviewsByPoiIdRequestCommand command = GetAllReviewsByPoiIdRequestCommand.builder()
@@ -64,6 +74,8 @@ public class ReviewController {
     }
 
     @PostMapping
+    @Operation(summary = "리뷰 등록", description = "poiId 해당하는 장소에 대한 리뷰 작성")
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = AddReviewResponse.class)))
     public ResponseEntity<AddReviewResponse> addReview(@RequestBody AddReviewRequest request){
 
         AddReviewRequestCommand command = AddReviewRequestCommand.builder()
@@ -80,6 +92,8 @@ public class ReviewController {
     }
 
     @PutMapping
+    @Operation(summary = "리뷰 수정", description = "reviewId에 해당하는 리뷰 수정")
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ModifyReviewResponse.class)))
     public ResponseEntity<ModifyReviewResponse> modifyReview(@RequestBody ModifyReviewRequest request){
 
         ModifyReviewRequestCommand command = ModifyReviewRequestCommand.builder()
@@ -95,6 +109,8 @@ public class ReviewController {
     }
 
     @DeleteMapping
+    @Operation(summary = "리뷰 삭제", description = "reviewId에 해당하는 리뷰 삭제")
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = DeleteReviewResponse.class)))
     public ResponseEntity<DeleteReviewResponse> deleteReview(@RequestBody DeleteReviewRequest request){
 
         DeleteReviewRequestCommand command = DeleteReviewRequestCommand.builder()

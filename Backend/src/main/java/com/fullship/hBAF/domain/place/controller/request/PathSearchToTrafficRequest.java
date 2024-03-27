@@ -13,10 +13,10 @@ import lombok.Data;
 @Data
 public class PathSearchToTrafficRequest {
 
-  private String startX;
-  private String startY;
-  private String endX;
-  private String endY;
+  private String startLng;
+  private String startLat;
+  private String endLng;
+  private String endLat;
 
   public SearchPathToTrafficCommand createForTaxi() {
     try {
@@ -33,10 +33,10 @@ public class PathSearchToTrafficRequest {
     try {
       return OdSayPathCommand.builder()
           .uri("https://api.odsay.com/v1/api/searchPubTransPathT?"
-                  + "SX=" + startX
-                  + "&SY=" + startY
-                  + "&EX=" + endX
-                  + "&EY=" + endY)
+                  + "SX=" + startLng
+                  + "&SY=" + startLat
+                  + "&EX=" + endLng
+                  + "&EY=" + endLat)
           .requestBody(createRequestBody())
           .build();
     } catch (Exception e) {
@@ -46,10 +46,10 @@ public class PathSearchToTrafficRequest {
 
   public Map<String, Object> createRequestBody() {
     Map<String, Object> map = new HashMap<>();
-    map.put("startX", startX);
-    map.put("startY", startY);
-    map.put("endX", endX);
-    map.put("endY", endY);
+    map.put("startX", startLng);
+    map.put("startY", startLat);
+    map.put("endX", endLng);
+    map.put("endY", endLat);
     return map;
   }
 }

@@ -2,13 +2,16 @@ package com.fullship.hBAF.domain.place.controller;
 
 import static com.fullship.hBAF.global.response.CommonResponseEntity.getResponseEntity;
 
+import com.fullship.hBAF.domain.place.controller.request.CalculateAngleRequest;
 import com.fullship.hBAF.domain.place.controller.request.GetPlaceListRequest;
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToTrafficRequest;
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToWheelRequest;
 import com.fullship.hBAF.domain.place.controller.response.PlaceListResponse;
 import com.fullship.hBAF.domain.place.controller.response.PlaceResponse;
 import com.fullship.hBAF.domain.place.service.PlaceService;
+import com.fullship.hBAF.domain.place.service.command.Request.AngleSlopeCommand;
 import com.fullship.hBAF.global.api.response.OdSayPath;
+import com.fullship.hBAF.global.api.response.PathGeoCode;
 import com.fullship.hBAF.global.api.response.TaxiPathForm;
 import com.fullship.hBAF.global.api.response.WheelPathForm;
 import com.fullship.hBAF.domain.place.service.command.Request.GetPlaceListRequestComment;
@@ -22,7 +25,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.text.ParseException;
 import lombok.RequiredArgsConstructor;
@@ -44,22 +46,16 @@ public class PlaceController {
 
   @PostMapping("/path/wheel")
   @Operation(summary = "휠체어 도보 경로 조회", description = "계단이 없는 보행자 도보를 이용한 휠체어 이동 경로 조회")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "경로 조회 성공", content = @Content(schema = @Schema(implementation = WheelPathForm.class))),
-      @ApiResponse(responseCode = "400", description = "경로 조회 실패")
-  })
-  public ResponseEntity<?> searchPathByWheel(@RequestBody PathSearchToWheelRequest requestDto) {
+  @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = WheelPathForm.class)))
+  public ResponseEntity<CommonResponseEntity> searchPathByWheel(@RequestBody PathSearchToWheelRequest requestDto) {
     SearchPathToWheelCommand command = requestDto.createForWheel();
     return getResponseEntity(SuccessCode.OK, tMapApiService.searchPathToWheel(command));
   }
 
   @PostMapping("/path/transit")
   @Operation(summary = "대중교통 경로 조회", description = "대중교통을 이용하는 경로 조회")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "경로 조회 성공", content = @Content(schema = @Schema(implementation = OdSayPath.class))),
-      @ApiResponse(responseCode = "400", description = "경로 조회 실패")
-  })
-  public ResponseEntity<?> searchPathByTransit(@RequestBody PathSearchToTrafficRequest requestDto) {
+  @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = OdSayPath.class)))
+  public ResponseEntity<CommonResponseEntity> searchPathByTransit(@RequestBody PathSearchToTrafficRequest requestDto) {
     OdSayPathCommand command = requestDto.createForSearch();
     return getResponseEntity(SuccessCode.OK, placeService.useTransitPath(command));
   }
@@ -75,28 +71,24 @@ public class PlaceController {
 
   @PostMapping("/path/taxi")
   @Operation(summary = "택시 경로 조회", description = "택시를 이용하는 경로 조회")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "경로 조회 성공", content = @Content(schema = @Schema(implementation = TaxiPathForm.class))),
-      @ApiResponse(responseCode = "400", description = "경로 조회 실패")
-  })
-  public ResponseEntity<?> searchPathByTaxi(@RequestBody PathSearchToTrafficRequest requestDto) {
+  @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = TaxiPathForm.class)))
+  public ResponseEntity<CommonResponseEntity> searchPathByTaxi(@RequestBody PathSearchToTrafficRequest requestDto) {
     SearchPathToTrafficCommand command = requestDto.createForTaxi();
     return getResponseEntity(SuccessCode.OK, tMapApiService.searchPathToCar(command));
   }
 
   @PostMapping("/list")
   @Operation(summary = "장애 편의 시설 목록 불러오기", description = "장애 편의 시설 목록 불러오기")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "카테고리 조회 성공", content = @Content(schema = @Schema(implementation = PlaceListResponse.class))),
-      @ApiResponse(responseCode = "400", description = "조회 실패")
-  })
+  @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = PlaceListResponse.class)))
   public ResponseEntity<CommonResponseEntity> getPlaceList(@RequestBody GetPlaceListRequest request) {
-    List<PlaceListResponse> placeList = placeService.getPlaceList(GetPlaceListRequestComment.builder().lat(request.getLat()).lng(request.getLng()).build());
+    List<PlaceListResponse> placeList = placeService.getPlaceList(
+        GetPlaceListRequestComment.builder().lat(request.getLat()).lng(request.getLng()).build());
     return getResponseEntity(SuccessCode.OK, placeList);
   }
 
   @GetMapping()
   @Operation(summary = "장애 편의 시설 상세 정보 불러오기", description = "장애 편의 시설 상세 정보 불러오기")
+  @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = PlaceResponse.class)))
   public ResponseEntity<CommonResponseEntity> getPlaceDetail(@RequestParam("placeId") Long placeId) {
     log.info("장애 편의 시설 상세 정보 불러오기 - 시설 id : {}", placeId);
     PlaceResponse place = placeService.getPlaceDetail(placeId);
@@ -105,8 +97,7 @@ public class PlaceController {
 
   @GetMapping("/test")
   @Operation(summary = "통신 테스트", description = "통신 테스트")
-  public ResponseEntity<CommonResponseEntity> test()
-          throws ParseException {
+  public ResponseEntity<CommonResponseEntity> test() throws ParseException {
     System.out.println("통신 테스트");
     return getResponseEntity(SuccessCode.OK, "테스트입니다.");
   }

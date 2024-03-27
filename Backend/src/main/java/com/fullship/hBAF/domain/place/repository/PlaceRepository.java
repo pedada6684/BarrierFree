@@ -12,9 +12,7 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     Place findPlaceByPoiId(String PoiId);
 
     boolean existsByPoiId(String poiId);
-
     Optional<Place> findByPoiId(String poiId);
-
     List<Place> findByCategory(String category);
 
     List<Place> findByType(boolean type);
@@ -22,7 +20,7 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
 //    @Query("select wtcltId from Place where type = true and barrierFree is null")
     @Query("select wtcltId from Place where type = true and barrierFree is null")
     List<String> findWtcltIdByType();
-
+    List<Place> findPlacesByTypeTrueAndPlaceNameContaining(String text);
     Optional<Place> findByWtcltId(String wcltId);
 
 //    List<Place> findByTypeTrueAndBarrierFreeIsNull();

@@ -13,6 +13,6 @@ public class AddReviewRequest {
     String content;
     Long feedback;
     String poiId;
-    List<MultipartFile> img;
+    List<String> img;
 
 }

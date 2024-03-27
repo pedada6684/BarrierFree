@@ -6,10 +6,16 @@ import com.fullship.hBAF.domain.review.controller.request.ModifyReviewRequest;
 import com.fullship.hBAF.domain.review.controller.response.*;
 import com.fullship.hBAF.domain.review.service.ReviewService;
 import com.fullship.hBAF.domain.review.service.command.request.*;
+import com.fullship.hBAF.util.ImageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,10 +23,25 @@ import org.springframework.web.bind.annotation.*;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final ImageUtil imageUtil;
+
+    @PostMapping("/img")
+    public ResponseEntity<UploadImgResponse> uploadImg(@RequestParam("img") List<MultipartFile> img){
+        List<String> list = new ArrayList<>();
+        for(MultipartFile i : img) {
+            System.out.println(i.getOriginalFilename());
+            list.add(imageUtil.uploadImageToS3(i, "review", UUID.randomUUID().toString().replace("-", "") + i.getOriginalFilename()).toString());
+        }
+
+        UploadImgResponse response = UploadImgResponse.builder()
+                .list(list)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     @GetMapping
-    public ResponseEntity<GetReviewResponse> getReview(@RequestParam Long reviewId){
-        System.out.println("******* "+reviewId);
+    public ResponseEntity<GetReviewResponse> getReview(@RequestParam("reviewId") Long reviewId){
         GetReviewRequestCommand command = GetReviewRequestCommand.builder()
                 .reviewId(reviewId)
                 .build();
@@ -31,7 +52,7 @@ public class ReviewController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<GetAllReviewsByPoiIdResponse> getAllReviewsByPoiId(@RequestParam String poiId){
+    public ResponseEntity<GetAllReviewsByPoiIdResponse> getAllReviewsByPoiId(@RequestParam("poiId") String poiId){
 
         GetAllReviewsByPoiIdRequestCommand command = GetAllReviewsByPoiIdRequestCommand.builder()
                 .poiId(poiId)
@@ -43,7 +64,7 @@ public class ReviewController {
     }
 
     @PostMapping
-    public ResponseEntity<AddReviewResponse> addReview(@ModelAttribute AddReviewRequest request){
+    public ResponseEntity<AddReviewResponse> addReview(@RequestBody AddReviewRequest request){
 
         AddReviewRequestCommand command = AddReviewRequestCommand.builder()
                 .feedback(request.getFeedback())
@@ -59,7 +80,7 @@ public class ReviewController {
     }
 
     @PutMapping
-    public ResponseEntity<ModifyReviewResponse> modifyReview(@ModelAttribute ModifyReviewRequest request){
+    public ResponseEntity<ModifyReviewResponse> modifyReview(@RequestBody ModifyReviewRequest request){
 
         ModifyReviewRequestCommand command = ModifyReviewRequestCommand.builder()
                 .reviewId(request.getReviewId())

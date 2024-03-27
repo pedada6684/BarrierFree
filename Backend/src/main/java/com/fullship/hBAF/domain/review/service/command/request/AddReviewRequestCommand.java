@@ -14,6 +14,6 @@ public class AddReviewRequestCommand {
     String content;
     Long feedback;
     String poiId;
-    List<MultipartFile> file;
+    List<String> file;
 
 }

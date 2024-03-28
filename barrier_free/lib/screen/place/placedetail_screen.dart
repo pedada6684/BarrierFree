@@ -1,10 +1,13 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/services/bookmarkPlace_service.dart';
+import 'package:barrier_free/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakaomap_webview/kakaomap_webview.dart';
+import 'package:provider/provider.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> placeDetail;
@@ -18,13 +21,31 @@ class PlaceDetailScreen extends StatefulWidget {
 }
 
 class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
-
+  int? userId;
   bool isStarFilled = false;
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _initializeUserId();
+  }
 
+  Future<void> _initializeUserId() async {
+    String? token = await SecureStorageService().getToken();
+    if (token != null) {
+      int decodeUserId = await SecureStorageService().decodeToken(token);
+      setState(() {
+        userId = decodeUserId;
+      });
+      print(decodeUserId);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final appKey = dotenv.env['APP_KEY'];
+    final isLoggedIn = Provider.of<UserProvider>(context).isLoggedIn();
 
     return Scaffold(
       appBar: CustomAppBar(title: '장소 상세'),
@@ -95,26 +116,33 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     ),
                   ),
                   Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      //memberId 수정 필요! 수정 후 지울 것
-                      bookmarkPlaceService().bookmarkPlace(1, widget.placeDetail['id'], widget.placeDetail['place_name'], widget.placeDetail['address_name'], widget.placeDetail['x'], widget.placeDetail['y']);
-                      setState(() {
-                        isStarFilled = !isStarFilled;
-                      });
-                    },
-                    icon: isStarFilled
-                        ? Icon(
-                      Icons.star,
-                      color: mainOrange,
-                      size: 30.0,
-                    )
-                        : Icon(
-                      Icons.star_border,
-                      color: mainOrange,
-                      size: 30.0,
-                    ),
-                  ),
+                  isLoggedIn
+                      ? IconButton(
+                          onPressed: () {
+                            bookmarkPlaceService().bookmarkPlace(
+                                userId!,
+                                widget.placeDetail['id'],
+                                widget.placeDetail['place_name'],
+                                widget.placeDetail['address_name'],
+                                widget.placeDetail['x'],
+                                widget.placeDetail['y']);
+                            setState(() {
+                              isStarFilled = !isStarFilled;
+                            });
+                          },
+                          icon: isStarFilled
+                              ? Icon(
+                                  Icons.star,
+                                  color: mainOrange,
+                                  size: 30.0,
+                                )
+                              : Icon(
+                                  Icons.star_border,
+                                  color: mainOrange,
+                                  size: 30.0,
+                                ),
+                        )
+                      : Container(),
                 ],
               ),
               SizedBox(height: 20.0),

@@ -48,6 +48,8 @@ dependencies:
   flutter_styled_toast: ^2.0.1
   flutter_secure_storage: ^9.0.0
   persistent_bottom_nav_bar: ^5.0.2
+  jwt_decode: ^0.3.1
+
 
 
 dev_dependencies:

@@ -1,3 +1,4 @@
+
 String generateMarkerScript(List<dynamic> searchResults) {
   String markerScript = "var markers = [];";
 

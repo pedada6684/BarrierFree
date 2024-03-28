@@ -81,7 +81,7 @@ class _MapResultScreenState extends State<MapResultScreen> {
     return """
       var circle = new kakao.maps.Circle({
         center: new kakao.maps.LatLng($lat, $lng),
-        radius: 20000, // 20km
+        radius: 3000, // 5km
         strokeWeight: 1,
         strokeColor: '#75B8FA',
         strokeOpacity: 0,

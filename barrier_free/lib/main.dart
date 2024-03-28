@@ -106,22 +106,6 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  // void _onItemTapped(int index) {
-  //   if (index == 2) {
-  //     _makePhoneCall('15881668');
-  //   } else {
-  //     if (index < 2) {
-  //       setState(() {
-  //         _selectedIndex = index;
-  //       });
-  //     } else if (index > 2) {
-  //       setState(() {
-  //         _selectedIndex = 2;
-  //       });
-  //     }
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -150,9 +134,9 @@ class _MyAppState extends State<MyApp> {
         navBarStyle: NavBarStyle.style6,
         onItemSelected: (int index) {
           if (index == 0) {
-            // MapScreen이 첫 번째 탭이라고 가정
             Provider.of<LocationProvider>(context, listen: false)
                 .updateLocation();
+            mapScreenKey = GlobalKey();
           }
         },
         // onItemSelected: (int index) {

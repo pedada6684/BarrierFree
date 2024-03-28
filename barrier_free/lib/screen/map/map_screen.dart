@@ -11,6 +11,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:kakaomap_webview/kakaomap_webview.dart';
 
+import '../../component/map_markers.dart';
+
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
 
@@ -19,7 +21,6 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-
   late TextEditingController _originController = TextEditingController();
   late List<dynamic> allPlaces = [];
   late List<dynamic> filteredPlaces = [];
@@ -28,7 +29,7 @@ class _MapScreenState extends State<MapScreen> {
 
   String customScript = '';
 
-  Map<String, List<dynamic>> categorizedPlaces={};
+  Map<String, List<dynamic>> categorizedPlaces = {};
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _MapScreenState extends State<MapScreen> {
     // _initializeLocation();
     // _loadPlaces();
   }
+
   //
   Future<Position?> _initializeLocation() async {
     try {
@@ -92,10 +94,13 @@ class _MapScreenState extends State<MapScreen> {
       String lng = _currentPosition!.longitude.toString();
 
       try {
-        List<dynamic> places = await PlaceService().fetchPlacesByCategory(lat, lng);
+        List<dynamic> places =
+            await PlaceService().fetchPlacesByCategory(lat, lng);
         print(places);
+
         Map<String, List<dynamic>> newCategorizedPlaces = {};
 
+        //장소 카테고리별로 분리하기
         for (var place in places) {
           String category = place['category'];
           if (!newCategorizedPlaces.containsKey(category)) {
@@ -108,37 +113,78 @@ class _MapScreenState extends State<MapScreen> {
           allPlaces = places;
           categorizedPlaces = newCategorizedPlaces; // 상태 업데이트
         });
+
+        categorizedPlaces.forEach((category, places) {
+          print('$category:${places.length}');
+        });
       } catch (e) {
         print(e);
       }
     }
   }
 
-
   void _onCategoryFiltered(String category) {
     // 선택한 버튼 카테고리로 장소 필터링
     List<dynamic> filteredPlaces =
         // allPlaces.where((place) => place['category'] == category).toList();
-    categorizedPlaces[category] ?? [];
+        categorizedPlaces[category] ?? [];
 
     // JavaScript 코드를 생성하여 마커를 업데이트
     String script = """
     var markers = []; // 마커 배열 초기화
+    var infowindows = [];
     var bounds = new kakao.maps.LatLngBounds(); // 지도 범위 객체 생성
+    var currentInfowindow = null;
+    var closeTimeout;
+
+function closeCurrentInfowindow(){
+    if(currentInfowindow) {
+      currentInfowindow.close();
+    }
+    if(closeTimeout) {
+      clearTimeout(closeTimeout);
+    }
+    currentInfowindow = null;
+  }
+  
+    function openInfowindow(marker, infowindow){
+      closeCurrentInfowindow();
+      infowindow.open(map, marker);
+      currentInfowindow = infowindow;
+      closeTimeout = setTimeout(function() {
+        if (currentInfowindow !== null) {
+          closeCurrentInfowindow();
+        }
+      }, 3000);
+      
+    }
     
-    ${filteredPlaces.map((place) => '''
-    var position = new kakao.maps.LatLng(${place['lat']}, ${place['lng']}); // 위치 객체 생성
-    var marker = new kakao.maps.Marker({ position: position }); // 마커 객체 생성
-    marker.setMap(map); // 마커를 지도에 표시
-    markers.push(marker); // 마커 배열에 추가
-    bounds.extend(position); // 지도 범위를 마커 위치로 확장
-    ''').join('')}
     
-    map.setBounds(bounds); // 지도 범위를 마커들이 포함되도록 조정
+  ${filteredPlaces.map((place) => '''
+    var position = new kakao.maps.LatLng(${place['lat']}, ${place['lng']});
+    var marker = new kakao.maps.Marker({
+      position: position,
+      map: map
+    });
+
+    var content = '<div style="padding:5px;min-width:150px;text-align:center;">${place['placeName']}</div>';
+    var infowindow = new kakao.maps.InfoWindow({
+      content: content
+    });
+     kakao.maps.event.addListener(marker, 'click', function() {
+       openInfowindow(marker, infowindow); 
+    });
+
+    markers.push(marker);
+    infowindows.push(infowindow);
+    bounds.extend(position);
+  ''').join('')}
+
+  map.setBounds(bounds);
   """;
 
     setState(() {
-      customScript = script; // 최종적으로 생성된 스크립트를 상태에 저장
+      customScript = script;
     });
   }
 

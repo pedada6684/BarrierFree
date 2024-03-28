@@ -24,7 +24,6 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final MemberRepository memberRepository;
-    private final ImageUtil imageUtil;
 
     public GetReviewResponse getReview(GetReviewRequestCommand command){
 
@@ -82,6 +81,35 @@ public class ReviewService {
         }
 
         GetAllReviewsByPoiIdResponse response = GetAllReviewsByPoiIdResponse.builder()
+                .list(list)
+                .build();
+        return response;
+    }
+
+    public GetAllReviewsByMemberIdResponse getAllReviewsByMemberId(GetAllReviewsByMemberIdRequestCommand command){
+
+        List<Review> allReviews = reviewRepository.findAllByMemberId(Long.parseLong(command.getMemberId()));
+        List<GetAllReviewsByMemberIdResponseCommand> list = new ArrayList<>();
+
+        for(Review review : allReviews) {
+            Member member = memberRepository.findById(review.getId()).get();
+
+            GetAllReviewsByMemberIdResponseCommand responseCommand = GetAllReviewsByMemberIdResponseCommand.builder()
+                    .memberId(member.getId())
+                    .nickname(member.getNickname())
+                    .content(review.getContent())
+                    .feedback(review.getFeedback())
+                    .regDate(review.getRegDate())
+                    .modifyDate(review.getModifyDate())
+                    .status(review.getStatus())
+                    .poiId(review.getPoiId())
+                    .img(review.getImgUrl())
+                    .build();
+
+            list.add(responseCommand);
+        }
+
+        GetAllReviewsByMemberIdResponse response = GetAllReviewsByMemberIdResponse.builder()
                 .list(list)
                 .build();
         return response;

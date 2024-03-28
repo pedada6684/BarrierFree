@@ -73,6 +73,17 @@ public class ReviewController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
+    @GetMapping("/list-by-memberId")
+    @Operation(summary = "리뷰 목록 조회", description = "memberId를 이용한 리뷰 목록 조회")
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = GetAllReviewsByPoiIdResponse.class)))
+    public ResponseEntity<GetAllReviewsByMemberIdResponse> getAllReviewsByMemberId(@RequestParam("memberId") String memberId){
+        GetAllReviewsByMemberIdRequestCommand command = GetAllReviewsByMemberIdRequestCommand.builder().memberId(memberId).build();
+
+        GetAllReviewsByMemberIdResponse response = reviewService.getAllReviewsByMemberId(command);
+
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
     @PostMapping
     @Operation(summary = "리뷰 등록", description = "poiId 해당하는 장소에 대한 리뷰 작성")
     @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = AddReviewResponse.class)))

@@ -1,5 +1,6 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/services/bookmarkPlace_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -96,8 +97,10 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   Spacer(),
                   IconButton(
                     onPressed: () {
+                      //memberId 수정 필요! 수정 후 지울 것
+                      bookmarkPlaceService().bookmarkPlace(1, widget.placeDetail['id'], widget.placeDetail['place_name'], widget.placeDetail['address_name'], widget.placeDetail['x'], widget.placeDetail['y']);
                       setState(() {
-                        isStarFilled = !isStarFilled; // 상태를 반전시킴 (토글)
+                        isStarFilled = !isStarFilled;
                       });
                     },
                     icon: isStarFilled

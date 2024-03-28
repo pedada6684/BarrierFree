@@ -1,4 +1,5 @@
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/provider/location_provider.dart';
 import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/directions/directions_screen.dart';
 import 'package:barrier_free/screen/mypage/mypage_screen.dart';
@@ -18,8 +19,12 @@ void main() async {
 
   await LocationService().getCurrentPosition();
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => UserProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => UserProvider()),
+        ChangeNotifierProvider(create: (context) => LocationProvider()),
+        // LocationProvider 추가
+      ],
       child: MyApp(),
     ),
   );
@@ -31,13 +36,15 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  GlobalKey mapScreenKey = GlobalKey();
   late PersistentTabController _controller;
 
   // 화면 리스트
   List<Widget> _buildScreens() {
     return [
-      MapScreen(), //지도
+      MapScreen(
+        key: mapScreenKey,
+      ), //지도
       DirectionsScreen(),
       Container(), //콜택시용 더미 화면
       MyPageScreen(),
@@ -51,7 +58,7 @@ class _MyAppState extends State<MyApp> {
     _controller = PersistentTabController(initialIndex: 0);
   }
 
-  void resetContoller(){
+  void resetContoller() {
     setState(() {
       _controller = PersistentTabController(initialIndex: 0);
     });
@@ -99,22 +106,6 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  // void _onItemTapped(int index) {
-  //   if (index == 2) {
-  //     _makePhoneCall('15881668');
-  //   } else {
-  //     if (index < 2) {
-  //       setState(() {
-  //         _selectedIndex = index;
-  //       });
-  //     } else if (index > 2) {
-  //       setState(() {
-  //         _selectedIndex = 2;
-  //       });
-  //     }
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -141,6 +132,13 @@ class _MyAppState extends State<MyApp> {
         confineInSafeArea: true,
         backgroundColor: mainOrange,
         navBarStyle: NavBarStyle.style6,
+        onItemSelected: (int index) {
+          if (index == 0) {
+            Provider.of<LocationProvider>(context, listen: false)
+                .updateLocation();
+            mapScreenKey = GlobalKey();
+          }
+        },
         // onItemSelected: (int index) {
         //   if (index == 3) {
         //     //마이페이지 탭
@@ -148,7 +146,6 @@ class _MyAppState extends State<MyApp> {
         //   }
         // },
       ),
-      navigatorKey: navigatorKey,
     );
   }
 }

@@ -14,6 +14,7 @@ class LocationService {
 
   Position? get currentPosition => _currentPosition;
 
+
   Future<Position> getCurrentPosition() async {
     bool serviceEnabled;
     LocationPermission permission;

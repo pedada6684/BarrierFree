@@ -22,10 +22,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final NaverLoginResult result = await FlutterNaverLogin.logIn();
 
     if (result.status == NaverLoginStatus.loggedIn) {
-      print('=======================================');
-      print(result.accessToken);
+      print('===================네이버로그인====================');
       print(result.account);
-      print('=======================================');
+      print('===================네이버로그인====================');
 
       //사용자 정보 받아오기
       final String? nickname = result.account.nickname;
@@ -39,11 +38,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       //백으로 정보 전달
       final response = await sendNaverLoginInfo(result.account);
-      if (response != null) {
-        //토큰 저장 by secure storage
-        final secureStorageService = SecureStorageService();
-        await secureStorageService.saveToken(response);
-      }
+      // if (response != null) {
+      //   //토큰 저장 by secure storage
+      //   final secureStorageService = SecureStorageService();
+      //   await secureStorageService.saveToken(response);
+      // }
 
       //네이버 로그인
       Provider.of<UserProvider>(context, listen: false)
@@ -53,21 +52,32 @@ class _LoginScreenState extends State<LoginScreen> {
     onLoginSuccess();
   }
 
-  Future<String?> sendNaverLoginInfo(NaverAccountResult account) async {
+  Future<void> sendNaverLoginInfo(NaverAccountResult account) async {
     final uri = Uri.parse("https://hbaf.site/api/member/naverLogin");
     //토큰
-    final response = await http.post(uri, body: {
-      'nickname': account.nickname,
-      'name': account.name,
-      'email': account.email,
-      'profileImage': account.profileImage,
-    });
+    try {
+      final response = await http.post(uri, body: {
+        'nickname': account.nickname,
+        'name': account.name,
+        'email': account.email,
+        'profileImage': account.profileImage,
+      });
+      print(response.body);
 
-    print(response.body);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final accessToken = data['accessToken'];
+        final refreshToken = data['refreshToken'];
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      print(data);
+        final secureStorageService = SecureStorageService();
+        await secureStorageService.saveToken(accessToken, refreshToken);
+        print(data);
+        // return data['token'];
+      } else {
+        print('오류 발생 오류 발생 오류 발생 ${response.statusCode}');
+      }
+    } catch (e) {
+      print('오류발생 오류발생 $e');
     }
   }
 

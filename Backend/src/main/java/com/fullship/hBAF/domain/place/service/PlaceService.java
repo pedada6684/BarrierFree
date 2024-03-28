@@ -44,6 +44,7 @@ import java.time.format.TextStyle;
 
 import java.io.IOException;
 
+import com.fullship.hBAF.global.response.exception.CustomException;
 import com.uber.h3core.H3Core;
 import com.uber.h3core.util.GeoCoord;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import static com.fullship.hBAF.global.response.ErrorCode.TEST_NOT_FOUND;
 import static com.fullship.hBAF.util.H3.daejeonH3Index;
 
 @Service
@@ -402,14 +404,6 @@ public class PlaceService {
 
     return placeList;
   }
-
-  public PlaceResponse getPlaceDetail(Long placeId) {
-    Place place = placeRepository.findById(placeId)
-            .orElseThrow(() -> new IllegalArgumentException("NOT FOUND PLACE " + placeId));
-
-    return PlaceResponse.from(place);
-  }
-
 
   public static List<PathGeoCode> setWheelGeoCode(
       List<PathGeoCode> origin, WheelPathForm wheel, int idx) {

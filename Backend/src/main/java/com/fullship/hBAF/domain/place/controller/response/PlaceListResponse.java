@@ -3,6 +3,7 @@ package com.fullship.hBAF.domain.place.controller.response;
 
 import com.fullship.hBAF.domain.place.entity.Image;
 import com.fullship.hBAF.domain.place.entity.Place;
+import com.fullship.hBAF.util.BarrierFreeInfo;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -19,10 +20,12 @@ public class PlaceListResponse {
     private String lng;
     private String poi;
     private String category;
-    private String barrierFree;
+    private List<String> barrierFree;
     private List<String> img;
 
     public static PlaceListResponse from(Place place) {
+        BarrierFreeInfo barrierFreeInfo = new BarrierFreeInfo();
+
         return PlaceListResponse.builder()
                 .placeId(place.getId())
                 .placeName(place.getPlaceName())
@@ -31,7 +34,7 @@ public class PlaceListResponse {
                 .lng(place.getLongitude())
                 .poi(place.getPoiId())
                 .category(place.getCategory())
-                .barrierFree(place.getBarrierFree())
+                .barrierFree(barrierFreeInfo.makeBafArrInfo(place.getBarrierFree()))
                 .img(createToCommand(place.getImages()))
                 .build();
     }

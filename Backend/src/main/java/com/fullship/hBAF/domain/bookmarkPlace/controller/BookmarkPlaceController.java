@@ -29,6 +29,7 @@ public class BookmarkPlaceController {
 
     BookmarkPlaceRequestCommand command = BookmarkPlaceRequestCommand.builder()
         .memberId(request.getMemberId())
+        .poiId(request.getPoiId())
         .placeName(request.getPlaceName())
         .address(request.getAddress())
         .longitude(request.getLongitude())

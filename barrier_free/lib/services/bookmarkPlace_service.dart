@@ -20,18 +20,24 @@ class bookmarkPlaceService {
       'longitude': longitude,
     };
 
+    print(requestBody);
+    print("$userId, $poiId, $placeName, $address, $latitude, $longitude");
+
     final response = await http
         .post(Uri.parse(_baseUrl), body: json.encode(requestBody), headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $accessToken',
     });
 
+    print(response.body);
+
     if (response.statusCode == 200) {
       final String decodedBody = utf8.decode(response.bodyBytes);
       final Map<String, dynamic> parsedJson = json.decode(decodedBody);
       return parsedJson['data'];
     } else {
-      throw Exception('북마크 장소 저장 실패');
+      // throw Exception('북마크 장소 저장 실패');
+      print(response.statusCode);
     }
   }
 }

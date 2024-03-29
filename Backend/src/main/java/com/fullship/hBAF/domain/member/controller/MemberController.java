@@ -14,10 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -49,6 +46,17 @@ public class MemberController {
     UpdateProfileResponse response = UpdateProfileResponse.builder()
         .profileImgUrl(profileImgUrl)
         .build();
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @GetMapping("/withdraw")
+  @Operation(summary = "프로필 이미지 변경", description = "프로필 이미지 변경")
+  @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = UpdateProfileResponse.class)))
+  public ResponseEntity<UpdateProfileResponse> updateProfileImg2() {
+    //유저 아이디 검증 메서드 하나 추가해야함 with jwt
+
+    UpdateProfileResponse response = UpdateProfileResponse.builder()
+            .build();
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }

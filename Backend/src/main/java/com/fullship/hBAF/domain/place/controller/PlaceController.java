@@ -86,15 +86,6 @@ public class PlaceController {
     return getResponseEntity(SuccessCode.OK, placeList);
   }
 
-  @GetMapping()
-  @Operation(summary = "장애 편의 시설 상세 정보 불러오기", description = "장애 편의 시설 상세 정보 불러오기")
-  @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = PlaceResponse.class)))
-  public ResponseEntity<CommonResponseEntity> getPlaceDetail(@RequestParam("placeId") Long placeId) {
-    log.info("장애 편의 시설 상세 정보 불러오기 - 시설 id : {}", placeId);
-    PlaceResponse place = placeService.getPlaceDetail(placeId);
-    return getResponseEntity(SuccessCode.OK, place);
-  }
-
   @GetMapping("/test")
   @Operation(summary = "통신 테스트", description = "통신 테스트")
   public ResponseEntity<CommonResponseEntity> test() throws ParseException {

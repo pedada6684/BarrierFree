@@ -21,7 +21,6 @@ logging:
 server:
   servlet:
     context-path: '/api'
-  port: 9090
 cloud:
   aws:
     bucket: hbaf

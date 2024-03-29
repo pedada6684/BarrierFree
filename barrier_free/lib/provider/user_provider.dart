@@ -1,7 +1,7 @@
 import 'package:barrier_free/screen/login/login_platform.dart';
 import 'package:barrier_free/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
-import 'package:jwt_decode/jwt_decode.dart';
+import 'package:provider/provider.dart';
 
 class UserProvider with ChangeNotifier {
   //유저 정보
@@ -68,4 +68,5 @@ class UserProvider with ChangeNotifier {
   }
 
   bool isLoggedIn() => _loginPlatform != LoginPlatform.none;
+
 }

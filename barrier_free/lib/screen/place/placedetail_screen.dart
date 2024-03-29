@@ -2,9 +2,9 @@ import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/services/bookmarkPlace_service.dart';
+import 'package:barrier_free/services/review_service.dart';
 import 'package:barrier_free/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakaomap_webview/kakaomap_webview.dart';
 import 'package:provider/provider.dart';
@@ -13,8 +13,11 @@ class PlaceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> placeDetail;
   final String placeCategory;
 
-  const PlaceDetailScreen(
-      {super.key, required this.placeDetail, required this.placeCategory});
+  const PlaceDetailScreen({
+    super.key,
+    required this.placeDetail,
+    required this.placeCategory,
+  });
 
   @override
   State<PlaceDetailScreen> createState() => _PlaceDetailScreenState();
@@ -23,12 +26,16 @@ class PlaceDetailScreen extends StatefulWidget {
 class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   int? userId;
   bool isStarFilled = false;
+  late Future<List<dynamic>> reviewListFuture;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _initializeUserId();
+    reviewListFuture =
+        ReviewService().fetchReviewByPlaceId(widget.placeDetail['id']);
+    print(widget.placeDetail['id']);
   }
 
   Future<void> _initializeUserId() async {
@@ -124,8 +131,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                 widget.placeDetail['id'],
                                 widget.placeDetail['place_name'],
                                 widget.placeDetail['address_name'],
-                                widget.placeDetail['x'],
-                                widget.placeDetail['y']);
+                                widget.placeDetail['y'],
+                                widget.placeDetail['x']);
                             setState(() {
                               isStarFilled = !isStarFilled;
                             });
@@ -151,8 +158,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                 width: MediaQuery.of(context).size.width * 0.9,
                 height: MediaQuery.of(context).size.width * 0.9,
                 child: KakaoMapView(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  height: MediaQuery.of(context).size.height * 0.8,
+                  width: MediaQuery.of(context).size.width * 0.7,
+                  height: MediaQuery.of(context).size.height * 0.7,
                   kakaoMapKey: appKey!,
                   lat: double.tryParse(widget.placeDetail['y'].toString()) ??
                       0.0,
@@ -258,79 +265,91 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                 ),
               ),
               SizedBox(height: 20.0),
-              Row(
-                children: [
-                  // CircleAvatar(
-                  //   // 사용자 프로필 이미지
-                  //   backgroundImage:
-                  //       AssetImage('assets/images/profile_image.png'),
-                  //   radius: 20, // 원의 반지름
-                  // ),
-                  SizedBox(width: 10), // 간격
-                  Text(
-                    '민지',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+              FutureBuilder<List<dynamic>>(
+                  future: reviewListFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: Text(
+                            '${widget.placeDetail['place_name']}의 리뷰를 불러오고 있습니다.'),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Column(
+                        children: [
+                          Text('리뷰를 불러오는데 실패했습니다 :${snapshot.error}'),
+                        ],
+                      );
+                    } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                      return ListView.builder(
+                        physics: NeverScrollableScrollPhysics(), // 스크롤 중첩 문제 해결
+                        shrinkWrap: true, // 내부 ListView 스크롤 가능하도록
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          var review = snapshot.data![index];
+                          return Text('리뷰리뷰리뷰'); // Custom Review Widget
+                        },
+                      );
+                    } else {
+                      return Center(
+                        child: Text('리뷰가 없습니다.', style: TextStyle(fontSize: 16.0),),
+                      );
+                    }
+                  }),
               SizedBox(height: 10.0), // 간격
               Row(
                 children: [
-                  // Image.asset('assets/images/attached_image.png'),
-                  Container(
-                    width: 130, // 원하는 너비
-                    height: 130, // 원하는 높이
-                    color: mainOrange, // 흰색 배경
-                  ),
-                  SizedBox(width: 20), // 간격
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xffffffff),
-                            // 배경 투명
-                            side: BorderSide(color: mainOrange, width: 1),
-                            // 테두리 오렌지
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(10), // 테두리 반경 10px
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '엘레베이터',
-                                style: TextStyle(
-                                  fontSize: 18.0,
-                                  color: mainBlack,
-                                ),
-                              ),
-                              SizedBox(width: 10),
-                              Icon(Icons.thumb_up_alt_outlined,
-                                  color: mainOrange), // 아이콘
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10.0, horizontal: 5.0),
-                          child: Text(
-                            '엘레베이터가 있긴 한데, 휠체어가 들어가지 않네요.',
-                            style: TextStyle(
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // // Image.asset('assets/images/attached_image.png'),
+                  // Container(
+                  //   width: 130, // 원하는 너비
+                  //   height: 130, // 원하는 높이
+                  //   color: mainOrange, // 흰색 배경
+                  // ),
+                  // SizedBox(width: 20), // 간격
+                  // Expanded(
+                  //   child: Column(
+                  //     crossAxisAlignment: CrossAxisAlignment.stretch,
+                  //     children: [
+                  //       ElevatedButton(
+                  //         onPressed: () {},
+                  //         style: ElevatedButton.styleFrom(
+                  //           backgroundColor: Color(0xffffffff),
+                  //           // 배경 투명
+                  //           side: BorderSide(color: mainOrange, width: 1),
+                  //           // 테두리 오렌지
+                  //           shape: RoundedRectangleBorder(
+                  //             borderRadius:
+                  //                 BorderRadius.circular(10), // 테두리 반경 10px
+                  //           ),
+                  //         ),
+                  //         child: Row(
+                  //           mainAxisAlignment: MainAxisAlignment.center,
+                  //           children: [
+                  //             Text(
+                  //               '엘레베이터',
+                  //               style: TextStyle(
+                  //                 fontSize: 18.0,
+                  //                 color: mainBlack,
+                  //               ),
+                  //             ),
+                  //             SizedBox(width: 10),
+                  //             Icon(Icons.thumb_up_alt_outlined,
+                  //                 color: mainOrange), // 아이콘
+                  //           ],
+                  //         ),
+                  //       ),
+                  // Padding(
+                  //   padding: const EdgeInsets.symmetric(
+                  //       vertical: 10.0, horizontal: 5.0),
+                  //   child: Text(
+                  //     '엘레베이터가 있긴 한데, 휠체어가 들어가지 않네요.',
+                  //     style: TextStyle(
+                  //       fontSize: 16,
+                  //     ),
+                  //   ),
+                  // ),
+                  //     ],
+                  //   ),
+                  // ),
                 ],
               ),
               ElevatedButton(

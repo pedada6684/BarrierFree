@@ -1,7 +1,6 @@
 import 'package:barrier_free/component/appBar.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:flutter/material.dart';
 
 class PlaceItem {
   final IconData icon;
@@ -18,6 +17,8 @@ class PlaceItem {
 }
 
 class MyPlaceScreen extends StatefulWidget {
+
+
   const MyPlaceScreen({super.key});
 
   @override
@@ -25,7 +26,9 @@ class MyPlaceScreen extends StatefulWidget {
 }
 
 class _MyPlaceScreenState extends State<MyPlaceScreen> {
-  final List<PlaceItem> listItems = [
+  //widget을 써야 StatefulWidget 인스턴스에 접근할 수 있음!
+
+  late List<PlaceItem> listItems = [
     PlaceItem(
       icon: Icons.home,
       title: '집',

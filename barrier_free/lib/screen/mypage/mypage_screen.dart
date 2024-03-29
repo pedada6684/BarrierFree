@@ -18,6 +18,7 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
+  int userId = 0;
 
   final Map<String, Widget Function(BuildContext)> menuItems = {
     '내 장소': (context) => const MyPlaceScreen(),
@@ -158,8 +159,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
     if (isLoggedIn) {
       return [
-        ...menuItems.entries
-            .map((MapEntry<String, Widget Function(BuildContext)> entry) {
+        ...menuItems.entries.map((entry) {
           return Padding(
             padding: const EdgeInsets.all(8.0),
             child: ListTile(
@@ -175,7 +175,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
               ),
               onTap: () {
                 Navigator.push(
-                    context, MaterialPageRoute(builder: entry.value));
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => entry.value(context)));
               },
             ),
           );
@@ -195,7 +197,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
             ),
             onTap: () async {
               await Provider.of<UserProvider>(context, listen: false).signOut();
-              Navigator.push(context, MaterialPageRoute(builder: (context)=>MapScreen()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => MapScreen()));
             },
           ),
         ),

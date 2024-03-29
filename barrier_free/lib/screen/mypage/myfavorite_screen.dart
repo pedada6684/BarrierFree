@@ -17,6 +17,7 @@ class PlaceItem {
 }
 
 class MyFavoriteScreen extends StatefulWidget {
+
   const MyFavoriteScreen({super.key});
 
   @override
@@ -43,6 +44,12 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
     ),
     // 추가 항목들을 이곳에 추가할 수 있습니다.
   ];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

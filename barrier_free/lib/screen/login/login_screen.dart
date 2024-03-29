@@ -18,6 +18,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+
   void signInWithNaver() async {
     final NaverLoginResult result = await FlutterNaverLogin.logIn();
 
@@ -26,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
       print(result.account);
       print('===================네이버로그인====================');
 
+      if(!mounted) return;
       //사용자 정보 받아오기
       final String? nickname = result.account.nickname;
       final String? email = result.account.email;
@@ -33,16 +35,18 @@ class _LoginScreenState extends State<LoginScreen> {
       final String? name = result.account.name;
 
       //userProvider에 사용자 정보
+      if(!mounted) return;
       Provider.of<UserProvider>(context, listen: false)
           .setUser(nickname, email!, profileImageUrl!, name!);
 
-      //백으로 정보 전달
-      final response = await sendNaverLoginInfo(result.account);
+      // 백으로 정보 전달
+    await sendNaverLoginInfo(result.account);
       // if (response != null) {
       //   //토큰 저장 by secure storage
       //   final secureStorageService = SecureStorageService();
       //   await secureStorageService.saveToken(response);
       // }
+      if(!mounted) return;
 
       //네이버 로그인
       Provider.of<UserProvider>(context, listen: false)

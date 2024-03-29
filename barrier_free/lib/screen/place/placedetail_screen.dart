@@ -216,24 +216,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   ),
                 ],
               ),
-              // SizedBox(height: 10.0),
-              // Row(
-              //   children: [
-              //     Icon(
-              //       Icons.access_time,
-              //       color: mainGray,
-              //       size: 16.0,
-              //     ),
-              //     SizedBox(width: 5.0),
-              //     Text(
-              //       'URL',
-              //       style: TextStyle(
-              //         fontSize: 14.0,
-              //         color: mainGray,
-              //       ),
-              //     ),
-              //   ],
-              // ),
               SizedBox(height: 20.0),
               Text(
                 '베리어프리 시설',

@@ -36,30 +36,80 @@ class _MapScreenState extends State<MapScreen> {
     //초기화
     allPlaces = [];
     filteredPlaces = [];
-    // _initializeLocation();
-    // _loadPlaces();
-    _currentPositionFuture = LocationService().getCurrentPosition();
+    _initMapData();
   }
 
-  // void _initializeLocation() async {
-  //   await LocationService().getCurrentPosition();
-  //   setState(() {
-  //     _currentPositionFuture = LocationService().getCurrentPosition();
-  //   });
-  // }
+  void _initMapData() async {
+    _currentPositionFuture = LocationService().getCurrentPosition();
+    final currentPosition = await _currentPositionFuture;
+    _loadPlaces(currentPosition);
+  }
+
+  void _loadPlaces(Position position) async {
+    final places = await PlaceService().fetchPlacesByCategory(
+        position.latitude.toString(), position.longitude.toString());
+
+    setState(() {
+      allPlaces = places;
+      _setInitialMarker(position, places);
+    });
+  }
+
+  void _setInitialMarker(Position currentPosition, List<dynamic> places) {
+    setState(() {
+      customScript = generateCutomScript(places, currentPosition,
+          showCurrentLocation: true);
+    });
+  }
+
+  String generateCutomScript(List<dynamic> places, Position currentPosition,
+      {bool showCurrentLocation = true}) {
+    var markersScript = places.map((place) {
+      return """
+      var markerPosition = new kakao.maps.LatLng(${place['lat']}, ${place['lng']});
+      var marker = new kakao.maps.Marker({
+        position: markerPosition,
+        map: map
+      });
+      kakao.maps.event.addListener(marker, 'click', function() {
+        var infowindow = new kakao.maps.InfoWindow({
+          content: '<div style="padding:5px;">${place['placeName']}</div>'
+        });
+        infowindow.open(map, marker);
+      });
+    """;
+    }).join('\n');
+
+    var currentLocationScript = showCurrentLocation
+        ? """
+    var currentMarkerPosition = new kakao.maps.LatLng(${currentPosition.latitude}, ${currentPosition.longitude});
+    var currentMarker = new kakao.maps.Marker({
+      position: currentMarkerPosition,
+      map: map,
+      image: new kakao.maps.MarkerImage('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png')
+    });
+  """
+        : '';
+
+    return """
+    ${markersScript}
+    ${currentLocationScript}
+    map.setBounds(new kakao.maps.LatLngBounds(new kakao.maps.LatLng(${currentPosition.latitude}, ${currentPosition.longitude})));
+  """;
+  }
 
   Future<void> _search() async {
     if (_originController.text.isNotEmpty) {
       try {
         final result = await fetchSearchResults(_originController.text);
-        final currentPositon = await _currentPositionFuture;
+        final currentPosition = await _currentPositionFuture;
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => MapResultScreen(
               searchResults: result,
               keyWord: _originController.text,
-              currentPosition: currentPositon,
+              currentPosition: currentPosition,
             ),
           ),
         );
@@ -73,29 +123,14 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  void _onCategoryFiltered(String category) {
-    // 선택한 버튼 카테고리로 장소 필터링
-    List<dynamic> filteredPlaces =
-    allPlaces.where((place) => place['category'] == category).toList();
-
-    // JavaScript 코드를 생성하여 마커를 업데이트
-    String script = """
-    var markers = []; // 마커 배열 초기화
-    var bounds = new kakao.maps.LatLngBounds(); // 지도 범위 객체 생성
-    
-    ${filteredPlaces.map((place) => '''
-    var position = new kakao.maps.LatLng(${place['lat']}, ${place['lon']}); // 위치 객체 생성
-    var marker = new kakao.maps.Marker({ position: position }); // 마커 객체 생성
-    marker.setMap(map); // 마커를 지도에 표시
-    markers.push(marker); // 마커 배열에 추가
-    bounds.extend(position); // 지도 범위를 마커 위치로 확장
-    ''').join('')}
-    
-    map.setBounds(bounds); // 지도 범위를 마커들이 포함되도록 조정
-  """;
-
+  //
+  void _onCategoryFiltered(String category) async {
+    final currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    List<dynamic> filtered =
+        allPlaces.where((place) => place['category'] == category).toList();
     setState(() {
-      customScript = script; // 최종적으로 생성된 스크립트를 상태에 저장
+      filteredPlaces = filtered;
     });
   }
 
@@ -104,8 +139,7 @@ class _MapScreenState extends State<MapScreen> {
     final appKey = dotenv.env['APP_KEY'];
 
     return FutureBuilder<Position>(
-      future:
-      _currentPositionFuture,
+      future: _currentPositionFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
@@ -155,7 +189,7 @@ class _MapScreenState extends State<MapScreen> {
                   decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius:
-                      const BorderRadius.all(Radius.circular(30.0)),
+                          const BorderRadius.all(Radius.circular(30.0)),
                       border: Border.all(color: mainOrange, width: 2.5),
                       boxShadow: [
                         BoxShadow(
@@ -170,12 +204,12 @@ class _MapScreenState extends State<MapScreen> {
                         child: TextField(
                           decoration: const InputDecoration(
                             contentPadding:
-                            EdgeInsets.symmetric(horizontal: 16.0),
+                                EdgeInsets.symmetric(horizontal: 16.0),
                             hintText: '검색어를 입력해주세요.',
                             hintStyle: TextStyle(
                                 color: mainGray, fontWeight: FontWeight.w600),
                             border:
-                            OutlineInputBorder(borderSide: BorderSide.none),
+                                OutlineInputBorder(borderSide: BorderSide.none),
                           ),
                           textCapitalization: TextCapitalization.words,
                           controller: _originController,
@@ -207,7 +241,7 @@ class _MapScreenState extends State<MapScreen> {
                         lat: position.latitude,
                         lng: position.longitude,
                         markerImageURL:
-                        'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                            'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
                         showZoomControl: false,
                         showMapTypeControl: false,
                         customScript: customScript,

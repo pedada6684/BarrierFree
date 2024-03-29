@@ -23,7 +23,8 @@ class PlaceService {
           response.bodyBytes); //Map<String, dynamic>형태로 온다 data 형태로 return해줘야함
       final Map<String, dynamic> parsedJson = json.decode(decodedBody);
       // print(decodedBody);
-      print(parsedJson);
+      // print(parsedJson);
+      print(parsedJson['data']);
       return parsedJson['data'];
 
     } else {

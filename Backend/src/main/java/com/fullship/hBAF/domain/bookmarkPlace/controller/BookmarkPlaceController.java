@@ -1,6 +1,7 @@
 package com.fullship.hBAF.domain.bookmarkPlace.controller;
 
 import com.fullship.hBAF.domain.bookmarkPlace.controller.request.BookmarkPlaceRequest;
+import com.fullship.hBAF.domain.bookmarkPlace.controller.response.GetBookmarkPlaceByMemberIdResponse;
 import com.fullship.hBAF.domain.bookmarkPlace.controller.response.BookmarkPlaceResponse;
 import com.fullship.hBAF.domain.bookmarkPlace.service.BookmarkPlaceService;
 import com.fullship.hBAF.domain.bookmarkPlace.service.command.request.BookmarkPlaceRequestCommand;
@@ -27,14 +28,6 @@ public class BookmarkPlaceController {
   @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = BookmarkPlaceResponse.class)))
   public ResponseEntity<BookmarkPlaceResponse> bookmarkPlace(@RequestBody BookmarkPlaceRequest request) {
 
-    System.out.println("******BookmarkPlaceController******");
-    System.out.println("memberId : "+request.getMemberId());
-    System.out.println("poiId : "+request.getPoiId());
-    System.out.println("placeName : "+request.getPlaceName());
-    System.out.println("address : "+request.getAddress());
-    System.out.println("longitude : "+request.getLongitude());
-    System.out.println("latitude : "+request.getLatitude());
-
     BookmarkPlaceRequestCommand command = BookmarkPlaceRequestCommand.builder()
         .memberId(request.getMemberId())
         .poiId(request.getPoiId())
@@ -47,5 +40,15 @@ public class BookmarkPlaceController {
     BookmarkPlaceResponse response = bookmarkPlaceService.bookmark(command);
 
     return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @GetMapping
+  @Operation(summary = "유저 별 북마크 조회", description = "memberId를 이용한 북마크 조회")
+  @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = GetBookmarkPlaceByMemberIdResponse.class)))
+  public ResponseEntity<GetBookmarkPlaceByMemberIdResponse> getBookmarkPlaceByMemberId(@RequestParam("memberId") Long memberId){
+
+    GetBookmarkPlaceByMemberIdResponse response = bookmarkPlaceService.getBookmarkPlaceByMember(memberId);
+
+    return new ResponseEntity<>(response,HttpStatus.OK);
   }
 }

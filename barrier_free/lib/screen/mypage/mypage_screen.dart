@@ -18,7 +18,6 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
-  int userId = 0;
 
   final Map<String, Widget Function(BuildContext)> menuItems = {
     '내 장소': (context) => const MyPlaceScreen(),

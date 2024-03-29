@@ -139,12 +139,6 @@ class _MyAppState extends State<MyApp> {
             mapScreenKey = GlobalKey();
           }
         },
-        // onItemSelected: (int index) {
-        //   if (index == 3) {
-        //     //마이페이지 탭
-        //     _controller.jumpToTab(0);
-        //   }
-        // },
       ),
     );
   }

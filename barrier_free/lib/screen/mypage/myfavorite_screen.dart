@@ -1,23 +1,12 @@
 import 'package:barrier_free/component/appBar.dart';
-import 'package:barrier_free/screen/place/placedetail_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:barrier_free/const/color.dart';
-
-class PlaceItem {
-  final String title;
-  final String address;
-  final Widget Function(BuildContext) builder;
-
-  PlaceItem({
-    required this.title,
-    required this.address,
-    required this.builder,
-  });
-}
+import 'package:barrier_free/provider/user_provider.dart';
+import 'package:barrier_free/screen/place/placedetail_screen.dart';
+import 'package:barrier_free/services/bookmarkPlace_service.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class MyFavoriteScreen extends StatefulWidget {
-
   const MyFavoriteScreen({super.key});
 
   @override
@@ -25,83 +14,103 @@ class MyFavoriteScreen extends StatefulWidget {
 }
 
 class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
-  final List<PlaceItem> listItems = [
-    PlaceItem(
-      title: '삼성화재 유성연수원',
-      address: '대전광역시 유성구',
-      builder: (context) => PlaceDetailScreen(
-        placeDetail: {},
-        placeCategory: '',
-      ),
-    ),
-    PlaceItem(
-      title: '하이테이블',
-      address: '대전광역시 유성구',
-      builder: (context) => PlaceDetailScreen(
-        placeDetail: {},
-        placeCategory: '',
-      ),
-    ),
-    // 추가 항목들을 이곳에 추가할 수 있습니다.
-  ];
+  Future<List<dynamic>>? myBmList;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadMyBookMarkList();
+    });
+  }
+
+  Future<void> _loadMyBookMarkList() async {
+    print('loadMyBookMarkList요청확인');
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final userId = userProvider.userId;
+
+      if (userId != null) {
+        final bookmarks =
+            await bookmarkPlaceService().fetchBookMarkByUserId(userId);
+        setState(() {
+          myBmList = Future.value(bookmarks);
+        });
+      }
+    } catch (e) {
+      print('북마크 리스트 불러오는 동안 오류 발생!!!');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(title: '즐겨찾기'),
-      body: ListView(
-        children: [
-          ..._buildListItems(),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _buildListItems() {
-    return listItems
-        .map((placeItem) => Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 10.0, horizontal: 10.0), // 수직 10, 수평 20
-                  child: ListTile(
-                    title: Text(
-                      placeItem.title,
-                      style: const TextStyle(
-                        fontSize: 20.0,
-                      ),
-                    ),
-                    subtitle: Text(
-                      placeItem.address, // 주소 표시
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.grey, // 다른 스타일 적용 가능
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios,
-                      color: mainGray,
-                    ),
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: placeItem.builder));
+      body: myBmList == null
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : FutureBuilder<List<dynamic>>(
+              future: myBmList,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('데이터 로드 중 오류가 발생했습니다.'));
+                } else if (snapshot.hasData) {
+                  final bookmarks = snapshot.data!;
+                  return ListView.builder(
+                    itemCount: bookmarks.length,
+                    itemBuilder: (context, index) {
+                      final bookmark = bookmarks[index];
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10.0, horizontal: 10.0),
+                            child: ListTile(
+                              title: Text(
+                                bookmark['placeName'],
+                                style: const TextStyle(fontSize: 20.0),
+                              ),
+                              subtitle: Text(
+                                bookmark['address'],
+                                style: const TextStyle(
+                                    fontSize: 16.0, color: Colors.grey),
+                              ),
+                              trailing: const Icon(Icons.arrow_forward_ios,
+                                  color: mainGray),
+                              onTap: () {
+                                // 여기서 PlaceDetailScreen으로 넘어갈 때, 해당 장소의 상세 데이터를 함께 전달합니다.
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PlaceDetailScreen(
+                                      placeDetail: bookmark,
+                                      // 예제에서는 {}로 되어 있지만, 실제 데이터로 변경
+                                      placeCategory: bookmark[
+                                          'category'], // 'category' 필드 사용 예시
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Divider(
+                              height: 1,
+                              color: Colors.grey.withOpacity(0.5),
+                              indent: 20,
+                              endIndent: 20),
+                        ],
+                      );
                     },
-                  ),
-                ),
-                Divider(
-                  height: 1, // Divider 높이 조절
-                  color: Colors.grey.withOpacity(0.5), // Divider 색상
-                  indent: 20, // 시작 부분 여백
-                  endIndent: 20, // 끝 부분 여백
-                ),
-              ],
-            ))
-        .toList();
+                  );
+                } else {
+                  return Center(child: Text('데이터가 없습니다.'));
+                }
+              },
+            ),
+    );
   }
 }

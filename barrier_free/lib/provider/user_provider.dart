@@ -11,7 +11,6 @@ class UserProvider with ChangeNotifier {
   String? _name;
   int? _userId;
 
-
   //유저 정보 접근자
   String? get nickname => _nickname;
 
@@ -22,7 +21,6 @@ class UserProvider with ChangeNotifier {
   String? get name => _name;
 
   int? get userId => _userId;
-
 
   //유저 정보 설정하기
   void setUser(
@@ -48,8 +46,9 @@ class UserProvider with ChangeNotifier {
   LoginPlatform get loginPlatform => _loginPlatform;
 
   //로그인
-  void signIn(LoginPlatform platform) {
+  void signIn(LoginPlatform platform, int userId) {
     _loginPlatform = platform;
+    setUserId(userId);
     notifyListeners();
   }
 
@@ -64,9 +63,9 @@ class UserProvider with ChangeNotifier {
 
   void setUserId(int userId) {
     _userId = userId;
+    print('userId 세팅 완료');
     notifyListeners();
   }
 
   bool isLoggedIn() => _loginPlatform != LoginPlatform.none;
-
 }

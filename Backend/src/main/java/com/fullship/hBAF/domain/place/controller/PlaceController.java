@@ -6,6 +6,7 @@ import com.fullship.hBAF.domain.place.controller.request.CalculateAngleRequest;
 import com.fullship.hBAF.domain.place.controller.request.GetPlaceListRequest;
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToTrafficRequest;
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToWheelRequest;
+import com.fullship.hBAF.domain.place.controller.response.GetPlaceResponse;
 import com.fullship.hBAF.domain.place.controller.response.PlaceListResponse;
 import com.fullship.hBAF.domain.place.controller.response.PlaceResponse;
 import com.fullship.hBAF.domain.place.service.PlaceService;
@@ -29,6 +30,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.text.ParseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -84,6 +86,15 @@ public class PlaceController {
     List<PlaceListResponse> placeList = placeService.getPlaceList(
         GetPlaceListRequestComment.builder().lat(request.getLat()).lng(request.getLng()).build());
     return getResponseEntity(SuccessCode.OK, placeList);
+  }
+
+  @GetMapping
+  @Operation(summary = "장애 편의 시설 불러오기", description = "장애 편의 시설 불러오기")
+  public ResponseEntity<GetPlaceResponse> getPlace(@RequestParam("poiId") String poiId){
+
+    GetPlaceResponse response = placeService.getPlace(poiId);
+
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   @GetMapping("/test")

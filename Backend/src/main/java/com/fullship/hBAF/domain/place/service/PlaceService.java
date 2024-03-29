@@ -8,6 +8,7 @@ import com.fullship.hBAF.domain.busInfo.repository.BusInfoRepository;
 import com.fullship.hBAF.domain.busStop.entity.BusStop;
 import com.fullship.hBAF.domain.busStop.repository.BusStopRepository;
 import com.fullship.hBAF.domain.metroInfo.repository.MetroInfoRepository;
+import com.fullship.hBAF.domain.place.controller.response.GetPlaceResponse;
 import com.fullship.hBAF.domain.place.controller.response.PlaceListResponse;
 import com.fullship.hBAF.domain.place.controller.response.PlaceResponse;
 import com.fullship.hBAF.domain.place.entity.Image;
@@ -386,6 +387,22 @@ public class PlaceService {
     return Precision.round(s, 3);
   }
 
+  public GetPlaceResponse getPlace(String poiId){
+    Place place = placeRepository.findPlaceByPoiId(poiId);
+
+    GetPlaceResponse response = GetPlaceResponse.builder()
+            .placeId(place.getId())
+            .placeName(place.getPlaceName())
+            .address(place.getAddress())
+            .barrierFree(place.getBarrierFree())
+            .category(place.getCategory())
+            .lat(place.getLatitude())
+            .lng(place.getLongitude())
+            .poiId(place.getPoiId())
+            .build();
+
+    return response;
+  }
   /**
    * 장애인 시설 카테고리별 불러오기
    * @return

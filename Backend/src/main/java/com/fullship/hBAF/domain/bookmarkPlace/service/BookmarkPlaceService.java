@@ -30,11 +30,17 @@ public class BookmarkPlaceService {
     System.out.println("******member****** : "+member.getId()+" "+member.getUsername());
     System.out.println(bookmarkPlaceRepository.findBookmarkPlaceByMemberAndPoiId(member,command.getPoiId()));
     BookmarkPlace bookmarkPlace;
+
+    BookmarkPlaceResponseCommand responseCommand = null;
     if((bookmarkPlace=bookmarkPlaceRepository.findBookmarkPlaceByMemberAndPoiId(member,command.getPoiId()))==null) {
       bookmarkPlace = BookmarkPlace.createTobookmarkPlace(member, command.getPoiId());
       bookmarkPlaceRepository.save(bookmarkPlace);
 
-      if(placeRepository.findPlaceByPoiId(command.getPoiId())!=null) {
+      responseCommand = BookmarkPlaceResponseCommand.builder()
+              .response("bookmark")
+              .build();
+
+      if(placeRepository.findPlaceByPoiId(command.getPoiId())==null) {
         Place place = Place.createNewPlace(
                 command.getPlaceName(),
                 command.getAddress(),
@@ -47,17 +53,14 @@ public class BookmarkPlaceService {
                 false
         );
         placeRepository.save(place);
-        BookmarkPlaceResponseCommand responseCommand = BookmarkPlaceResponseCommand.builder()
-                .response("bookmark")
-                .build();
       }
     }
-    else
+    else {
       bookmarkPlaceRepository.delete(bookmarkPlace);
-
-    BookmarkPlaceResponseCommand responseCommand = BookmarkPlaceResponseCommand.builder()
-            .response("unBookmark")
-            .build();
+      responseCommand = BookmarkPlaceResponseCommand.builder()
+              .response("unBookmark")
+              .build();
+    }
     return BookmarkPlaceResponse.builder().command(responseCommand).build();
   }
 }

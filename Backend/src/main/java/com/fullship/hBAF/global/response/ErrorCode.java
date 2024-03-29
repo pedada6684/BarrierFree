@@ -15,8 +15,8 @@ public enum ErrorCode {
 
     /* JWT Token Error */
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 토큰"),
-
     INVALID_TOKEN(HttpStatus.FORBIDDEN, "잘못된 토큰"),
+    TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "토큰을 찾을 수 없습니다."),
 
     /* TMapApi 요청 실패 */
     NO_AVAILABLE_API(HttpStatus.BAD_REQUEST, "API 요청에 실패하였습니다."),

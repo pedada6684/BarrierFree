@@ -30,10 +30,10 @@ public class MemberService {
   private final ImageUtil imageUtil;
 
 
-  public Long findUserByEmail(FindMemberByEmailCommand command){
-    Member member = memberRepository.findByEmail(command.getEmail())
+  public Member findMemberById(FindMemberByIdCommand command){
+    Member member = memberRepository.findById(command.getId())
             .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
-    return member.getId();
+    return member;
   }
 
   @Transactional(readOnly = false)

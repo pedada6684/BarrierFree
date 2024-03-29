@@ -27,6 +27,14 @@ public class BookmarkPlaceController {
   @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = BookmarkPlaceResponse.class)))
   public ResponseEntity<BookmarkPlaceResponse> bookmarkPlace(@RequestBody BookmarkPlaceRequest request) {
 
+    System.out.println("******BookmarkPlaceController******");
+    System.out.println("memberId : "+request.getMemberId());
+    System.out.println("poiId : "+request.getPoiId());
+    System.out.println("placeName : "+request.getPlaceName());
+    System.out.println("address : "+request.getAddress());
+    System.out.println("longitude : "+request.getLongitude());
+    System.out.println("latitude : "+request.getLatitude());
+
     BookmarkPlaceRequestCommand command = BookmarkPlaceRequestCommand.builder()
         .memberId(request.getMemberId())
         .poiId(request.getPoiId())

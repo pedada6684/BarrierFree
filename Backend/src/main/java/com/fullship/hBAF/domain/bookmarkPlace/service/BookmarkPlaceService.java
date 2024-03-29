@@ -27,10 +27,10 @@ public class BookmarkPlaceService {
       throw new CustomException(ErrorCode.REQUEST_NOT_FOUND);
 
     Member member = memberRepository.getReferenceById(command.getMemberId());
-
+    System.out.println("******member****** : "+member.getId()+" "+member.getUsername());
+    System.out.println(bookmarkPlaceRepository.findBookmarkPlaceByMemberAndPoiId(member,command.getPoiId()));
     BookmarkPlace bookmarkPlace;
     if((bookmarkPlace=bookmarkPlaceRepository.findBookmarkPlaceByMemberAndPoiId(member,command.getPoiId()))==null) {
-
       bookmarkPlace = BookmarkPlace.createTobookmarkPlace(member, command.getPoiId());
       bookmarkPlaceRepository.save(bookmarkPlace);
 

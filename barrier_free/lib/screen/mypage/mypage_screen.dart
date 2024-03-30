@@ -5,6 +5,7 @@ import 'package:barrier_free/screen/login/login_screen.dart';
 import 'package:barrier_free/screen/map/map_screen.dart';
 import 'package:barrier_free/screen/mypage/myplace_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:provider/provider.dart';
 
 import 'myfavorite_screen.dart';
@@ -194,6 +195,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
               color: mainGray,
             ),
             onTap: () async {
+              // await FlutterNaverLogin.logOut();
               await Provider.of<UserProvider>(context, listen: false).signOut();
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => MapScreen()));

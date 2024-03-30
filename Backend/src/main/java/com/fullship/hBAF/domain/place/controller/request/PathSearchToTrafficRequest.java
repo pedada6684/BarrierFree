@@ -13,6 +13,7 @@ import lombok.Data;
 @Data
 public class PathSearchToTrafficRequest {
 
+  private String type;
   private String startLng;
   private String startLat;
   private String endLng;
@@ -32,6 +33,7 @@ public class PathSearchToTrafficRequest {
   public OdSayPathCommand createForSearch() {
     try {
       return OdSayPathCommand.builder()
+          .type(type)
           .uri("https://api.odsay.com/v1/api/searchPubTransPathT?"
                   + "SX=" + startLng
                   + "&SY=" + startLat

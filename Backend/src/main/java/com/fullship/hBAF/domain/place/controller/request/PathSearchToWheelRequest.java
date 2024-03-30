@@ -15,17 +15,23 @@ import lombok.Data;
 @Builder
 public class PathSearchToWheelRequest {
 
+  private final int wheel = 4;
+  private final int eWheel = 10;
+  private final int crutch = 3;
+
+  private String type;
   private String startLng;
   private String startLat;
   private String endLng;
   private String endLat;
 
-  public static SearchPathToWheelCommand createForWheel(PointGeoCode startGeo, PointGeoCode endGeo) {
+  public static SearchPathToWheelCommand createForWheel(PointGeoCode startGeo, PointGeoCode endGeo, String type) {
     return PathSearchToWheelRequest.builder()
         .startLng(startGeo.getLongitude())
         .startLat(startGeo.getLatitude())
         .endLng(endGeo.getLongitude())
         .endLat(endGeo.getLatitude())
+        .type(type)
         .build()
         .createForWheel();
   }
@@ -43,6 +49,7 @@ public class PathSearchToWheelRequest {
 
   public Map<String, Object> createRequestBody() {
     Map<String, Object> map = new HashMap<>();
+    map.put("speed", type.equals("휠체어") ? wheel : type.equals("전동휠체어") ? eWheel : crutch);
     map.put("startX", startLng);
     map.put("startY", startLat);
     map.put("endX", endLng);

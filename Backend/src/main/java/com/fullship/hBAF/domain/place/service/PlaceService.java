@@ -108,49 +108,51 @@ public class PlaceService {
     }
     log.info("환승 횟수 이상치 제거 결과 = {}", list);
 
-    for (int i = 0; i < list.size(); i++) {
+    for (OdSayPath odSayPath : list) {
       /* 대중교통 경로 좌표 */
-      list.get(i).setGeoCode(
+      odSayPath.setGeoCode(
           odSayApiService.getOdSayGeoCode(
               OdSayGeoCommand.builder()
                   .uri("https://api.odsay.com/v1/api/loadLane?")
-                  .mapObj("0:0@" + list.get(i).getMapObj())
+                  .mapObj("0:0@" + odSayPath.getMapObj())
                   .build()));
 
       int sumTime = 0;
-      for (int j = 0; j < list.get(i).getSubPaths().size(); j++) {
-        SubPath subPath = list.get(i).getSubPaths().get(j);
+      for (int j = 0; j < odSayPath.getSubPaths().size(); j++) {
+        SubPath subPath = odSayPath.getSubPaths().get(j);
         /* WALK 모드 */
         if (subPath.getTrafficType() == 3) {
           PointGeoCode startGeo;
           PointGeoCode endGeo;
           /* 제일 처음에 걷는 경우 */
           if (j == 0) {
-            startGeo = PointGeoCode.builder().longitude(command.getRequestBody().get("startX").toString())
+            startGeo = PointGeoCode.builder()
+                .longitude(command.getRequestBody().get("startX").toString())
                 .latitude(command.getRequestBody().get("startY").toString()).build();
-            endGeo = list.get(i).getSubPaths().get(j + 1).getStartGeo();
+            endGeo = odSayPath.getSubPaths().get(j + 1).getStartGeo();
           }
           /* 끝에 걷는 경우 */
-          else if (j == list.get(i).getSubPaths().size() - 1) {
-            startGeo = list.get(i).getSubPaths().get(j - 1).getEndGeo();
-            endGeo = PointGeoCode.builder().longitude(command.getRequestBody().get("endX").toString())
+          else if (j == odSayPath.getSubPaths().size() - 1) {
+            startGeo = odSayPath.getSubPaths().get(j - 1).getEndGeo();
+            endGeo = PointGeoCode.builder()
+                .longitude(command.getRequestBody().get("endX").toString())
                 .latitude(command.getRequestBody().get("endY").toString()).build();
           }
           /* 중간에 걷는 경우 */
           else {
-            startGeo = list.get(i).getSubPaths().get(j - 1).getEndGeo();
-            endGeo = list.get(i).getSubPaths().get(j + 1).getStartGeo();
+            startGeo = odSayPath.getSubPaths().get(j - 1).getEndGeo();
+            endGeo = odSayPath.getSubPaths().get(j + 1).getStartGeo();
           }
 
           /* 도보 경로가 없는 경우 */
           if (startGeo.getLongitude().equals(endGeo.getLongitude())
               && startGeo.getLatitude().equals(endGeo.getLatitude())) {
-            list.get(i).setGeoCode(setWheelGeoCode(list.get(i).getGeoCode(), null, j));
+            odSayPath.setGeoCode(setWheelGeoCode(odSayPath.getGeoCode(), null, j));
           } else {
             WheelPathForm wheelForm = tMapApiService.searchPathToWheel(
-                createForWheel(startGeo, endGeo));
-            list.get(i).getSubPaths().set(j, changeSubPathToWheel(wheelForm));
-            list.get(i).setGeoCode(setWheelGeoCode(list.get(i).getGeoCode(), wheelForm, j));
+                createForWheel(startGeo, endGeo, command.getType()));
+            odSayPath.getSubPaths().set(j, changeSubPathToWheel(wheelForm));
+            odSayPath.setGeoCode(setWheelGeoCode(odSayPath.getGeoCode(), wheelForm, j));
           }
         }
         /* BUS 모드 */
@@ -185,7 +187,7 @@ public class PlaceService {
                   busStopRepository.findBusStopByArsIdAndBusId(busesCurLocation.getArsId(),
                       bus.getBusId());
               long countStop = Math.abs(busStop.getId() - curBusStop.getId());
-              list.get(i).getSubPaths().get(j).setBeforeCount(countStop);
+              odSayPath.getSubPaths().get(j).setBeforeCount(countStop);
             }
           }
         }
@@ -222,7 +224,7 @@ public class PlaceService {
               Integer.parseInt(arrTime.substring(2)));
           Duration duration = Duration.between(time, futureTime);
           long waitTime = duration.toMinutes() * 60;
-          list.get(i).getSubPaths().get(j).setWaitTime(waitTime);
+          odSayPath.getSubPaths().get(j).setWaitTime(waitTime);
         }
         sumTime += (int) subPath.getSectionTime();
       }
@@ -437,7 +439,7 @@ public class PlaceService {
 
   public List<PathGeoCode> calculateAngle(AngleSlopeCommand command) {
     List<PathGeoCode> pathGeoCodes = command.getGeoCodes();
-    log.info("pathGeoCode : ", pathGeoCodes);
+    log.info("pathGeoCode = {}", pathGeoCodes);
     for(PathGeoCode pathGeoCode : pathGeoCodes){
       if(pathGeoCode == null)
         continue;

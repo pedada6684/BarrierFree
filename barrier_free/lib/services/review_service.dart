@@ -85,6 +85,7 @@ class ReviewService {
     if (response.statusCode == 200) {
       return true;
     } else {
+      print(response.statusCode);
       throw Exception('리뷰업로드에러');
     }
   }

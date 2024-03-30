@@ -10,6 +10,7 @@ class bookmarkPlaceService {
       String address, String latitude, String longitude) async {
     //토큰 받아오기
     String? accessToken = await _secureStorageService.getToken();
+    String? cookies = await _secureStorageService.getCookies();
 
     final Map<String, dynamic> requestBody = {
       'memberId': userId,
@@ -27,6 +28,7 @@ class bookmarkPlaceService {
         .post(Uri.parse(_baseUrl), body: json.encode(requestBody), headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $accessToken',
+      'Cookie': cookies!,
     });
 
     print(response.body);

@@ -65,12 +65,14 @@ class ReviewService {
     required String? imageUrl,
   }) async {
     String? accessToken = await _secureStorageService.getToken();
+    String? cookies = await _secureStorageService.getCookies();
 
     var response = await http.post(
       Uri.parse('$_baseUrl'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken',
+        'Cookie': cookies!,
       },
       body: jsonEncode({
         'poiId': poiId,

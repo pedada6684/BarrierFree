@@ -1,8 +1,12 @@
 import 'dart:io';
+
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/provider/user_provider.dart';
+import 'package:barrier_free/services/review_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class ReviewScreen extends StatefulWidget {
   final String poiId;
@@ -15,9 +19,10 @@ class ReviewScreen extends StatefulWidget {
 
 class _ReviewScreenState extends State<ReviewScreen> {
   final TextEditingController _reviewController = TextEditingController();
+
   bool _elevatorButtonActive = true;
   File? _image;
-  int _remainingChars = 300; //300자 글자수 제한
+  int _remainingChars = 0; //300자 글자수 제한
 
   @override
   void initState() {
@@ -38,7 +43,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     // 300 - 입력된 글자 수 = 남은 글자 수
     final int currentLength = _reviewController.text.length;
     setState(() {
-      _remainingChars = 300 - currentLength;
+      _remainingChars = currentLength;
     });
   }
 
@@ -51,6 +56,33 @@ class _ReviewScreenState extends State<ReviewScreen> {
       setState(() {
         _image = File(selectedImage.path); // 선택된 이미지 파일
       });
+    }
+  }
+
+  Future<void> _submitReview() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.userId;
+
+    String? imageUrl;
+    if (_image != null) {
+      imageUrl = await ReviewService().uploadImage(_image!);
+    }
+
+    bool isReviewAdded = await ReviewService().addReview(
+      poiId: widget.poiId,
+      userId: userId!,
+      content: _reviewController.text,
+      feedback: _elevatorButtonActive ? 1 : 0,
+      imageUrl: imageUrl,
+    );
+
+    if (isReviewAdded) {
+      //다시 상세 페이지로 이동시키기
+      Navigator.pop(context, true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('리뷰 추가에 실패했습니다.')),
+      );
     }
   }
 
@@ -76,6 +108,26 @@ class _ReviewScreenState extends State<ReviewScreen> {
               onCameraTap: _pickImage,
               pickedImage: _image,
             ),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _submitReview,
+                    child: Text(
+                      '리뷰 작성하기',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16.0),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: mainOrange,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        )),
+                  ),
+                ),
+              ],
+            )
           ],
         ),
       ),
@@ -122,7 +174,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           ),
           onChanged: (text) {
             setState(() {
-              _remainingChars = 300 - text.length;
+              _remainingChars = text.length;
             });
           },
         ),
@@ -205,7 +257,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         InkWell(
           onTap: onCameraTap,
           child: Container(
-            height: 150, // 또는 적절한 높이
+            height: 300, // 또는 적절한 높이
             decoration: BoxDecoration(
               border: Border.all(color: mainOrange, width: 2),
               borderRadius: BorderRadius.circular(10),
@@ -226,7 +278,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       pickedImage,
                       width: double.infinity,
                       height: double.infinity,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                     ),
                   ),
           ),

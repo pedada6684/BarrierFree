@@ -36,7 +36,15 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     _initializeUserId();
     reviewListFuture =
         ReviewService().fetchReviewByPlaceId(widget.placeDetail['id']);
+    refreshReviews();
     print(widget.placeDetail['id']);
+  }
+
+  void refreshReviews() {
+    setState(() {
+      reviewListFuture =
+          ReviewService().fetchReviewByPlaceId(widget.placeDetail['id']);
+    });
   }
 
   Future<void> _initializeUserId() async {
@@ -269,16 +277,20 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     ),
                   ),
                   ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
+                      onPressed: () async {
+                        final result = Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ReviewScreen(poiId: widget.placeDetail['id']),
+                            builder: (context) =>
+                                ReviewScreen(poiId: widget.placeDetail['id']),
                           ),
                         );
+
+                        if (result == true) {
+                          refreshReviews(); //리뷰 목록 새로고침
+                        }
                       },
-                      child: Text('리뷰 작성하기')
-                  ),
+                      child: Text('리뷰 작성하기')),
                 ],
               ),
               SizedBox(height: 20.0),
@@ -303,7 +315,72 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, index) {
                           var review = snapshot.data![index];
-                          return Text('리뷰리뷰리뷰'); // Custom Review Widget
+
+                          return Row(
+                            children: [
+                              Container(
+                                // if(review['img']!=null && review['img'].isNotEmpty)
+                                width: 130, // 원하는 너비
+                                height: 130, // 원하는 높이
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: NetworkImage(
+                                        review['img'][0],
+                                      ),
+                                      fit: BoxFit.cover),
+                                ),
+                              ),
+                              SizedBox(width: 20), // 간격
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: () {},
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xffffffff),
+                                        // 배경 투명
+                                        side: BorderSide(
+                                            color: mainOrange, width: 1),
+                                        // 테두리 오렌지
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              10), // 테두리 반경 10px
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '엘레베이터',
+                                            style: TextStyle(
+                                              fontSize: 18.0,
+                                              color: mainBlack,
+                                            ),
+                                          ),
+                                          SizedBox(width: 10),
+                                          Icon(Icons.thumb_up_alt_outlined,
+                                              color: mainOrange), // 아이콘
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10.0, horizontal: 5.0),
+                                      child: Text(
+                                        review['content'],
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ); // Custom Review Widget
                         },
                       );
                     } else {
@@ -316,62 +393,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     }
                   }),
               SizedBox(height: 10.0), // 간격
-              Row(
-                children: [
-                  // // Image.asset('assets/images/attached_image.png'),
-                  // Container(
-                  //   width: 130, // 원하는 너비
-                  //   height: 130, // 원하는 높이
-                  //   color: mainOrange, // 흰색 배경
-                  // ),
-                  // SizedBox(width: 20), // 간격
-                  // Expanded(
-                  //   child: Column(
-                  //     crossAxisAlignment: CrossAxisAlignment.stretch,
-                  //     children: [
-                  //       ElevatedButton(
-                  //         onPressed: () {},
-                  //         style: ElevatedButton.styleFrom(
-                  //           backgroundColor: Color(0xffffffff),
-                  //           // 배경 투명
-                  //           side: BorderSide(color: mainOrange, width: 1),
-                  //           // 테두리 오렌지
-                  //           shape: RoundedRectangleBorder(
-                  //             borderRadius:
-                  //                 BorderRadius.circular(10), // 테두리 반경 10px
-                  //           ),
-                  //         ),
-                  //         child: Row(
-                  //           mainAxisAlignment: MainAxisAlignment.center,
-                  //           children: [
-                  //             Text(
-                  //               '엘레베이터',
-                  //               style: TextStyle(
-                  //                 fontSize: 18.0,
-                  //                 color: mainBlack,
-                  //               ),
-                  //             ),
-                  //             SizedBox(width: 10),
-                  //             Icon(Icons.thumb_up_alt_outlined,
-                  //                 color: mainOrange), // 아이콘
-                  //           ],
-                  //         ),
-                  //       ),
-                  // Padding(
-                  //   padding: const EdgeInsets.symmetric(
-                  //       vertical: 10.0, horizontal: 5.0),
-                  //   child: Text(
-                  //     '엘레베이터가 있긴 한데, 휠체어가 들어가지 않네요.',
-                  //     style: TextStyle(
-                  //       fontSize: 16,
-                  //     ),
-                  //   ),
-                  // ),
-                  //     ],
-                  //   ),
-                  // ),
-                ],
-              ),
+
               ElevatedButton(
                 onPressed: () {
                   // 버튼이 눌렸을 때 수행할 동작 추가

@@ -51,6 +51,7 @@ public class BarrierFreeConstructor {
 
     private final PlaceRepository placeRepository;
     private final ResourceLoader resourceLoader;
+    private final ImageCrawler imageCrawler;
     private ArrayList<HashMap<String, String>> etcData = new ArrayList<>();
 
     /**
@@ -61,13 +62,19 @@ public class BarrierFreeConstructor {
      */
     public void saveBarrierFree() throws IOException, ParserConfigurationException, SAXException {
         List<Map<String, String>> places = searchBarrierFreePlace();
-        saveBarrierFreePlace(places);
+//        saveBarrierFreePlace(places);
 //        setBarrierfreeInfo();
 //        addBFPlaceInBuilding();
+        setBarrierfreeThumbnail();
+    }
+
+    private void setBarrierfreeThumbnail() {
+        List<Place> placeList = placeRepository.findByType(true);
+        imageCrawler.updatelBFImage(placeList);
     }
 
     /**
-     * api를 통해서 무장애place를 받아오는 메서드
+     * api를 통해서 무장애 place를 받아오는 메서드
      * @return
      * @throws IOException
      * @throws ParserConfigurationException

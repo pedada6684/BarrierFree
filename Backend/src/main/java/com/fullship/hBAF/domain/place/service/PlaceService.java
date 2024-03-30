@@ -44,6 +44,7 @@ import java.time.format.TextStyle;
 
 import java.io.IOException;
 
+import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import com.fullship.hBAF.util.H3;
 import com.uber.h3core.H3Core;
@@ -255,7 +256,7 @@ public class PlaceService {
   @Transactional(readOnly = false)
   public Long updatePlaceImageUrl(UpdatePlaceImageCommand command) {
     Place place = placeRepository.findById(command.getPlaceId())
-        .orElseThrow(() -> new IllegalStateException());
+        .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
     Optional<Image> imageOptional = imageRepository.findByPlaceAndImageType(place, 0);
     if (imageOptional.isPresent()) {
       Image image = imageOptional.get();

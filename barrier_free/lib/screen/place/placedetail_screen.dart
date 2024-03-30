@@ -3,6 +3,7 @@ import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/review/review_screen.dart';
 import 'package:barrier_free/services/bookmarkPlace_service.dart';
+import 'package:barrier_free/services/place_service.dart';
 import 'package:barrier_free/services/review_service.dart';
 import 'package:barrier_free/services/secure_storage_service.dart';
 import 'package:barrier_free/services/test_service.dart';
@@ -29,6 +30,10 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   int? userId;
   bool isStarFilled = false;
   late Future<List<dynamic>> reviewListFuture;
+  late String barrierFreeCodes;
+  late Map<String, String> barrierFreeInfo;
+  Map<String, dynamic>? barrierFreeList;
+  late Future<Map<String, dynamic>>? barrierFreeDetailsFuture;
 
   @override
   void initState() {
@@ -37,8 +42,16 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     _initializeUserId();
     reviewListFuture =
         ReviewService().fetchReviewByPlaceId(widget.placeDetail['id']);
-    refreshReviews();
-    print(widget.placeDetail['id']);
+    barrierFreeInfo = {
+      'a': "화장실",
+      'b': "주차",
+      'c': "경사로",
+      'd': "접근로",
+      'e': "출입문",
+      'f': "엘레베이터",
+    };
+    barrierFreeDetailsFuture = _fetchBarrierFreeDetails();
+
   }
 
   void refreshReviews() {
@@ -57,6 +70,60 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       });
       print(decodeUserId);
     }
+  }
+
+  Future<Map<String, dynamic>> _fetchBarrierFreeDetails() async {
+    // Map<String, dynamic> details = {};
+    try {
+      final details = await PlaceService().fetchBfByPoiId(widget.placeDetail['id']);
+      return details;
+    } catch (e) {
+      print('배리어프리 정보 가져오기 실패: $e');  barrierFreeDetailsFuture = _fetchBarrierFreeDetails();
+
+      return {};
+    }
+  }
+
+  List<Widget> _buildBarrierFreeButtons(
+      Map<String, dynamic>? barrierFreeDetails) {
+    List<Widget> buttons = [];
+    if (barrierFreeDetails == null || barrierFreeDetails['barrierFree'].isEmpty) {
+      buttons.add(Text('배리어프리 시설 정보가 없습니다'));
+      return buttons;
+    }// 데이터가 없으면 빈 리스트 반환
+
+    String barrierFreeCodes = barrierFreeDetails['barrierFree'];
+    for (var code in barrierFreeCodes.split('')) {
+      var name = barrierFreeInfo[code];
+      if (name != null) {
+        buttons.add(
+          ElevatedButton(
+            onPressed: () {
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white, // 배경색
+              side: BorderSide(color: mainOrange, width: 1), // 테두리 색상 및 두께
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10), // 모서리 둥글기
+              ),
+            ),
+            child: Text(
+              name,
+              style: TextStyle(
+                fontSize: 16.0,
+                color: mainBlack,
+              ),
+
+            ),
+          ),
+        );
+        buttons.add(SizedBox(width: 10.0)); // 버튼 사이 간격
+      }else{
+        Text('배리어프리 시설 정보가 없습니다');
+      }
+    }
+
+    return buttons;
   }
 
   @override
@@ -246,22 +313,23 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               SizedBox(height: 10.0),
               Row(
                 children: [
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xffffffff), // 배경 투명
-                      side: BorderSide(color: mainOrange, width: 1), // 테두리 오렌지
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10), // 테두리 반경 10px
-                      ),
-                    ),
-                    child: Text(
-                      '엘레베이터',
-                      style: TextStyle(
-                        fontSize: 18.0,
-                        color: mainBlack,
-                      ),
-                    ),
+                  FutureBuilder<Map<String, dynamic>>(
+                    future: barrierFreeDetailsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('장애물 없는 시설 정보를 가져오는 데 실패했습니다.');
+                      } else {
+                        // 데이터가 있는 경우 버튼 리스트 반환
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: _buildBarrierFreeButtons(snapshot.data),
+                          ),
+                        );
+                      }
+                    },
                   ),
                   // SizedBox(width: 10.0),
                 ],

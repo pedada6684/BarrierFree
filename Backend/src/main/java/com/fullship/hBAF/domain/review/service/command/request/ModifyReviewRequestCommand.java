@@ -12,7 +12,8 @@ public class ModifyReviewRequestCommand {
 
     Long reviewId;
     String content;
-    Long feedback;
+    String lik;
+    String unlik;
     List<String> img;
 
 }

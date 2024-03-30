@@ -20,7 +20,9 @@ public class Review {
 
     private String content;
 
-    private Long feedback;
+    private String lik;
+
+    private String unlik;
 
     private LocalDateTime regDate;
 
@@ -37,14 +39,16 @@ public class Review {
     public static Review createToReview(
             Member member,
             String content,
-            Long feedback,
+            String lik,
+            String unlik,
             String poiId,
             List<String> list
     ){
         Review review = new Review();
         review.member = member;
         review.content = content;
-        review.feedback = feedback;
+        review.lik = lik;
+        review.unlik = unlik;
         review.regDate = LocalDateTime.now();
         review.modifyDate = LocalDateTime.now();
         review.status = 0L;
@@ -56,13 +60,16 @@ public class Review {
 
     public void modifyReview(
             String content,
-            Long feedback,
+            String lik,
+            String unlik,
             List<String> img
     ){
         if(content!=null)
             this.content=content;
-        if(feedback!=null)
-            this.feedback=feedback;
+        if(lik!=null)
+            this.lik=lik;
+        if(unlik!=null)
+            this.unlik=unlik;
         if(img!=null)
             this.imgUrl=img;
         this.modifyDate = LocalDateTime.now();

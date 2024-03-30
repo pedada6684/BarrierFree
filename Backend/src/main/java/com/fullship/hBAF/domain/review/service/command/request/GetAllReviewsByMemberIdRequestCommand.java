@@ -7,6 +7,6 @@ import lombok.Data;
 @Builder
 public class GetAllReviewsByMemberIdRequestCommand {
 
-    String memberId;
+    Long memberId;
 
 }

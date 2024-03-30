@@ -34,7 +34,8 @@ public class ReviewService {
                 .memberId(member.getId())
                 .nickname(member.getNickname())
                 .content(review.getContent())
-                .feedback(review.getFeedback())
+                .lik(review.getLik())
+                .unlik(review.getUnlik())
                 .regDate(review.getRegDate())
                 .modifyDate(review.getModifyDate())
                 .status(review.getStatus())
@@ -46,7 +47,8 @@ public class ReviewService {
                 .memberId(responseCommand.getMemberId())
                 .nickname(responseCommand.getNickname())
                 .content(responseCommand.getContent())
-                .feedback(responseCommand.getFeedback())
+                .lik(responseCommand.getLik())
+                .unlik(responseCommand.getUnlik())
                 .regDate(review.getRegDate())
                 .modifyDate(responseCommand.getModifyDate())
                 .status(responseCommand.getStatus())
@@ -69,7 +71,8 @@ public class ReviewService {
                     .memberId(member.getId())
                     .nickname(member.getNickname())
                     .content(review.getContent())
-                    .feedback(review.getFeedback())
+                    .lik(review.getLik())
+                    .unlik(review.getUnlik())
                     .regDate(review.getRegDate())
                     .modifyDate(review.getModifyDate())
                     .status(review.getStatus())
@@ -88,7 +91,7 @@ public class ReviewService {
 
     public GetAllReviewsByMemberIdResponse getAllReviewsByMemberId(GetAllReviewsByMemberIdRequestCommand command){
 
-        List<Review> allReviews = reviewRepository.findAllByMemberId(Long.parseLong(command.getMemberId()));
+        List<Review> allReviews = reviewRepository.findAllByMemberId(command.getMemberId());
         List<GetAllReviewsByMemberIdResponseCommand> list = new ArrayList<>();
 
         for(Review review : allReviews) {
@@ -98,7 +101,8 @@ public class ReviewService {
                     .memberId(member.getId())
                     .nickname(member.getNickname())
                     .content(review.getContent())
-                    .feedback(review.getFeedback())
+                    .lik(review.getLik())
+                    .unlik(review.getUnlik())
                     .regDate(review.getRegDate())
                     .modifyDate(review.getModifyDate())
                     .status(review.getStatus())
@@ -122,7 +126,8 @@ public class ReviewService {
         Review review = Review.createToReview(
                 member,
                 command.getContent(),
-                command.getFeedback(),
+                command.getLik(),
+                command.getUnlik(),
                 command.getPoiId(),
                 command.getFile()
         );
@@ -141,7 +146,8 @@ public class ReviewService {
 
         review.modifyReview(
                 command.getContent(),
-                command.getFeedback(),
+                command.getLik(),
+                command.getUnlik(),
                 command.getImg());
 
         ModifyReviewResponseCommand responseCommand = ModifyReviewResponseCommand.builder()

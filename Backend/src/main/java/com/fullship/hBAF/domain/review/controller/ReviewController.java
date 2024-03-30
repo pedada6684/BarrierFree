@@ -76,7 +76,7 @@ public class ReviewController {
     @GetMapping("/list-by-memberId")
     @Operation(summary = "리뷰 목록 조회", description = "memberId를 이용한 리뷰 목록 조회")
     @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = GetAllReviewsByPoiIdResponse.class)))
-    public ResponseEntity<GetAllReviewsByMemberIdResponse> getAllReviewsByMemberId(@RequestParam("memberId") String memberId){
+    public ResponseEntity<GetAllReviewsByMemberIdResponse> getAllReviewsByMemberId(@RequestParam("memberId") Long memberId){
         GetAllReviewsByMemberIdRequestCommand command = GetAllReviewsByMemberIdRequestCommand.builder().memberId(memberId).build();
 
         GetAllReviewsByMemberIdResponse response = reviewService.getAllReviewsByMemberId(command);
@@ -90,7 +90,8 @@ public class ReviewController {
     public ResponseEntity<AddReviewResponse> addReview(@RequestBody AddReviewRequest request){
 
         AddReviewRequestCommand command = AddReviewRequestCommand.builder()
-                .feedback(request.getFeedback())
+                .lik(request.getLik())
+                .unlik(request.getUnlik())
                 .content(request.getContent())
                 .memberId(request.getMemberId())
                 .poiId(request.getPoiId())
@@ -110,7 +111,8 @@ public class ReviewController {
         ModifyReviewRequestCommand command = ModifyReviewRequestCommand.builder()
                 .reviewId(request.getReviewId())
                 .content(request.getContent())
-                .feedback(request.getFeedback())
+                .lik(request.getLik())
+                .unlik(request.getUnlik())
                 .img(request.getImg())
                 .build();
 

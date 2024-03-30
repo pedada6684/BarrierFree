@@ -12,7 +12,8 @@ public class AddReviewRequestCommand {
 
     Long memberId;
     String content;
-    Long feedback;
+    String lik;
+    String unlik;
     String poiId;
     List<String> file;
 

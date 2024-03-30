@@ -11,7 +11,8 @@ public class AddReviewRequest {
 
     Long memberId;
     String content;
-    Long feedback;
+    String lik;
+    String unlik;
     String poiId;
     List<String> img;
 

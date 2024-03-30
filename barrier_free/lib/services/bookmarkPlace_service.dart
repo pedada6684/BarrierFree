@@ -44,9 +44,11 @@ class bookmarkPlaceService {
   Future<List<dynamic>> fetchBookMarkByUserId(int userId) async {
     final SecureStorageService _secureStorageService = SecureStorageService();
     String? accessToken = await _secureStorageService.getToken();
+    String? cookies = await _secureStorageService.getCookies();
     final response =
         await http.get(Uri.parse('$_baseUrl?memberId=$userId'), headers: {
       'Authorization': 'Bearer $accessToken',
+      'Cookie': cookies!,
     });
 
     if (response.statusCode == 200) {

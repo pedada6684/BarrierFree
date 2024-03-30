@@ -24,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (result.status == NaverLoginStatus.loggedIn) {
       print('===================네이버로그인====================');
-      print(result.account);
+      print('네이버 로그인 결과 ${result.account}');
       print('===================네이버로그인====================');
 
       if (!mounted) return;
@@ -57,7 +57,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<int> sendNaverLoginInfo(NaverAccountResult account) async {
-    final uri = Uri.parse("https://hbaf.site/api/member/naverLogin");
+    // final uri = Uri.parse("https://hbaf.site/api/member/naverLogin");
+    final uri = Uri.parse('https://hbaf.site/api/v1/auth/appLogin');
+    // final uri = Uri.parse('https://hbaf.site/api/v1/auth/test');
     //토큰
     try {
       final response = await http.post(uri, body: {
@@ -66,16 +68,17 @@ class _LoginScreenState extends State<LoginScreen> {
         'email': account.email,
         'profileImage': account.profileImage,
       });
-      print(response.body);
+      print(response.headers);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final accessToken = data['accessToken'];
-        final refreshToken = data['refreshToken'];
+        final cookies = response.headers['set-cookie'];
 
         final secureStorageService = SecureStorageService();
-        print(data);
-        return await secureStorageService.saveToken(accessToken, refreshToken);
+
+        print('백에서 넘어 온 쿠키, 토큰 데이터 : $data');
+        return await secureStorageService.saveToken(accessToken, cookies!);
       } else {
         throw Exception('${response.statusCode}');
       }

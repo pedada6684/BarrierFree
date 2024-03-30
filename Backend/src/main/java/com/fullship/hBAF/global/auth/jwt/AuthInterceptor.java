@@ -6,7 +6,9 @@ import com.fullship.hBAF.global.auth.entity.RedisRefreshToken;
 import com.fullship.hBAF.global.auth.repository.RefreshTokenRepository;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
+import com.fullship.hBAF.util.Auth;
 import com.fullship.hBAF.util.CookieProvider;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,12 +16,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AuthInterCeptor implements HandlerInterceptor {
+public class AuthInterceptor implements HandlerInterceptor {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String REFRESH_TOKEN_NAME = "refreshToken";
     private final MemberService memberService;
@@ -31,28 +35,29 @@ public class AuthInterCeptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        log.debug("Login Interceptor preHandler");
+        log.info("Login Interceptor preHandlerpreHandler");
         if (HttpMethod.OPTIONS.matches(request.getMethod())){
             return true;
         }
+        if (!checkAnnotation(handler, Auth.class)){//@Auth 어노테이션 없으면
+            return true; // 로그인 검증 넘어감
+        }
+
         //JWT 추출
         String accessToken = resolveTokenInRequest(request);
         String refreshToken = getRefreshToken(request);
-        if (refreshToken == null){
-            throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
-        }
-        //JWT 유효성 검사
-        if (accessToken != null && jwtTokenProvider.validateToken(accessToken)){ // AT유효
+
+        try {//AT 유효
+            jwtTokenProvider.validateAccessToken(accessToken);
             return allowAccess(response, accessToken);
-        }else{ //AT 만료
-            if (jwtTokenProvider.validateToken(refreshToken)){ //RT 유효
-                String strMemberId = getMemberIdFromToken(refreshToken);
-                RedisRefreshToken redisRefreshToken = refreshTokenRepository.findById(strMemberId).orElseThrow(
-                        () -> new CustomException(ErrorCode.TOKEN_NOT_FOUND)
-                );
-                if (jwtTokenProvider.validateToken(redisRefreshToken.getRefreshToken())){
-                    return allowAccess(response, accessToken);
-                }
+        } catch (ExpiredJwtException e) {//AT만료
+            jwtTokenProvider.validateRefreshToken(refreshToken);
+            String strMemberId = getMemberIdFromToken(refreshToken);
+            RedisRefreshToken redisRefreshToken = refreshTokenRepository.findById(strMemberId).orElseThrow(
+                    () -> new CustomException(ErrorCode.TOKEN_NOT_FOUND)
+            );
+            if (jwtTokenProvider.validateRefreshToken(redisRefreshToken.getRefreshToken())){
+                return allowAccess(response, accessToken);
             }
         }
         throw new CustomException(ErrorCode.INVALID_TOKEN);
@@ -78,7 +83,7 @@ public class AuthInterCeptor implements HandlerInterceptor {
         RefreshToken newRefreshToken = authTokenGenerator.generateRT(memberId);
         Cookie cookie = cookieProvider.createCookie(
                 "refreshToken",
-                newRefreshToken.getGrantType() +":"+ newRefreshToken.getRefreshToken(),
+                newRefreshToken.getRefreshToken(),
                 Long.valueOf(newRefreshToken.getExpiresIn()/1000L).intValue()
         );
         response.setHeader("Authorization", "Bearer " + newAccessToken.getAccessToken());
@@ -93,7 +98,11 @@ public class AuthInterCeptor implements HandlerInterceptor {
      */
     private String resolveTokenInRequest(HttpServletRequest request){
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        return jwtTokenProvider.resolveToken(bearerToken);
+        String token = jwtTokenProvider.resolveToken(bearerToken);
+        if (token == null){
+            throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+        return token;
     }
 
     /**
@@ -103,12 +112,15 @@ public class AuthInterCeptor implements HandlerInterceptor {
      */
     private String getRefreshToken(HttpServletRequest request){
         Cookie[] cookies = request.getCookies();
+        if (cookies == null){
+            throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
+        }
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals(REFRESH_TOKEN_NAME)){
                 return cookie.getValue();
             }
         }
-        return null;
+        throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
     }
 
     /**
@@ -117,5 +129,22 @@ public class AuthInterCeptor implements HandlerInterceptor {
      */
     private String getMemberIdFromToken(String accessToken) {
         return jwtTokenProvider.extractSubject(accessToken);
+    }
+
+    private boolean checkAnnotation(Object handler, Class<Auth> authClass) {
+        //js. html 타입인 view 과련 파일들은 통과한다.(view 관련 요청 = ResourceHttpRequestHandler)
+        if (handler instanceof ResourceHttpRequestHandler) {
+            return true;
+        }
+
+        HandlerMethod handlerMethod = (HandlerMethod) handler;
+
+        //Auth anntotation이 있는 경우
+        if (null != handlerMethod.getMethodAnnotation(authClass) || null != handlerMethod.getBeanType().getAnnotation(authClass)) {
+            return true;
+        }else {//annotation이 없는 경우
+            return false;
+        }
+
     }
 }

@@ -6,6 +6,9 @@ import com.fullship.hBAF.domain.member.service.MemberService;
 import com.fullship.hBAF.global.auth.controller.request.NaverLoginRequest;
 import com.fullship.hBAF.global.auth.jwt.*;
 import com.fullship.hBAF.domain.member.service.OAuthLoginService;
+import com.fullship.hBAF.global.response.CommonResponseEntity;
+import com.fullship.hBAF.global.response.SuccessCode;
+import com.fullship.hBAF.util.Auth;
 import com.fullship.hBAF.util.CookieProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import static com.fullship.hBAF.global.response.CommonResponseEntity.getResponseEntity;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,7 +43,7 @@ public class AuthController {
     RefreshToken refreshToken = result.getRefreshToken();
     Cookie cookie = cookieProvider.createCookie(
             "refreshToken",
-            refreshToken.getGrantType() +":"+ refreshToken.getRefreshToken(),
+            refreshToken.getRefreshToken(),
             Long.valueOf(refreshToken.getExpiresIn()/1000L).intValue()
     );
     //헤더에 refreshToken 삽입
@@ -67,11 +72,18 @@ public class AuthController {
     RefreshToken refreshToken = result.getRefreshToken();
     Cookie cookie = cookieProvider.createCookie(
             "refreshToken",
-            refreshToken.getGrantType() +":"+ refreshToken.getRefreshToken(),
+            refreshToken.getRefreshToken(),
             Long.valueOf(refreshToken.getExpiresIn()/1000L).intValue()
     );
     //헤더에 refreshToken 삽입
     response.addCookie(cookie);
     return new ResponseEntity<>(accessToken, HttpStatus.OK);
+  }
+  @Auth
+  @GetMapping("/test")
+  @Operation(summary = "로그인 여부 확인 테스트", description = "로그인 여부 확인 테스트")
+  public ResponseEntity<CommonResponseEntity> test() {
+    System.out.println("통신 테스트");
+    return getResponseEntity(SuccessCode.OK, "테스트입니다.");
   }
 }

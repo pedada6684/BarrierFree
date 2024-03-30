@@ -4,6 +4,7 @@ import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/login/login_platform.dart';
 import 'package:barrier_free/screen/map/map_screen.dart';
+import 'package:barrier_free/screen/mypage/mypage_screen.dart';
 import 'package:barrier_free/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
@@ -18,7 +19,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
   void signInWithNaver() async {
     final NaverLoginResult result = await FlutterNaverLogin.logIn();
 
@@ -27,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
       print(result.account);
       print('===================네이버로그인====================');
 
-      if(!mounted) return;
+      if (!mounted) return;
       //사용자 정보 받아오기
       final String? nickname = result.account.nickname;
       final String? email = result.account.email;
@@ -35,28 +35,28 @@ class _LoginScreenState extends State<LoginScreen> {
       final String? name = result.account.name;
 
       //userProvider에 사용자 정보
-      if(!mounted) return;
+      if (!mounted) return;
       Provider.of<UserProvider>(context, listen: false)
           .setUser(nickname, email!, profileImageUrl!, name!);
 
       // 백으로 정보 전달
-    await sendNaverLoginInfo(result.account);
+      final userId = await sendNaverLoginInfo(result.account);
       // if (response != null) {
       //   //토큰 저장 by secure storage
       //   final secureStorageService = SecureStorageService();
       //   await secureStorageService.saveToken(response);
       // }
-      if(!mounted) return;
+      if (!mounted) return;
 
       //네이버 로그인
       Provider.of<UserProvider>(context, listen: false)
-          .signIn(LoginPlatform.naver);
+          .signIn(LoginPlatform.naver, userId);
     }
 
     onLoginSuccess();
   }
 
-  Future<void> sendNaverLoginInfo(NaverAccountResult account) async {
+  Future<int> sendNaverLoginInfo(NaverAccountResult account) async {
     final uri = Uri.parse("https://hbaf.site/api/member/naverLogin");
     //토큰
     try {
@@ -74,14 +74,13 @@ class _LoginScreenState extends State<LoginScreen> {
         final refreshToken = data['refreshToken'];
 
         final secureStorageService = SecureStorageService();
-        await secureStorageService.saveToken(accessToken, refreshToken);
         print(data);
-        // return data['token'];
+        return await secureStorageService.saveToken(accessToken, refreshToken);
       } else {
-        print('오류 발생 오류 발생 오류 발생 ${response.statusCode}');
+        throw Exception('${response.statusCode}');
       }
     } catch (e) {
-      print('오류발생 오류발생 $e');
+      throw Exception('오류발생 오류발생 $e');
     }
   }
 
@@ -92,9 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void onLoginSuccess() async {
-    await Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => MapScreen()),
-    );
+    await Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context)=>MyPageScreen()), (route) => false);
   }
 
   @override

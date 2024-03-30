@@ -40,4 +40,26 @@ class bookmarkPlaceService {
       print(response.statusCode);
     }
   }
+
+  Future<List<dynamic>> fetchBookMarkByUserId(int userId) async {
+    final SecureStorageService _secureStorageService = SecureStorageService();
+    String? accessToken = await _secureStorageService.getToken();
+    final response =
+        await http.get(Uri.parse('$_baseUrl?memberId=$userId'), headers: {
+      'Authorization': 'Bearer $accessToken',
+    });
+
+    if (response.statusCode == 200) {
+      final String decodedBody = utf8.decode(response.bodyBytes);
+      final data = json.decode(decodedBody);
+
+      // print(data);
+
+      final List<dynamic> bmList = data['list'] as List<dynamic>;
+
+      return bmList;
+    } else {
+      throw Exception('내 즐겨찾기 리스트 불러오기 실패');
+    }
+  }
 }

@@ -8,8 +8,9 @@ import lombok.Data;
 @Builder
 public class OdSayPathCommand {
 
-  private String uri;
+  private String type;
 
+  private String uri;
   private Map<String, Object> requestBody;
 
 }

@@ -195,7 +195,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
               color: mainGray,
             ),
             onTap: () async {
-              await FlutterNaverLogin.logOut();
+              // await FlutterNaverLogin.logOut();
               await Provider.of<UserProvider>(context, listen: false).signOut();
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => MapScreen()));

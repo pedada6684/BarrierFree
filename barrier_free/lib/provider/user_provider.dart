@@ -1,7 +1,7 @@
 import 'package:barrier_free/screen/login/login_platform.dart';
 import 'package:barrier_free/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_naver_login/flutter_naver_login.dart';
 
 class UserProvider with ChangeNotifier {
   //유저 정보
@@ -54,8 +54,13 @@ class UserProvider with ChangeNotifier {
 
   //로그아웃
   Future<void> signOut() async {
-    _loginPlatform = LoginPlatform.none;
+
+      //네이버일경우
+      await FlutterNaverLogin.logOutAndDeleteToken();
+
+    _loginPlatform = LoginPlatform.none; //플랫폼 초기화\
     notifyListeners();
+
     final secureStorageService = SecureStorageService();
     //토큰 삭제!!
     await secureStorageService.deleteToken();

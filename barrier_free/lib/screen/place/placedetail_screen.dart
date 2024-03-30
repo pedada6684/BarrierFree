@@ -1,6 +1,7 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
+import 'package:barrier_free/screen/review/review_screen.dart';
 import 'package:barrier_free/services/bookmarkPlace_service.dart';
 import 'package:barrier_free/services/review_service.dart';
 import 'package:barrier_free/services/secure_storage_service.dart';
@@ -256,13 +257,29 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                 ],
               ),
               SizedBox(height: 20.0),
-              Text(
-                '방문자 리뷰',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                  color: mainBlack,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '방문자 리뷰',
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                      color: mainBlack,
+                    ),
+                  ),
+                  ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReviewScreen(poiId: widget.placeDetail['id']),
+                          ),
+                        );
+                      },
+                      child: Text('리뷰 작성하기')
+                  ),
+                ],
               ),
               SizedBox(height: 20.0),
               FutureBuilder<List<dynamic>>(
@@ -291,7 +308,10 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       );
                     } else {
                       return Center(
-                        child: Text('리뷰가 없습니다.', style: TextStyle(fontSize: 16.0),),
+                        child: Text(
+                          '리뷰가 없습니다.',
+                          style: TextStyle(fontSize: 16.0),
+                        ),
                       );
                     }
                   }),

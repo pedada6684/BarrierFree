@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 class ReviewService {
   static const String _baseUrl = 'https://hbaf.site/api/review';
 
+  //리뷰 불러오기
   Future<List<dynamic>> fetchReviewByPlaceId(String poiId) async {
     final response = await http.get(Uri.parse('$_baseUrl/list?poiId=$poiId'));
 
@@ -21,4 +22,6 @@ class ReviewService {
       throw Exception('이 장소의 리뷰 목록 불러오는데 실패');
     }
   }
+
+  //리뷰 작성하기
 }

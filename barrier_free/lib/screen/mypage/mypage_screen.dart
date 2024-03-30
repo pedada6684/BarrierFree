@@ -20,7 +20,6 @@ class MyPageScreen extends StatefulWidget {
 class _MyPageScreenState extends State<MyPageScreen> {
 
   final Map<String, Widget Function(BuildContext)> menuItems = {
-    '내 장소': (context) => const MyPlaceScreen(),
     '즐겨찾기': (context) => const MyFavoriteScreen(),
     '게시글': (context) => const MyReviewScreen(),
   };

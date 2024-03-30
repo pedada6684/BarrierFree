@@ -4,6 +4,7 @@ import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/login/login_platform.dart';
 import 'package:barrier_free/screen/map/map_screen.dart';
+import 'package:barrier_free/screen/mypage/mypage_screen.dart';
 import 'package:barrier_free/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
@@ -90,9 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void onLoginSuccess() async {
-    await Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => MapScreen()),
-    );
+    await Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context)=>MyPageScreen()), (route) => false);
   }
 
   @override

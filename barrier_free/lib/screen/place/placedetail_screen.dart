@@ -5,6 +5,7 @@ import 'package:barrier_free/screen/review/review_screen.dart';
 import 'package:barrier_free/services/bookmarkPlace_service.dart';
 import 'package:barrier_free/services/review_service.dart';
 import 'package:barrier_free/services/secure_storage_service.dart';
+import 'package:barrier_free/services/test_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakaomap_webview/kakaomap_webview.dart';
@@ -62,6 +63,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   Widget build(BuildContext context) {
     final appKey = dotenv.env['APP_KEY'];
     final isLoggedIn = Provider.of<UserProvider>(context).isLoggedIn();
+    final TestService testService = TestService();
 
     return Scaffold(
       appBar: CustomAppBar(title: '장소 상세'),
@@ -290,6 +292,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           refreshReviews(); //리뷰 목록 새로고침
                         }
                       },
+                      // onPressed: () {
+                      //   testService.sendTestRequest();
+                      // },
                       child: Text('리뷰 작성하기')),
                 ],
               ),

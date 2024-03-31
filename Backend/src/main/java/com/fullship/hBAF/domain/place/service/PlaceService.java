@@ -10,7 +10,6 @@ import com.fullship.hBAF.domain.busStop.repository.BusStopRepository;
 import com.fullship.hBAF.domain.metroInfo.repository.MetroInfoRepository;
 import com.fullship.hBAF.domain.place.controller.response.GetPlaceResponse;
 import com.fullship.hBAF.domain.place.controller.response.PlaceListResponse;
-import com.fullship.hBAF.domain.place.controller.response.PlaceResponse;
 import com.fullship.hBAF.domain.place.entity.Image;
 import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.domain.place.repository.ImageRepository;
@@ -46,6 +45,7 @@ import java.time.format.TextStyle;
 import java.io.IOException;
 
 import com.fullship.hBAF.global.response.exception.CustomException;
+import com.fullship.hBAF.util.H3;
 import com.uber.h3core.H3Core;
 import com.uber.h3core.util.GeoCoord;
 import lombok.RequiredArgsConstructor;
@@ -54,12 +54,8 @@ import org.apache.commons.math3.util.Precision;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
-import static com.fullship.hBAF.global.response.ErrorCode.TEST_NOT_FOUND;
 import static com.fullship.hBAF.util.H3.daejeonH3Index;
 
 @Service
@@ -281,7 +277,7 @@ public class PlaceService {
     long lastH3Index = h3.geoToH3(coord.lat, coord.lng, 8);
 
     int clockIdx = arr.length - 1;
-    if (!daejeonH3Index.contains(lastH3Index)) {
+    if (!daejeonH3Index.containsKey(lastH3Index)) {
       clockIdx = findClock(arr);
     }
 
@@ -326,8 +322,8 @@ public class PlaceService {
 
       GeoCoord coord = new GeoCoord(Double.parseDouble(arr[mid][1]),
           Double.parseDouble(arr[mid][0]));
-      long findH3Index = h3.geoToH3(coord.lat, coord.lng, 8);
-      if (daejeonH3Index.contains(findH3Index)) {
+      long findH3Index = h3.geoToH3(coord.lat, coord.lng, 12);
+      if (daejeonH3Index.containsKey(findH3Index)) {
         l = mid + 1;
       } else {
         r = mid;
@@ -449,4 +445,110 @@ public class PlaceService {
     wheelPathForm.setGeoCode(googleApiService.elevationForPath(elevation).getGeoCode());
     return wheelPathForm;
   }
+
+  /**
+   * 도보 경로를 넣었을 때, 급경사의 시작과 끝을 출력해주는 함수
+   * @param arr : (위도,경도,경사)로 이루어진 경로 배열
+   * boundary : 급경사를 구분하는 기준
+   * @return
+   */
+  public double[][] findScarp(String[][] arr) {
+    double boundary = 6.0;
+
+    double[][] result = new double[2][2];
+    int cal = 0;
+
+    for (String[] strings : arr) {
+        double slope = Double.parseDouble(strings[2]);
+
+        if (slope >= slope) {
+            if (cal == 0) {
+                result[0][0] = Double.parseDouble(strings[0]);
+                result[0][1] = Double.parseDouble(strings[1]);
+                cal = 1;
+            }
+            result[1][0] = Double.parseDouble(strings[0]);
+            result[1][1] = Double.parseDouble(strings[1]);
+        }
+    }
+
+    return result;
+  }
+
+  /*아래 코드 부터는 경사로를 가중치로 완만한 경로를 추천 하는 aStar 알고리즘*/
+  public static class NodeAStar{
+    long h3Index;
+    double g, h, f;
+    NodeAStar preNode;
+
+    public NodeAStar(long h3Index) {
+      this.h3Index = h3Index;
+    }
+  }
+  public List<double[]> findPathByAStar(double[][] se) throws IOException{
+    double sX = se[0][0];
+    double sY = se[0][1];
+    double eX = se[1][0];
+    double eY = se[1][1];
+
+    Map<Long, NodeAStar> openMap = new HashMap<>();
+    Map<Long, NodeAStar> closeMap = new HashMap<>();
+
+    H3Core h3 = H3Core.newInstance();
+    GeoCoord startGeo = new GeoCoord(sY,sX);
+    GeoCoord endGeo = new GeoCoord(eY,eX);
+    long start = h3.geoToH3(startGeo.lat, startGeo.lng,12);
+    long end = h3.geoToH3(endGeo.lat, endGeo.lng,12);
+    if(!daejeonH3Index.containsKey(start))
+      return null;
+    NodeAStar startNode = new NodeAStar(start);
+    openMap.put(start,startNode);
+
+    while (!openMap.isEmpty()){
+      NodeAStar current = null;
+      for(NodeAStar node : openMap.values()){
+        if(current == null || node.f<current.f)
+          current=node;
+      }
+
+      if(current.h3Index == end){
+        List<double[]> path = new ArrayList<>();
+        while(current != null){
+          GeoCoord geoCoord = h3.h3ToGeo(current.h3Index);
+          path.add(new double[]{geoCoord.lat,geoCoord.lng,daejeonH3Index.get(current.h3Index)});
+          current = current.preNode;
+        }
+        Collections.reverse(path);
+
+        return path;
+      }
+
+      openMap.remove(current.h3Index);
+      closeMap.put(current.h3Index,current);
+
+      for(long h3Index : h3.kRing(current.h3Index,1)){
+        if(!daejeonH3Index.containsKey(h3Index))
+          continue;
+
+        if(closeMap.containsKey(h3Index))
+          continue;
+
+        //Math.abs() : 현재 인덱스와 이동할 인덱스의 고도 차이, 가중치 계산 필요
+        double tentativeG = current.g + Math.abs(daejeonH3Index.get(current.h3Index)-daejeonH3Index.get(h3Index));
+        //openMap에 없거나, 이미 openMap에 존재하는 인덱스보다 가중치가 작은 경우
+        if(!openMap.containsKey(h3Index) || tentativeG<openMap.get(h3Index).g){
+          NodeAStar node = new NodeAStar(h3Index);
+          node.preNode = current;
+          node.g = tentativeG;
+          node.h = Math.pow(Math.abs(h3.h3ToGeo(h3Index).lat-eY),2)+Math.pow(Math.abs(h3.h3ToGeo(h3Index).lng-eX),2);
+          node.f = node.g+ node.h;
+          openMap.put(h3Index,node);
+        }
+
+      }
+    }
+
+    return null;
+  }
+
 }

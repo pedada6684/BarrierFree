@@ -10,9 +10,10 @@ import 'package:provider/provider.dart';
 
 class ReviewScreen extends StatefulWidget {
   final String poiId;
+  final List<String> barrierFreeItems;
 
   const ReviewScreen(
-      {super.key, required this.poiId});
+      {super.key, required this.poiId, required this.barrierFreeItems});
 
   @override
   State<ReviewScreen> createState() => _ReviewScreenState();
@@ -61,34 +62,26 @@ class _ReviewScreenState extends State<ReviewScreen> {
       });
     }
   }
-
-  Widget _buildFeedbackButtons() {
-    List<Widget> buttons = [];
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: buttons,
-    );
-  }
-
-  Widget _buildFeedbackButton({
-    required IconData icon,
-    required String text,
-    required bool active,
-    required VoidCallback onTap,
-  }) {
-    return OutlinedButton.icon(
-      icon: Icon(icon, color: active ? mainOrange : mainGray),
-      label: Text(text, style: TextStyle(color: active ? mainOrange : mainGray)),
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        side: BorderSide(color: active ? mainOrange : mainGray), // 테두리 색상
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30), // 버튼 모서리 둥글게
-        ),
-      ),
-    );
-  }
+  //
+  //
+  // Widget _buildFeedbackButton({
+  //   required IconData icon,
+  //   required String text,
+  //   required bool active,
+  //   required VoidCallback onTap,
+  // }) {
+  //   return OutlinedButton.icon(
+  //     icon: Icon(icon, color: active ? mainOrange : mainGray),
+  //     label: Text(text, style: TextStyle(color: active ? mainOrange : mainGray)),
+  //     onPressed: onTap,
+  //     style: OutlinedButton.styleFrom(
+  //       side: BorderSide(color: active ? mainOrange : mainGray), // 테두리 색상
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(30), // 버튼 모서리 둥글게
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Future<void> _submitReview() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -133,7 +126,6 @@ class _ReviewScreenState extends State<ReviewScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            _buildFeedbackButtons(),
             SizedBox(
               height: 16.0,
             ),

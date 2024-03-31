@@ -10,8 +10,10 @@ import 'package:provider/provider.dart';
 
 class ReviewScreen extends StatefulWidget {
   final String poiId;
+  final List<String> barrierFreeItems;
 
-  const ReviewScreen({super.key, required this.poiId});
+  const ReviewScreen(
+      {super.key, required this.poiId, required this.barrierFreeItems});
 
   @override
   State<ReviewScreen> createState() => _ReviewScreenState();
@@ -23,12 +25,27 @@ class _ReviewScreenState extends State<ReviewScreen> {
   bool _elevatorButtonActive = true;
   File? _image;
   int _remainingChars = 0; //300자 글자수 제한
+  Map<String, bool> likeState = {};
+  Map<String, bool> unlikeState = {};
+
+  String mapSelectedToString(Map<String, bool> items) {
+    return items.entries
+        .where((entry) => entry.value == true)
+        .map((entry) => entry.key)
+        .join(', ');
+  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _reviewController.addListener(_onReviewChanged);
+    for (var item in widget.barrierFreeItems) {
+      likeState[item] = false;
+      unlikeState[item] = false;
+    }
+
+    print(widget.barrierFreeItems);
   }
 
   @override
@@ -59,6 +76,70 @@ class _ReviewScreenState extends State<ReviewScreen> {
     }
   }
 
+  Widget _buildThumbsButton({
+    required String item,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton.icon(
+      label: Text(
+        item,
+        style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+      ),
+      icon: Icon(
+        icon,
+        color: isSelected ? mainOrange : mainGray,
+      ),
+      style: ElevatedButton.styleFrom(
+        foregroundColor: mainBlack,
+        // backgroundColor: isSelected ? mainOrange : Colors.white,
+        side: BorderSide(color: mainOrange, width: 2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+        elevation: 0,
+      ),
+      onPressed: onPressed,
+    );
+  }
+
+  List<Widget> buildFeedbackButtons() {
+    List<Widget> buttons = [];
+    widget.barrierFreeItems.forEach((item) {
+      buttons.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildThumbsButton(
+              item: item,
+              icon: Icons.thumb_up_outlined,
+              isSelected: likeState[item] ?? false,
+              onPressed: () {
+                setState(() {
+                  likeState[item] = !(likeState[item] ?? false);
+                  unlikeState[item] = false;
+                });
+              },
+            ),
+            _buildThumbsButton(
+              item: item,
+              icon: Icons.thumb_down_outlined,
+              isSelected: unlikeState[item] ?? false,
+              onPressed: () {
+                setState(() {
+                  unlikeState[item] = !(unlikeState[item] ?? false);
+                  likeState[item] = false;
+                });
+              },
+            ),
+          ],
+        ),
+      );
+    });
+    return buttons;
+  }
+
   Future<void> _submitReview() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final userId = userProvider.userId;
@@ -68,27 +149,35 @@ class _ReviewScreenState extends State<ReviewScreen> {
       imageUrl = await ReviewService().uploadImage(_image!);
     }
 
-    bool isReviewAdded = await ReviewService().addReview(
-      poiId: widget.poiId,
-      userId: userId!,
-      content: _reviewController.text,
-      feedback: _elevatorButtonActive ? 1 : 0,
-      imageUrl: imageUrl,
-    );
+    String likString = mapSelectedToString(likeState);
+    String unlikString = mapSelectedToString(unlikeState);
 
-    if (isReviewAdded) {
-      //다시 상세 페이지로 이동시키기
-      Navigator.pop(context, true);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('리뷰 추가에 실패했습니다.')),
+    try {
+      bool isSuccess = await ReviewService().addReview(
+        poiId: widget.poiId,
+        userId: userId!,
+        content: _reviewController.text,
+        lik: likString.isEmpty ? null : likString,
+        unlik: unlikString.isEmpty ? null : unlikString,
+        imageUrl: imageUrl,
       );
+      if (isSuccess) {
+        //다시 상세 페이지로 이동시키기
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('리뷰 추가에 실패했습니다.')),
+        );
+      }
+    } catch (e) {
+      throw Exception('리뷰 등록하다가 에러 발생 $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBar(
         title: '배리어프리 리뷰',
       ),
@@ -98,16 +187,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            _buildElevatorButtons(),
+            ...buildFeedbackButtons(),
             SizedBox(
               height: 16.0,
             ),
-            _buildInputField(hint: '최대 300자 입력', controller: _reviewController),
+            _buildInputField(hint: '최대 255자 입력', controller: _reviewController),
             _buildImagePicker(
               label: '사진 선택',
               onCameraTap: _pickImage,
               pickedImage: _image,
             ),
+            SizedBox(height: 16.0,),
             Row(
               children: [
                 Expanded(
@@ -151,7 +241,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         ),
         TextField(
           controller: controller,
-          maxLength: 300,
+          maxLength: 255,
           maxLines: 5,
           decoration: InputDecoration(
             counterText: '',
@@ -170,7 +260,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
               borderRadius: BorderRadius.circular(10.0),
               borderSide: BorderSide(color: mainOrange, width: 2),
             ),
-            counter: Text('$_remainingChars/300'),
+            counter: Text('$_remainingChars/255'),
           ),
           onChanged: (text) {
             setState(() {

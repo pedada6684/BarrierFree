@@ -34,6 +34,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   late Map<String, String> barrierFreeInfo;
   Map<String, dynamic>? barrierFreeList;
   late Future<Map<String, dynamic>>? barrierFreeDetailsFuture;
+  List<String>? barrierFreeDetails;
 
   @override
   void initState() {
@@ -42,16 +43,12 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     _initializeUserId();
     reviewListFuture =
         ReviewService().fetchReviewByPlaceId(widget.placeDetail['id']);
-    barrierFreeInfo = {
-      'a': "화장실",
-      'b': "주차",
-      'c': "경사로",
-      'd': "접근로",
-      'e': "출입문",
-      'f': "엘레베이터",
-    };
     barrierFreeDetailsFuture = _fetchBarrierFreeDetails();
-
+    _fetchBarrierFreeDetails().then((details) {
+      setState(() {
+        barrierFreeDetails = List<String>.from(details['barrierFree']).toList();
+      });
+    });
   }
 
   void refreshReviews() {
@@ -68,59 +65,43 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       setState(() {
         userId = decodeUserId;
       });
-      print(decodeUserId);
+      // print(decodeUserId);
     }
   }
 
   Future<Map<String, dynamic>> _fetchBarrierFreeDetails() async {
     // Map<String, dynamic> details = {};
     try {
-      final details = await PlaceService().fetchBfByPoiId(widget.placeDetail['id']);
+      final details =
+          await PlaceService().fetchBfByPoiId(widget.placeDetail['id']);
       return details;
     } catch (e) {
-      print('배리어프리 정보 가져오기 실패: $e');  barrierFreeDetailsFuture = _fetchBarrierFreeDetails();
-
-      return {};
+      print('배리어프리 정보 가져오기 실패: $e');
+      return {}; // 오류 발생시 빈 맵 반환
     }
   }
 
-  List<Widget> _buildBarrierFreeButtons(
-      Map<String, dynamic>? barrierFreeDetails) {
+  List<Widget> _buildBarrierFreeButtons(List<dynamic> barrierFreeDetailsList) {
     List<Widget> buttons = [];
-    if (barrierFreeDetails == null || barrierFreeDetails['barrierFree'].isEmpty) {
-      buttons.add(Text('배리어프리 시설 정보가 없습니다'));
-      return buttons;
-    }// 데이터가 없으면 빈 리스트 반환
 
-    String barrierFreeCodes = barrierFreeDetails['barrierFree'];
-    for (var code in barrierFreeCodes.split('')) {
-      var name = barrierFreeInfo[code];
-      if (name != null) {
-        buttons.add(
-          ElevatedButton(
-            onPressed: () {
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white, // 배경색
-              side: BorderSide(color: mainOrange, width: 1), // 테두리 색상 및 두께
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10), // 모서리 둥글기
-              ),
-            ),
-            child: Text(
-              name,
-              style: TextStyle(
-                fontSize: 16.0,
-                color: mainBlack,
-              ),
-
+    for (var detail in barrierFreeDetailsList) {
+      buttons.add(
+        ElevatedButton(
+          onPressed: () {},
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            side: BorderSide(color: mainOrange, width: 1),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
-        );
-        buttons.add(SizedBox(width: 10.0)); // 버튼 사이 간격
-      }else{
-        Text('배리어프리 시설 정보가 없습니다');
-      }
+          child: Text(
+            detail, // 직접 세부사항을 표시합니다.
+            style: TextStyle(fontSize: 16.0, color: mainBlack),
+          ),
+        ),
+      );
+      buttons.add(SizedBox(width: 10.0)); // 버튼 사이 간격
     }
 
     return buttons;
@@ -232,12 +213,10 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               ),
               SizedBox(height: 20.0),
               // 지도 위젯
-              Container(
-                width: MediaQuery.of(context).size.width * 0.9,
-                height: MediaQuery.of(context).size.width * 0.9,
+              Center(
                 child: KakaoMapView(
-                  width: MediaQuery.of(context).size.width * 0.7,
-                  height: MediaQuery.of(context).size.height * 0.7,
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: MediaQuery.of(context).size.width * 0.8,
                   kakaoMapKey: appKey!,
                   lat: double.tryParse(widget.placeDetail['y'].toString()) ??
                       0.0,
@@ -320,14 +299,18 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         return CircularProgressIndicator();
                       } else if (snapshot.hasError) {
                         return Text('장애물 없는 시설 정보를 가져오는 데 실패했습니다.');
-                      } else {
-                        // 데이터가 있는 경우 버튼 리스트 반환
+                      } else if (snapshot.hasData) {
+                        var barrierFreeList = List<String>.from(
+                            snapshot.data!['barrierFree'] as List);
                         return SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
-                            children: _buildBarrierFreeButtons(snapshot.data),
+                            children: _buildBarrierFreeButtons(
+                                barrierFreeList), // 캐스팅된 리스트를 전달
                           ),
                         );
+                      } else {
+                        return Text('배리어프리 정보가 없습니다.');
                       }
                     },
                   ),
@@ -348,21 +331,25 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   ),
                   ElevatedButton(
                       onPressed: () async {
-                        final result = Navigator.push(
+                        // 배리어프리 시설 상세 정보를 기다립니다.
+                        List<String> barrierFreeItemsToSend = barrierFreeDetails ?? [];
+
+                        // ReviewScreen으로 이동합니다.
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                ReviewScreen(poiId: widget.placeDetail['id']),
+                            builder: (context) => ReviewScreen(
+                              poiId: widget.placeDetail['id'],
+                              barrierFreeItems: barrierFreeItemsToSend,
+                            ),
                           ),
                         );
 
+                        // 필요하다면 리뷰 목록을 새로고침 합니다.
                         if (result == true) {
-                          refreshReviews(); //리뷰 목록 새로고침
+                          refreshReviews();
                         }
                       },
-                      // onPressed: () {
-                      //   testService.sendTestRequest();
-                      // },
                       child: Text('리뷰 작성하기')),
                 ],
               ),

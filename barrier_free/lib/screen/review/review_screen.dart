@@ -11,7 +11,8 @@ import 'package:provider/provider.dart';
 class ReviewScreen extends StatefulWidget {
   final String poiId;
 
-  const ReviewScreen({super.key, required this.poiId});
+  const ReviewScreen(
+      {super.key, required this.poiId});
 
   @override
   State<ReviewScreen> createState() => _ReviewScreenState();
@@ -23,12 +24,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
   bool _elevatorButtonActive = true;
   File? _image;
   int _remainingChars = 0; //300자 글자수 제한
+  Map<String, bool> _feedbackButtonsActiveState = {};
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _reviewController.addListener(_onReviewChanged);
+
   }
 
   @override
@@ -59,6 +62,34 @@ class _ReviewScreenState extends State<ReviewScreen> {
     }
   }
 
+  Widget _buildFeedbackButtons() {
+    List<Widget> buttons = [];
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: buttons,
+    );
+  }
+
+  Widget _buildFeedbackButton({
+    required IconData icon,
+    required String text,
+    required bool active,
+    required VoidCallback onTap,
+  }) {
+    return OutlinedButton.icon(
+      icon: Icon(icon, color: active ? mainOrange : mainGray),
+      label: Text(text, style: TextStyle(color: active ? mainOrange : mainGray)),
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: active ? mainOrange : mainGray), // 테두리 색상
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30), // 버튼 모서리 둥글게
+        ),
+      ),
+    );
+  }
+
   Future<void> _submitReview() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final userId = userProvider.userId;
@@ -67,12 +98,16 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (_image != null) {
       imageUrl = await ReviewService().uploadImage(_image!);
     }
+    Map<String, int> feedback = {};
+    _feedbackButtonsActiveState.forEach((key, value) {
+      feedback[key] = value ? 1 : 0;
+    });
 
     bool isReviewAdded = await ReviewService().addReview(
       poiId: widget.poiId,
       userId: userId!,
       content: _reviewController.text,
-      feedback: _elevatorButtonActive ? 1 : 0,
+      feedback: feedback['value']!,
       imageUrl: imageUrl,
     );
 
@@ -98,11 +133,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            _buildElevatorButtons(),
+            _buildFeedbackButtons(),
             SizedBox(
               height: 16.0,
             ),
-            _buildInputField(hint: '최대 300자 입력', controller: _reviewController),
+            _buildInputField(hint: '최대 255자 입력', controller: _reviewController),
             _buildImagePicker(
               label: '사진 선택',
               onCameraTap: _pickImage,
@@ -151,7 +186,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         ),
         TextField(
           controller: controller,
-          maxLength: 300,
+          maxLength: 255,
           maxLines: 5,
           decoration: InputDecoration(
             counterText: '',
@@ -170,7 +205,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
               borderRadius: BorderRadius.circular(10.0),
               borderSide: BorderSide(color: mainOrange, width: 2),
             ),
-            counter: Text('$_remainingChars/300'),
+            counter: Text('$_remainingChars/255'),
           ),
           onChanged: (text) {
             setState(() {

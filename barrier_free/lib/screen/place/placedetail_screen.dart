@@ -42,16 +42,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     _initializeUserId();
     reviewListFuture =
         ReviewService().fetchReviewByPlaceId(widget.placeDetail['id']);
-    barrierFreeInfo = {
-      'a': "화장실",
-      'b': "주차",
-      'c': "경사로",
-      'd': "접근로",
-      'e': "출입문",
-      'f': "엘레베이터",
-    };
     barrierFreeDetailsFuture = _fetchBarrierFreeDetails();
-
   }
 
   void refreshReviews() {
@@ -78,53 +69,39 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       final details = await PlaceService().fetchBfByPoiId(widget.placeDetail['id']);
       return details;
     } catch (e) {
-      print('배리어프리 정보 가져오기 실패: $e');  barrierFreeDetailsFuture = _fetchBarrierFreeDetails();
-
-      return {};
+      print('배리어프리 정보 가져오기 실패: $e');
+      return {}; // 오류 발생시 빈 맵 반환
     }
   }
 
   List<Widget> _buildBarrierFreeButtons(
-      Map<String, dynamic>? barrierFreeDetails) {
+      List<dynamic> barrierFreeDetailsList) {
+
     List<Widget> buttons = [];
-    if (barrierFreeDetails == null || barrierFreeDetails['barrierFree'].isEmpty) {
-      buttons.add(Text('배리어프리 시설 정보가 없습니다'));
-      return buttons;
-    }// 데이터가 없으면 빈 리스트 반환
 
-    String barrierFreeCodes = barrierFreeDetails['barrierFree'];
-    for (var code in barrierFreeCodes.split('')) {
-      var name = barrierFreeInfo[code];
-      if (name != null) {
-        buttons.add(
-          ElevatedButton(
-            onPressed: () {
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white, // 배경색
-              side: BorderSide(color: mainOrange, width: 1), // 테두리 색상 및 두께
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10), // 모서리 둥글기
-              ),
-            ),
-            child: Text(
-              name,
-              style: TextStyle(
-                fontSize: 16.0,
-                color: mainBlack,
-              ),
-
+    for (var detail in barrierFreeDetailsList) {
+      buttons.add(
+        ElevatedButton(
+          onPressed: () {},
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            side: BorderSide(color: mainOrange, width: 1),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
-        );
-        buttons.add(SizedBox(width: 10.0)); // 버튼 사이 간격
-      }else{
-        Text('배리어프리 시설 정보가 없습니다');
-      }
+          child: Text(
+            detail, // 직접 세부사항을 표시합니다.
+            style: TextStyle(fontSize: 16.0, color: mainBlack),
+          ),
+        ),
+      );
+      buttons.add(SizedBox(width: 10.0)); // 버튼 사이 간격
     }
 
     return buttons;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -320,14 +297,16 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         return CircularProgressIndicator();
                       } else if (snapshot.hasError) {
                         return Text('장애물 없는 시설 정보를 가져오는 데 실패했습니다.');
-                      } else {
-                        // 데이터가 있는 경우 버튼 리스트 반환
+                      }else if (snapshot.hasData) {
+                        // _buildBarrierFreeButtons 호출부 수정: Map에서 List를 추출하여 전달합니다.
                         return SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
-                            children: _buildBarrierFreeButtons(snapshot.data),
+                            children: _buildBarrierFreeButtons(snapshot.data!['barrierFree']),
                           ),
                         );
+                      } else {
+                        return Text('배리어프리 정보가 없습니다.');
                       }
                     },
                   ),
@@ -347,24 +326,28 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     ),
                   ),
                   ElevatedButton(
-                      onPressed: () async {
-                        final result = Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ReviewScreen(poiId: widget.placeDetail['id']),
-                          ),
-                        );
+                    onPressed: () async {
+                      // 배리어프리 시설 상세 정보를 기다립니다.
+                      Map<String, dynamic> barrierFreeDetails = await _fetchBarrierFreeDetails();
 
-                        if (result == true) {
-                          refreshReviews(); //리뷰 목록 새로고침
-                        }
-                      },
-                      // onPressed: () {
-                      //   testService.sendTestRequest();
-                      // },
-                      child: Text('리뷰 작성하기')),
-                ],
+                      // ReviewScreen으로 이동합니다.
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ReviewScreen(
+                            poiId: widget.placeDetail['id'],
+
+                          ),
+                        ),
+                      );
+
+                      // 필요하다면 리뷰 목록을 새로고침 합니다.
+                      if (result == true) {
+                        refreshReviews();
+                      }
+                    },
+                    child: Text('리뷰 작성하기')
+                  ),],
               ),
               SizedBox(height: 20.0),
               FutureBuilder<List<dynamic>>(

@@ -32,7 +32,7 @@ Future<List<dynamic>> fetchMainSearchResults(
   final appKey = dotenv.env['REST_API_KEY'];
   final response = await http.get(
     Uri.parse(
-        'https://dapi.kakao.com/v2/local/search/keyword.json?query=$keyword&x=${currentPosition.longitude}&y=${currentPosition.latitude}&radius=20000&sort=distance'),
+        'https://dapi.kakao.com/v2/local/search/keyword.json?query=$keyword&size=10&x=${currentPosition.longitude}&y=${currentPosition.latitude}&radius=20000&sort=distance'),
     headers: {
       'Authorization': 'KakaoAK $appKey',
     },

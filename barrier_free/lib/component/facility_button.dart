@@ -40,7 +40,6 @@ class _CustomFacilityButtonState extends State<CustomFacilityButton> {
             style: TextStyle(
               color: isSelected ? Colors.white : mainBlack,
               fontSize: 18.0,
-              fontWeight: FontWeight.bold
             ),
           ),
         ),

@@ -166,7 +166,7 @@ class _MapResultScreenState extends State<MapResultScreen> {
                     topLeft: Radius.circular(30.0),
                   ),
                   minHeight: 72.0,
-                  maxHeight: MediaQuery.of(context).size.height * 0.7,
+                  maxHeight: MediaQuery.of(context).size.height * 0.5,
                 ),
               ],
             ),

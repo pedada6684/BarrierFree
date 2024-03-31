@@ -5,6 +5,7 @@ import 'package:barrier_free/screen/map/mapresult_screen.dart';
 import 'package:barrier_free/services/location_service.dart';
 import 'package:barrier_free/services/place_service.dart';
 import 'package:barrier_free/services/search_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -19,6 +20,8 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
+  Key mapKey = UniqueKey();
+
   late TextEditingController _originController = TextEditingController();
   late Future<Position> _currentPositionFuture;
   late List<dynamic> allPlaces = [];
@@ -39,10 +42,30 @@ class _MapScreenState extends State<MapScreen> {
     _initMapData();
   }
 
+  //현재 위치 기반으로 마커와 이동 버튼 만들기
   void _initMapData() async {
     _currentPositionFuture = LocationService().getCurrentPosition();
     final currentPosition = await _currentPositionFuture;
     _loadPlaces(currentPosition);
+    _setCustomScript(currentPosition);
+  }
+
+  void _setCustomScript(Position currentPosition) {
+    var starMarkerScript = """
+    var markerPosition = new kakao.maps.LatLng(${currentPosition.latitude}, ${currentPosition.longitude});
+    var marker = new kakao.maps.Marker({
+      position: markerPosition,
+      map: map,
+      image: new kakao.maps.MarkerImage(
+        'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+        new kakao.maps.Size(24, 35)
+      )
+    });
+  """;
+
+    setState(() {
+      customScript = starMarkerScript;
+    });
   }
 
   void _loadPlaces(Position position) async {
@@ -51,58 +74,15 @@ class _MapScreenState extends State<MapScreen> {
 
     setState(() {
       allPlaces = places;
-      _setInitialMarker(position, places);
+      // _setInitialMarker(position, places);
     });
-  }
-
-  void _setInitialMarker(Position currentPosition, List<dynamic> places) {
-    setState(() {
-      customScript = generateCutomScript(places, currentPosition,
-          showCurrentLocation: true);
-    });
-  }
-
-  String generateCutomScript(List<dynamic> places, Position currentPosition,
-      {bool showCurrentLocation = true}) {
-    var markersScript = places.map((place) {
-      return """
-      var markerPosition = new kakao.maps.LatLng(${place['lat']}, ${place['lng']});
-      var marker = new kakao.maps.Marker({
-        position: markerPosition,
-        map: map
-      });
-      kakao.maps.event.addListener(marker, 'click', function() {
-        var infowindow = new kakao.maps.InfoWindow({
-          content: '<div style="padding:5px;">${place['placeName']}</div>'
-        });
-        infowindow.open(map, marker);
-      });
-    """;
-    }).join('\n');
-
-    var currentLocationScript = showCurrentLocation
-        ? """
-    var currentMarkerPosition = new kakao.maps.LatLng(${currentPosition.latitude}, ${currentPosition.longitude});
-    var currentMarker = new kakao.maps.Marker({
-      position: currentMarkerPosition,
-      map: map,
-      image: new kakao.maps.MarkerImage('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png')
-    });
-  """
-        : '';
-
-    return """
-    ${markersScript}
-    ${currentLocationScript}
-    map.setBounds(new kakao.maps.LatLngBounds(new kakao.maps.LatLng(${currentPosition.latitude}, ${currentPosition.longitude})));
-  """;
   }
 
   Future<void> _search() async {
     if (_originController.text.isNotEmpty) {
       try {
-        final result = await fetchSearchResults(_originController.text);
-        final currentPosition = await _currentPositionFuture;
+        final currentPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+        final result = await fetchMainSearchResults(_originController.text, currentPosition);
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -123,15 +103,108 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  //
   void _onCategoryFiltered(String category) async {
-    final currentPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    final currentPosition = await _currentPositionFuture;
     List<dynamic> filtered =
         allPlaces.where((place) => place['category'] == category).toList();
-    setState(() {
-      filteredPlaces = filtered;
+
+    if (filtered.isEmpty) {
+      // 필터링된 목록이 비었을 경우, 사용자에게 알림을 주고 현재 위치에 마커를 표시합니다.
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("주변에 $category 관련 배리어프리 시설이 없습니다.")));
+
+      // 현재 위치 마커와 인포윈도우 추가
+      var currentLocationScript =
+          _generateCurrentLocationScript(currentPosition);
+      // 마커 스크립트 생성 및 적용
+      var markersScript = _generateMarkersScript(filtered, currentPosition);
+
+      setState(() {
+        customScript = currentLocationScript + markersScript;
+      });
+    } else {
+      // 마커 스크립트 생성 및 적용
+      setState(() {
+        mapKey = UniqueKey(); // 지도 새로고침
+        customScript = _generateMarkersScript(filtered, currentPosition!);
+      });
+    }
+  }
+
+  String _generateMarkersScript(
+      List<dynamic> filtered, Position currentPosition) {
+    if (filtered.isEmpty) {
+      return _generateCurrentLocationScript(currentPosition);
+    }
+
+    var boundsScript = """
+      var bounds = new kakao.maps.LatLngBounds();
+      var currentPos = new kakao.maps.LatLng(${currentPosition.latitude}, ${currentPosition.longitude});
+      bounds.extend(currentPos);
+      """;
+    var markersScript = """
+      var currentInfowindow = null; // 현재 열려 있는 인포윈도우를 추적
+      """;
+
+    for (var i = 0; i < filtered.length; i++) {
+      var place = filtered[i];
+      markersScript += """
+        var markerPosition${i} = new kakao.maps.LatLng(${place['lat']}, ${place['lng']});
+        var marker${i} = new kakao.maps.Marker({
+          position: markerPosition${i},
+          map: map
+        });
+        bounds.extend(markerPosition${i});
+        
+        kakao.maps.event.addListener(marker${i}, 'click', (function(marker, placeName) {
+         return function() {
+            map.setCenter(marker.getPosition());
+           map.panTo(marker.getPosition()); // 마커가 있는 위치로 부드럽게 이동
+           map.setLevel(5, {animate: {duration: 400}});
+            // 이전 인포윈도우 닫기
+            if (currentInfowindow) {
+              currentInfowindow.close();
+            }
+            // 새 인포윈도우 생성
+            var infowindow = new kakao.maps.InfoWindow({
+              content: '<div style="padding:5px; width:auto; height:auto; word-wrap:break-word;text-align:center;">' + placeName + '</div>'
+            });
+            // 인포윈도우 열기
+            infowindow.open(map, marker);
+            // 현재 인포윈도우 설정
+            currentInfowindow = infowindow;
+            // 3초 후에 인포윈도우 닫기
+            setTimeout(function() {
+              if (infowindow === currentInfowindow) {
+                infowindow.close();
+                currentInfowindow = null;
+              }
+            }, 3000);
+          };
+        })(marker${i}, '${place['placeName']}'));
+        """;
+    }
+    markersScript += "map.setBounds(bounds);";
+
+    return boundsScript +
+        markersScript +
+        _generateCurrentLocationScript(currentPosition);
+  }
+
+  String _generateCurrentLocationScript(Position currentPosition) {
+    return """
+    var currentMarkerPosition = new kakao.maps.LatLng(${currentPosition.latitude}, ${currentPosition.longitude});
+    var currentMarker = new kakao.maps.Marker({
+      position: currentMarkerPosition,
+      map: map,
+      image: new kakao.maps.MarkerImage('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png')
     });
+    var currentInfowindow = new kakao.maps.InfoWindow({
+      content: '<div style="padding:5px;text-align:center;">내 위치</div>'
+    });
+    currentInfowindow.open(map, currentMarker);
+   setTimeout(function() {currentInfowindow.close();}, 3000); // `infowindow`가 아닌 `currentInfowindow`로 수정
+  """;
   }
 
   @override
@@ -179,7 +252,7 @@ class _MapScreenState extends State<MapScreen> {
               title: '베프.',
               titleStyle: TextStyle(
                 fontFamily: 'LogoFont',
-                fontSize: 32.0,
+                fontSize: 40.0,
               ),
             ),
             body: Column(
@@ -213,9 +286,7 @@ class _MapScreenState extends State<MapScreen> {
                           ),
                           textCapitalization: TextCapitalization.words,
                           controller: _originController,
-                          onChanged: (value) {
-                            print(value);
-                          },
+                          onChanged: (value) {},
                         ),
                       ),
                       IconButton(
@@ -234,17 +305,20 @@ class _MapScreenState extends State<MapScreen> {
                 Expanded(
                   child: Stack(
                     children: [
-                      KakaoMapView(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height,
-                        kakaoMapKey: appKey!,
-                        lat: position.latitude,
-                        lng: position.longitude,
-                        markerImageURL:
-                            'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
-                        showZoomControl: false,
-                        showMapTypeControl: false,
-                        customScript: customScript,
+                      Container(
+                        key: mapKey,
+                        child: KakaoMapView(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height,
+                          kakaoMapKey: appKey!,
+                          lat: position.latitude,
+                          lng: position.longitude,
+                          // markerImageURL:
+                          //     'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                          showZoomControl: false,
+                          showMapTypeControl: false,
+                          customScript: customScript,
+                        ),
                       ),
                       Positioned(
                         top: 8.0, // 위치 조정 가능

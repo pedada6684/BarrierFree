@@ -112,8 +112,15 @@ class _MapScreenState extends State<MapScreen> {
       // 필터링된 목록이 비었을 경우, 사용자에게 알림을 주고 현재 위치에 마커를 표시합니다.
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("주변에 $category 관련 배리어프리 시설이 없습니다.")));
+
+      // 현재 위치 마커와 인포윈도우 추가
+      var currentLocationScript =
+          _generateCurrentLocationScript(currentPosition);
+      // 마커 스크립트 생성 및 적용
+      var markersScript = _generateMarkersScript(filtered, currentPosition);
+
       setState(() {
-        customScript = _generateCurrentLocationScript(currentPosition!);
+        customScript = currentLocationScript + markersScript;
       });
     } else {
       // 마커 스크립트 생성 및 적용
@@ -131,34 +138,57 @@ class _MapScreenState extends State<MapScreen> {
     }
 
     var boundsScript = """
-var bounds = new kakao.maps.LatLngBounds();
-var currentPos = new kakao.maps.LatLng(${currentPosition.latitude}, ${currentPosition.longitude});
-bounds.extend(currentPos);
-""";
-    var markersScript = "";
+      var bounds = new kakao.maps.LatLngBounds();
+      var currentPos = new kakao.maps.LatLng(${currentPosition.latitude}, ${currentPosition.longitude});
+      bounds.extend(currentPos);
+      """;
+    var markersScript = """
+      var currentInfowindow = null; // 현재 열려 있는 인포윈도우를 추적
+      """;
 
     for (var i = 0; i < filtered.length; i++) {
       var place = filtered[i];
       markersScript += """
-var markerPosition${i} = new kakao.maps.LatLng(${place['lat']}, ${place['lng']});
-var marker${i} = new kakao.maps.Marker({
-  position: markerPosition${i},
-  map: map
-});
-bounds.extend(markerPosition${i});
-
-kakao.maps.event.addListener(marker${i}, 'click', function() {
-  var infowindow = new kakao.maps.InfoWindow({
-    content: '<div style="padding:5px; max-width:200px; height:auto; word-wrap:break-word;text-align:center;">${place['placeName']}</div>'
-  });
-  infowindow.open(map, marker${i});
-});
-""";
+        var markerPosition${i} = new kakao.maps.LatLng(${place['lat']}, ${place['lng']});
+        var marker${i} = new kakao.maps.Marker({
+          position: markerPosition${i},
+          map: map
+        });
+        bounds.extend(markerPosition${i});
+        
+        kakao.maps.event.addListener(marker${i}, 'click', (function(marker, placeName) {
+         return function() {
+            map.setCenter(marker.getPosition());
+           map.panTo(marker.getPosition()); // 마커가 있는 위치로 부드럽게 이동
+           map.setLevel(4);
+            // 이전 인포윈도우 닫기
+            if (currentInfowindow) {
+              currentInfowindow.close();
+            }
+            // 새 인포윈도우 생성
+            var infowindow = new kakao.maps.InfoWindow({
+              content: '<div style="padding:5px; width:auto; height:auto; word-wrap:break-word;text-align:center;">' + placeName + '</div>'
+            });
+            // 인포윈도우 열기
+            infowindow.open(map, marker);
+            // 현재 인포윈도우 설정
+            currentInfowindow = infowindow;
+            // 3초 후에 인포윈도우 닫기
+            setTimeout(function() {
+              if (infowindow === currentInfowindow) {
+                infowindow.close();
+                currentInfowindow = null;
+              }
+            }, 3000);
+          };
+        })(marker${i}, '${place['placeName']}'));
+        """;
     }
-
     markersScript += "map.setBounds(bounds);";
 
-    return boundsScript + markersScript;
+    return boundsScript +
+        markersScript +
+        _generateCurrentLocationScript(currentPosition);
   }
 
   String _generateCurrentLocationScript(Position currentPosition) {
@@ -173,7 +203,7 @@ kakao.maps.event.addListener(marker${i}, 'click', function() {
       content: '<div style="padding:5px;text-align:center;">내 위치</div>'
     });
     currentInfowindow.open(map, currentMarker);
-     setTimeout(function() {infowindow.close();}, 3000);
+   setTimeout(function() {currentInfowindow.close();}, 3000); // `infowindow`가 아닌 `currentInfowindow`로 수정
   """;
   }
 

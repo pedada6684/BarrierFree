@@ -392,18 +392,10 @@ public class PlaceService {
   public GetPlaceResponse getPlace(String poiId){
     Place place = placeRepository.findPlaceByPoiId(poiId);
 
-    GetPlaceResponse response = GetPlaceResponse.builder()
-            .placeId(place.getId())
-            .placeName(place.getPlaceName())
-            .address(place.getAddress())
-            .barrierFree(place.getBarrierFree())
-            .category(place.getCategory())
-            .lat(place.getLatitude())
-            .lng(place.getLongitude())
-            .poiId(place.getPoiId())
-            .build();
+    if (place == null) return null;
+//    if (place == null) throw new CustomException(ErrorCode.PLACE_NOT_FOUND);
 
-    return response;
+    return GetPlaceResponse.from(place);
   }
   /**
    * 장애인 시설 카테고리별 불러오기

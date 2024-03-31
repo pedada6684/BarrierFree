@@ -12,8 +12,8 @@ public class BarrierFreeInfo {
         this.bafInfo = new HashMap<>();
         bafInfo.put('a', "화장실");
         bafInfo.put('b', "주차");
-        bafInfo.put('c', "주출입구 높이 차이 제거");
-        bafInfo.put('d', "주출입구 접근로");
+        bafInfo.put('c', "경사로");
+        bafInfo.put('d', "접근로");
         bafInfo.put('e', "출입문");
         bafInfo.put('f', "승강기");
     }

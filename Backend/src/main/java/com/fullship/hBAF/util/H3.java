@@ -12,7 +12,7 @@ import java.util.*;
 public class H3 {
 
     public static double xMax, yMax, xMin, yMin;
-    public static Set<Long> daejeonH3Index = new HashSet<>();
+    public static Map<Long,Double> daejeonH3Index = new HashMap<>();
 
     public static void setH3Index() throws IOException, LineUndefinedException {
 
@@ -97,8 +97,8 @@ public class H3 {
 
             for (int i = 1; i < daejeonGeo.length; i++) {
                 GeoCoord curCoord = daejeonGeo[i];
-                long preIndex = h3.geoToH3(preCoord.lat, preCoord.lng, 8);
-                long curIndex = h3.geoToH3(curCoord.lat, curCoord.lng, 8);
+                long preIndex = h3.geoToH3(preCoord.lat, preCoord.lng, 12);
+                long curIndex = h3.geoToH3(curCoord.lat, curCoord.lng, 12);
 
                 xMax = Math.max(xMax,curCoord.lat);
                 yMax = Math.max(yMax,curCoord.lng);
@@ -108,7 +108,7 @@ public class H3 {
                 list = h3.h3Line(preIndex,curIndex);
 
                 for(int j = 0; j<list.size(); j++) {
-                    daejeonH3Index.add(list.get(j));
+                    daejeonH3Index.put(list.get(j),0.0);
                 }
 
                 list.clear();
@@ -127,12 +127,7 @@ public class H3 {
 
         JSONArray jsonArray = new JSONArray();
 
-        int max = 0;
-        int min = 987654321;
-        for(Long i : daejeonH3Index){
-            int res = h3.h3GetResolution(i);
-            max = Math.max(max,res);
-            min = Math.min(min,res);
+        for(Long i : daejeonH3Index.keySet()){
 
             List<GeoCoord> geoCoordList = h3.h3ToGeoBoundary(i);
             for(GeoCoord coord : geoCoordList) {
@@ -151,21 +146,21 @@ public class H3 {
             e.printStackTrace();
         }
 
-        List<Long> daejeonCompact = h3.compact(daejeonH3Index);
-
-        System.out.println("대전 compact 전체 h3 인덱스 개수 : "+daejeonCompact.size());
-
+//        List<Long> daejeonCompact = h3.compact(daejeonH3Index);
+//
+//        System.out.println("대전 compact 전체 h3 인덱스 개수 : "+daejeonCompact.size());
+//
 //        System.out.println("max : "+max);
 //        System.out.println("min : "+min);
 
     }
 
-    public static Set<Long> bfs(Set<Long> set, double Lat, double Lng) throws IOException {
+    public static Map<Long,Double> bfs(Map<Long, Double> map, double Lat, double Lng) throws IOException {
 
         H3Core h3 = H3Core.newInstance();
 
-        long startIndex = h3.geoToH3(Lat,Lng,8);
-        set.add(startIndex);
+        long startIndex = h3.geoToH3(Lat,Lng,12);
+        map.put(startIndex,0.0);
 
         Queue<Long> que = new LinkedList<>();
         que.add(startIndex);
@@ -176,16 +171,16 @@ public class H3 {
 
             list = h3.kRing(index,1);
             for(Long i : list){
-                if(set.contains(i))
+                if(map.containsKey(i))
                     continue;
-                set.add(i);
+                map.put(i,0.0);
 
                 que.add(i);
             }
             list.clear();
         }
 
-        return set;
+        return map;
 
     }
 

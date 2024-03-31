@@ -8,6 +8,13 @@ class MapSearchResultList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //distance 있을때 만 필터링
+    List<dynamic> filteredResults = searchResults
+        .where((result) =>
+            result.containsKey('distance') && result['distance'] != null)
+        .toList();
+
+
     return ListView(
       children: [
         const Padding(
@@ -22,19 +29,26 @@ class MapSearchResultList extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8.0),
-        ...searchResults.map((result) {
+        ...filteredResults.map((result) {
+          double distanceInKm = int.parse(result['distance']) / 1000;
           String categoryName = result['category_name'];
           List<String> categoryDetail = categoryName.split('>');
           String categoryReal = categoryDetail.length > 1
               ? categoryDetail[1].trim()
               : categoryName;
           return ListTile(
-            title: Text(
-              result['place_name'],
-              style: const TextStyle(
-                fontSize: 20.0,
-                fontWeight: FontWeight.bold,
-              ),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  result['place_name'],
+                  style: const TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text('${distanceInKm.toStringAsFixed(1)}km'),
+              ],
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,7 +62,8 @@ class MapSearchResultList extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PlaceDetailScreen(placeDetail: result, placeCategory: categoryReal),
+                  builder: (context) => PlaceDetailScreen(
+                      placeDetail: result, placeCategory: categoryReal),
                 ),
               );
             },

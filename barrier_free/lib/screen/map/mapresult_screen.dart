@@ -98,14 +98,16 @@ class _MapResultScreenState extends State<MapResultScreen> {
     // TODO: implement initState
     super.initState();
     _initializeMarkers();
-    WidgetsBinding.instance.addPostFrameCallback((_) {});
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_panelController.isPanelOpen) {
+        _panelController.close();
+      }
+    });
   }
 
   void _initializeMarkers() {
     _markerPositions = widget.searchResults.map<Position>((result) {
-      // print(result['y']);
-      // print(result['x']);
-      // API에서 반환된 위치 데이터
+
       return Position(
         latitude: double.parse(result['y'].toString()),
         longitude: double.parse(result['x'].toString()),

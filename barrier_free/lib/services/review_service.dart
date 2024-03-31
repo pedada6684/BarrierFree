@@ -61,7 +61,8 @@ class ReviewService {
     required String poiId,
     required int userId,
     required String content,
-    required int feedback,
+    String? lik,
+    String? unlik,
     required String? imageUrl,
   }) async {
     String? accessToken = await _secureStorageService.getToken();
@@ -78,7 +79,8 @@ class ReviewService {
         'poiId': poiId,
         'memberId': userId,
         'content': content,
-        'feedback': feedback,
+        'lik':lik,
+        'unlik':unlik,
         'img': imageUrl != null ? [imageUrl] : [],
       }),
     );

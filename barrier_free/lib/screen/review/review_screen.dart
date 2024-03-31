@@ -25,14 +25,27 @@ class _ReviewScreenState extends State<ReviewScreen> {
   bool _elevatorButtonActive = true;
   File? _image;
   int _remainingChars = 0; //300자 글자수 제한
-  Map<String, bool> _feedbackButtonsActiveState = {};
+  Map<String, bool> likeState = {};
+  Map<String, bool> unlikeState = {};
+
+  String mapSelectedToString(Map<String, bool> items) {
+    return items.entries
+        .where((entry) => entry.value == true)
+        .map((entry) => entry.key)
+        .join(', ');
+  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _reviewController.addListener(_onReviewChanged);
+    for (var item in widget.barrierFreeItems) {
+      likeState[item] = false;
+      unlikeState[item] = false;
+    }
 
+    print(widget.barrierFreeItems);
   }
 
   @override
@@ -62,26 +75,70 @@ class _ReviewScreenState extends State<ReviewScreen> {
       });
     }
   }
-  //
-  //
-  // Widget _buildFeedbackButton({
-  //   required IconData icon,
-  //   required String text,
-  //   required bool active,
-  //   required VoidCallback onTap,
-  // }) {
-  //   return OutlinedButton.icon(
-  //     icon: Icon(icon, color: active ? mainOrange : mainGray),
-  //     label: Text(text, style: TextStyle(color: active ? mainOrange : mainGray)),
-  //     onPressed: onTap,
-  //     style: OutlinedButton.styleFrom(
-  //       side: BorderSide(color: active ? mainOrange : mainGray), // 테두리 색상
-  //       shape: RoundedRectangleBorder(
-  //         borderRadius: BorderRadius.circular(30), // 버튼 모서리 둥글게
-  //       ),
-  //     ),
-  //   );
-  // }
+
+  Widget _buildThumbsButton({
+    required String item,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton.icon(
+      label: Text(
+        item,
+        style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+      ),
+      icon: Icon(
+        icon,
+        color: isSelected ? mainOrange : mainGray,
+      ),
+      style: ElevatedButton.styleFrom(
+        foregroundColor: mainBlack,
+        // backgroundColor: isSelected ? mainOrange : Colors.white,
+        side: BorderSide(color: mainOrange, width: 2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+        elevation: 0,
+      ),
+      onPressed: onPressed,
+    );
+  }
+
+  List<Widget> buildFeedbackButtons() {
+    List<Widget> buttons = [];
+    widget.barrierFreeItems.forEach((item) {
+      buttons.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildThumbsButton(
+              item: item,
+              icon: Icons.thumb_up_outlined,
+              isSelected: likeState[item] ?? false,
+              onPressed: () {
+                setState(() {
+                  likeState[item] = !(likeState[item] ?? false);
+                  unlikeState[item] = false;
+                });
+              },
+            ),
+            _buildThumbsButton(
+              item: item,
+              icon: Icons.thumb_down_outlined,
+              isSelected: unlikeState[item] ?? false,
+              onPressed: () {
+                setState(() {
+                  unlikeState[item] = !(unlikeState[item] ?? false);
+                  likeState[item] = false;
+                });
+              },
+            ),
+          ],
+        ),
+      );
+    });
+    return buttons;
+  }
 
   Future<void> _submitReview() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -91,32 +148,36 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (_image != null) {
       imageUrl = await ReviewService().uploadImage(_image!);
     }
-    Map<String, int> feedback = {};
-    _feedbackButtonsActiveState.forEach((key, value) {
-      feedback[key] = value ? 1 : 0;
-    });
 
-    bool isReviewAdded = await ReviewService().addReview(
-      poiId: widget.poiId,
-      userId: userId!,
-      content: _reviewController.text,
-      feedback: feedback['value']!,
-      imageUrl: imageUrl,
-    );
+    String likString = mapSelectedToString(likeState);
+    String unlikString = mapSelectedToString(unlikeState);
 
-    if (isReviewAdded) {
-      //다시 상세 페이지로 이동시키기
-      Navigator.pop(context, true);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('리뷰 추가에 실패했습니다.')),
+    try {
+      bool isSuccess = await ReviewService().addReview(
+        poiId: widget.poiId,
+        userId: userId!,
+        content: _reviewController.text,
+        lik: likString.isEmpty ? null : likString,
+        unlik: unlikString.isEmpty ? null : unlikString,
+        imageUrl: imageUrl,
       );
+      if (isSuccess) {
+        //다시 상세 페이지로 이동시키기
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('리뷰 추가에 실패했습니다.')),
+        );
+      }
+    } catch (e) {
+      throw Exception('리뷰 등록하다가 에러 발생 $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBar(
         title: '배리어프리 리뷰',
       ),
@@ -126,6 +187,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
+            ...buildFeedbackButtons(),
             SizedBox(
               height: 16.0,
             ),
@@ -135,6 +197,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
               onCameraTap: _pickImage,
               pickedImage: _image,
             ),
+            SizedBox(height: 16.0,),
             Row(
               children: [
                 Expanded(

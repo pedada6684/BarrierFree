@@ -160,7 +160,7 @@ class _MapScreenState extends State<MapScreen> {
          return function() {
             map.setCenter(marker.getPosition());
            map.panTo(marker.getPosition()); // 마커가 있는 위치로 부드럽게 이동
-           map.setLevel(4);
+           map.setLevel(5, {animate: {duration: 400}});
             // 이전 인포윈도우 닫기
             if (currentInfowindow) {
               currentInfowindow.close();

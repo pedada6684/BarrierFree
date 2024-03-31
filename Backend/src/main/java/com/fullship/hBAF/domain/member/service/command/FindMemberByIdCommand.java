@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 @Builder
-public class FindMemberByEmailCommand {
-    String email;
+public class FindMemberByIdCommand {
+    Long id;
 }

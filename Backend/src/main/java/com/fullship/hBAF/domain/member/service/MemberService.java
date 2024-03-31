@@ -1,12 +1,12 @@
 package com.fullship.hBAF.domain.member.service;
 
+import com.fullship.hBAF.global.auth.controller.response.LoginResult;
 import com.fullship.hBAF.domain.member.entity.Member;
 import com.fullship.hBAF.domain.member.repository.MemberRepository;
-import com.fullship.hBAF.domain.member.service.command.FindMemberByEmailCommand;
+import com.fullship.hBAF.domain.member.service.command.FindMemberByIdCommand;
 import com.fullship.hBAF.domain.member.service.command.JoinMemberCommand;
 import com.fullship.hBAF.domain.member.service.command.NaverLoginCommand;
 import com.fullship.hBAF.domain.member.service.command.UpdateProfileImgCommand;
-import com.fullship.hBAF.global.auth.jwt.AuthToken;
 import com.fullship.hBAF.global.auth.jwt.AuthTokenGenerator;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
@@ -30,19 +30,24 @@ public class MemberService {
   private final ImageUtil imageUtil;
 
 
-  public Long findUserByEmail(FindMemberByEmailCommand command){
-    Member member = memberRepository.findByEmail(command.getEmail())
+  public Member findMemberById(FindMemberByIdCommand command){
+    Member member = memberRepository.findById(command.getId())
             .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
-    return member.getId();
+    return member;
   }
 
   @Transactional(readOnly = false)
-  public AuthToken login(NaverLoginCommand command) {
+  public LoginResult login(NaverLoginCommand command) {
     Member member = memberRepository.findByEmail(command.getEmail())
             .orElseGet(// 신규 유저인 경우 회원 가입
                     ()->joinMember(command.convertToJoinMemberCommand())
             );
-    return authTokenGenerator.generate(member.getId());
+
+    LoginResult result = LoginResult.builder()
+            .accessToken(authTokenGenerator.generateAT(member.getId()))
+            .refreshToken(authTokenGenerator.generateRT(member.getId()))
+            .build();
+    return result;
   }
 
   @Transactional(readOnly = false)

@@ -1,4 +1,4 @@
-package com.fullship.hBAF.domain.member.controller.request;
+package com.fullship.hBAF.global.auth.controller.request;
 
 import com.fullship.hBAF.domain.member.service.command.NaverLoginCommand;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class NaverLoginRequest {
+public class AppLoginRequest {
     String nickname;
     String name;
     String email;

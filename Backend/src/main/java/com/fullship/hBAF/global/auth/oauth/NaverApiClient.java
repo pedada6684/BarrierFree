@@ -1,7 +1,7 @@
 package com.fullship.hBAF.global.auth.oauth;
 
 import com.fullship.hBAF.global.auth.dto.NaverToken;
-import com.fullship.hBAF.global.auth.dto.loginRequest.OAuthLoginRequest;
+import com.fullship.hBAF.global.auth.controller.request.OAuthLoginRequest;
 import com.fullship.hBAF.global.auth.dto.memberInfo.NaverMemberInfo;
 import com.fullship.hBAF.global.auth.dto.memberInfo.OAuthMemberInfo;
 import com.fullship.hBAF.domain.member.entity.OAuthProvider;

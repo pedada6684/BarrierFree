@@ -9,7 +9,7 @@ public class AuthToken {
     private String grantType;
     private Long expiresIn;
 
-    public AuthToken(String accessToken, String refreshToken, String grantType, Long expiresIn) {
+    private AuthToken(String accessToken, String refreshToken, String grantType, Long expiresIn) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.grantType = grantType;

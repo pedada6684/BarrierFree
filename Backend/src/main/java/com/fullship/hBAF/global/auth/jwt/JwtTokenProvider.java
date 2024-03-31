@@ -48,7 +48,7 @@ public class JwtTokenProvider {
      * @param token jwt 토큰
      * @return
      */
-    public boolean validateToken(String token) {
+    public boolean validateRefreshToken(String token) {
         try {
             Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -70,6 +70,29 @@ public class JwtTokenProvider {
         }
     }
 
+    /**
+     * jwt 유효성 검증 메서드
+     * @param token jwt 토큰
+     * @return
+     */
+    public boolean validateAccessToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (SecurityException | MalformedJwtException e) {//유효하지 않은 토큰
+            log.warn("Invalid JWT Token", e);
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }  catch (UnsupportedJwtException e) {//잘못된 서명
+            log.warn("Unsupported JWT Token", e);
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        } catch (IllegalArgumentException e) {//빈 클레임
+            log.warn("JWT claims string is empty.", e);
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+    }
     /**
      * userId 추출 메서드
      * @param accessToken: 전달받은 jwt 토큰

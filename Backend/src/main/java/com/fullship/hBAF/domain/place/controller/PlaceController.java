@@ -8,7 +8,6 @@ import com.fullship.hBAF.domain.place.controller.request.PathSearchToTrafficRequ
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToWheelRequest;
 import com.fullship.hBAF.domain.place.controller.response.GetPlaceResponse;
 import com.fullship.hBAF.domain.place.controller.response.PlaceListResponse;
-import com.fullship.hBAF.domain.place.controller.response.PlaceResponse;
 import com.fullship.hBAF.domain.place.service.PlaceService;
 import com.fullship.hBAF.domain.place.service.command.Request.AngleSlopeCommand;
 import com.fullship.hBAF.global.api.response.OdSayPath;

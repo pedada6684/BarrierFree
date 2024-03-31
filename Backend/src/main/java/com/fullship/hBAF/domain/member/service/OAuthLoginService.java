@@ -1,8 +1,8 @@
 package com.fullship.hBAF.domain.member.service;
 
-import com.fullship.hBAF.global.auth.dto.loginRequest.OAuthLoginRequest;
+import com.fullship.hBAF.global.auth.controller.response.LoginResult;
+import com.fullship.hBAF.global.auth.controller.request.OAuthLoginRequest;
 import com.fullship.hBAF.global.auth.dto.memberInfo.OAuthMemberInfo;
-import com.fullship.hBAF.global.auth.jwt.AuthToken;
 import com.fullship.hBAF.global.auth.jwt.AuthTokenGenerator;
 import com.fullship.hBAF.global.auth.oauth.RequestOAuthInfoService;
 import com.fullship.hBAF.domain.member.entity.Member;
@@ -25,11 +25,15 @@ public class OAuthLoginService {
    * @param request
    * @return
    */
-  public AuthToken login(OAuthLoginRequest request){
+  public LoginResult login(OAuthLoginRequest request){
     OAuthMemberInfo oAuthMemberInfo = requestOAuthInfoService.request(request);
     Member member = memberRepository.findByEmail(oAuthMemberInfo.getEmail())
-            .orElse(createMember(oAuthMemberInfo)); // 신규 유저인 경우 회원 가입
-    return authTokenGenerator.generate(member.getId());
+            .orElseGet(()->createMember(oAuthMemberInfo)); // 신규 유저인 경우 회원 가입
+    LoginResult result = LoginResult.builder()
+            .accessToken(authTokenGenerator.generateAT(member.getId()))
+            .refreshToken(authTokenGenerator.generateRT(member.getId()))
+            .build();
+    return result;
   }
   public Member createMember(CreateMemberCommand command){
     Member newMember = Member.createNewMember(

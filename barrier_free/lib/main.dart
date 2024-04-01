@@ -12,6 +12,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'screen/map/map_screen.dart';
 import 'services/location_service.dart';
 
+import 'package:barrier_free/providers/text_provider.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
@@ -115,31 +117,37 @@ class _MyAppState extends State<MyApp> {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),
         }),
         appBarTheme: AppBarTheme(
-            centerTitle: true,
-            iconTheme: IconThemeData(
-              color: mainOrange,
-            ),
-            titleTextStyle: TextStyle(
-                color: mainOrange,
-                fontWeight: FontWeight.bold,
-                fontSize: 22.0)),
+          centerTitle: true,
+          iconTheme: IconThemeData(
+            color: mainOrange,
+          ),
+          titleTextStyle: TextStyle(
+            color: mainOrange,
+            fontWeight: FontWeight.bold,
+            fontSize: 22.0,
+          ),
+        ),
       ),
-      home: PersistentTabView(
-        context,
-        controller: _controller,
-        screens: _buildScreens(),
-        items: _navBarsItems(),
-        confineInSafeArea: true,
-        backgroundColor: mainOrange,
-        navBarStyle: NavBarStyle.style6,
-        onItemSelected: (int index) {
-          if (index == 0) {
-            Provider.of<LocationProvider>(context, listen: false)
-                .updateLocation();
-            mapScreenKey = GlobalKey();
-          }
-        },
+      home: ChangeNotifierProvider(
+        create: (context) => TextProvider(),
+        child: PersistentTabView(
+          context,
+          controller: _controller,
+          screens: _buildScreens(),
+          items: _navBarsItems(),
+          confineInSafeArea: true,
+          backgroundColor: mainOrange,
+          navBarStyle: NavBarStyle.style6,
+          onItemSelected: (int index) {
+            if (index == 0) {
+              Provider.of<LocationProvider>(context, listen: false)
+                  .updateLocation();
+              mapScreenKey = GlobalKey();
+            }
+          },
+        ),
       ),
     );
   }
 }
+

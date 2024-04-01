@@ -81,8 +81,9 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _search() async {
     if (_originController.text.isNotEmpty) {
       try {
-        final currentPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-        final result = await fetchMainSearchResults(_originController.text, currentPosition);
+        final currentPosition = await _currentPositionFuture;
+        final result = await fetchMainSearchResults(
+            _originController.text, currentPosition);
         Navigator.push(
           context,
           MaterialPageRoute(

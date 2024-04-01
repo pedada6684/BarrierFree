@@ -38,7 +38,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _initializeUserId();
     reviewListFuture =
@@ -77,7 +76,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       return details;
     } catch (e) {
       print('배리어프리 정보 가져오기 실패: $e');
-      return {}; // 오류 발생시 빈 맵 반환
+      return {};
     }
   }
 
@@ -299,16 +298,24 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         return CircularProgressIndicator();
                       } else if (snapshot.hasError) {
                         return Text('장애물 없는 시설 정보를 가져오는 데 실패했습니다.');
-                      } else if (snapshot.hasData) {
-                        var barrierFreeList = List<String>.from(
-                            snapshot.data!['barrierFree'] as List);
-                        return SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: _buildBarrierFreeButtons(
-                                barrierFreeList), // 캐스팅된 리스트를 전달
-                          ),
-                        );
+                      } else if (snapshot.hasData && snapshot.data != null) {
+                        var barrierFreeDetailList =
+                            snapshot.data!['barrierFree'];
+                        if (barrierFreeDetailList != null &&
+                            barrierFreeDetailList.isNotEmpty) {
+                          var barrierFreeList =
+                              List<String>.from(barrierFreeDetailList as List);
+
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: _buildBarrierFreeButtons(
+                                  barrierFreeList), // 캐스팅된 리스트를 전달
+                            ),
+                          );
+                        } else {
+                          return Text('배리어프리 정보가 없습니다');
+                        }
                       } else {
                         return Text('배리어프리 정보가 없습니다.');
                       }
@@ -332,7 +339,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   ElevatedButton(
                       onPressed: () async {
                         // 배리어프리 시설 상세 정보를 기다립니다.
-                        List<String> barrierFreeItemsToSend = barrierFreeDetails ?? [];
+                        List<String> barrierFreeItemsToSend =
+                            barrierFreeDetails ?? [];
 
                         // ReviewScreen으로 이동합니다.
                         final result = await Navigator.push(

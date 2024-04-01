@@ -31,7 +31,6 @@ class _MapResultScreenState extends State<MapResultScreen> {
   //마커 누르면 장소 이름 나옴
   String generateMarkerScript(
       List<dynamic> searchResults, Position currentPosition) {
-    const double maxDistance = 2000; // 20km
     String markersScript = "var currentInfowindow = null;\n";
 
     for (var i = 0; i < searchResults.length; i++) {
@@ -62,11 +61,11 @@ class _MapResultScreenState extends State<MapResultScreen> {
       // }
       
       infowindow.open(map, marker${i});
-      currentInfowindow = infowindow;
+      currentInfowindow = infowindow;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
       
       setTimeout(function() {
       infowindow.close();
-      currentInfowindow = null;
+      currentInfowindow = null; 
       }, 3000);
       });
     """;
@@ -184,6 +183,8 @@ class _MapResultScreenState extends State<MapResultScreen> {
     return Column(
       children: [
         Container(
+          width: MediaQuery.of(context).size.width,
+          height: 72.0,
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(

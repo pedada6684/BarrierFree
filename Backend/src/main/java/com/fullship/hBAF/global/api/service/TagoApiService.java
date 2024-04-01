@@ -77,6 +77,7 @@ public class TagoApiService {
       NodeList license = document.getElementsByTagName("PLATE_NO");
 
       List<BusesCurLocation> list = new ArrayList<>();
+      System.out.println("item list: " + list);
       for (int i = 0; i < itemList.getLength(); i++) {
         BusesCurLocation command = BusesCurLocation.builder()
             .localStationId(busNodeId.item(i).getTextContent())
@@ -92,6 +93,7 @@ public class TagoApiService {
           continue;
         }
         list.add(command);
+        System.out.println(command);
       }
 
       return list;

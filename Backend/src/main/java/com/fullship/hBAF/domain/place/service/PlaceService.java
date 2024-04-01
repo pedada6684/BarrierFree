@@ -167,6 +167,8 @@ public class PlaceService {
             // 2. 검색 대상 노선 찾기
             String busPublicId = bus.getPublicBusId();
             // 3. 해당 노선에 버스 목록 찾기 (상 하행 필터링)
+
+            System.out.println("busPublicId: " + busPublicId + ", direction: " + direction);
             List<BusesCurLocation> buses =
                 tagoApiService.findBusesByPublicId(busPublicId, direction);
             List<BusesCurLocation> lowFilter = new ArrayList<>();

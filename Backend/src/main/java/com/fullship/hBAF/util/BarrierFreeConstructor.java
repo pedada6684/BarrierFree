@@ -73,7 +73,7 @@ public class BarrierFreeConstructor {
      * @throws ParserConfigurationException
      * @throws SAXException
      */
-    private List<Map<String, String>> searchBarrierFreePlace() throws IOException, ParserConfigurationException, SAXException {
+    public List<Map<String, String>> searchBarrierFreePlace() throws IOException, ParserConfigurationException, SAXException {
         // 공공데이터 포털 배리어프리 장소 저장
         List<Map<String, String>> placeInfoList = new ArrayList<>();
         for (String faclTyCd : CATEGORY_MAP.keySet()) {

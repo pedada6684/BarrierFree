@@ -1,6 +1,7 @@
 spring:
   datasource:
-    url: jdbc:mysql://mysql-db:3306/fullship?useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://172.29.0.2:3306/fullship?useUnicode=true&characterEncoding=utf8
+#    url: jdbc:mysql://mysql-db:3306/fullship?useUnicode=true&characterEncoding=utf8
   jpa:
     hibernate:
       ddl-auto: none

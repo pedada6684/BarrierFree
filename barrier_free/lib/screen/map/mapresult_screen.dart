@@ -31,13 +31,17 @@ class _MapResultScreenState extends State<MapResultScreen> {
   //마커 누르면 장소 이름 나옴
   String generateMarkerScript(
       List<dynamic> searchResults, Position currentPosition) {
-    String markersScript = "var currentInfowindow = null;\n";
+    String markersScript = """
+    var bounds = new kakao.maps.LatLngBounds();
+    var currentInfowindow = null;
+  """;
 
     for (var i = 0; i < searchResults.length; i++) {
       var result = searchResults[i];
       markersScript += """
     
       var markerPosition${i} = new kakao.maps.LatLng(${result['y']}, ${result['x']});
+      bounds.extend(markerPosition${i});
       var marker${i} = new kakao.maps.Marker({
         position: markerPosition${i},
         map: map
@@ -50,18 +54,14 @@ class _MapResultScreenState extends State<MapResultScreen> {
         if(currentInfowindow){
           currentInfowindow.close();
         }
-        
-      //    if (currentInfowindow === infowindow) {
-      //   infowindow.close();
-      //   currentInfowindow = null;
-      // } else {
-      //   // 새로운 인포윈도우를 엽니다.
-      //   infowindow.open(map, marker${i});
-      //   currentInfowindow = infowindow;
-      // }
-      
+       
       infowindow.open(map, marker${i});
-      currentInfowindow = infowindow;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+      currentInfowindow = infowindow;
+      
+      map.panTo(markerPosition${i});
+      setTimeout(function() {
+        map.setLevel(3);
+      }, 500);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
       
       setTimeout(function() {
       infowindow.close();
@@ -70,27 +70,28 @@ class _MapResultScreenState extends State<MapResultScreen> {
       });
     """;
     }
+    markersScript += "map.setBounds(bounds);";
     return markersScript;
   }
 
-  String generateBoundsScript(Position currentPosition) {
-    // 현재 위치에서의 반경 20km를 위한 바운드 설정
-    double lat = widget.currentPosition.latitude;
-    double lng = widget.currentPosition.longitude;
-    return """
-      var circle = new kakao.maps.Circle({
-        center: new kakao.maps.LatLng($lat, $lng),
-        radius: 3000, // 5km
-        strokeWeight: 1,
-        strokeColor: '#75B8FA',
-        strokeOpacity: 0,
-      });
-      circle.setMap(map);
-      // 바운드를 circle에 맞춤
-      var bounds = circle.getBounds();
-      map.setBounds(bounds);
-    """;
-  }
+  // String generateBoundsScript(Position currentPosition) {
+  //   // 현재 위치에서의 반경 20km를 위한 바운드 설정
+  //   double lat = widget.currentPosition.latitude;
+  //   double lng = widget.currentPosition.longitude;
+  //   return """
+  //     var circle = new kakao.maps.Circle({
+  //       center: new kakao.maps.LatLng($lat, $lng),
+  //       radius: 3000, // 5km
+  //       strokeWeight: 1,
+  //       strokeColor: '#75B8FA',
+  //       strokeOpacity: 0,
+  //     });
+  //     circle.setMap(map);
+  //     // 바운드를 circle에 맞춤
+  //     var bounds = circle.getBounds();
+  //     map.setBounds(bounds);
+  //   """;
+  // }
 
   @override
   void initState() {
@@ -102,9 +103,6 @@ class _MapResultScreenState extends State<MapResultScreen> {
 
   void _initializeMarkers() {
     _markerPositions = widget.searchResults.map<Position>((result) {
-      // print(result['y']);
-      // print(result['x']);
-      // API에서 반환된 위치 데이터
       return Position(
         latitude: double.parse(result['y'].toString()),
         longitude: double.parse(result['x'].toString()),
@@ -141,20 +139,18 @@ class _MapResultScreenState extends State<MapResultScreen> {
             child: Stack(
               children: <Widget>[
                 KakaoMapView(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height -
-                      AppBar().preferredSize.height,
-                  kakaoMapKey: appKey!,
-                  lat: currentPosition!.latitude,
-                  lng: currentPosition!.longitude,
-                  markerImageURL:
-                      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
-                  showZoomControl: false,
-                  showMapTypeControl: false,
-                  customScript: generateMarkerScript(
-                          widget.searchResults, widget.currentPosition) +
-                      generateBoundsScript(widget.currentPosition),
-                ),
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height -
+                        AppBar().preferredSize.height,
+                    kakaoMapKey: appKey!,
+                    lat: currentPosition!.latitude,
+                    lng: currentPosition!.longitude,
+                    markerImageURL:
+                        'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                    showZoomControl: false,
+                    showMapTypeControl: false,
+                    customScript: generateMarkerScript(
+                        widget.searchResults, widget.currentPosition)),
                 _buildToggleButton(),
                 SlidingUpPanel(
                   controller: _panelController,

@@ -14,8 +14,7 @@ class ReviewService {
   Future<List<dynamic>> fetchReviewByPlaceId(String poiId) async {
     final response = await http.get(Uri.parse('$_baseUrl/list?poiId=$poiId'));
 
-    print(response);
-    print(response.body);
+    print('리뷰ㅜ리뷰리뷰리ㅠ비류ㅣ뷰리뷰립류ㅣㅂ리뷰${response.body}');
     print(response.statusCode);
     if (response.statusCode == 200) {
       final data = json.decode(response.body);

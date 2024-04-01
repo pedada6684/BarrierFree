@@ -305,7 +305,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: 20.0),
+              SizedBox(height: 40.0),
               Text(
                 '베리어프리 시설',
                 style: TextStyle(
@@ -340,17 +340,17 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                             ),
                           );
                         } else {
-                          return Text('배리어프리 정보가 없습니다');
+                          return Text('배리어프리 시설 정보가 없습니다');
                         }
                       } else {
-                        return Text('배리어프리 정보가 없습니다.');
+                        return Text('배리어프리 시설 정보가 없습니다.');
                       }
                     },
                   ),
                   // SizedBox(width: 10.0),
                 ],
               ),
-              SizedBox(height: 20.0),
+              SizedBox(height: 40.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

@@ -7,6 +7,7 @@ import 'package:barrier_free/services/place_service.dart';
 import 'package:barrier_free/services/review_service.dart';
 import 'package:barrier_free/services/secure_storage_service.dart';
 import 'package:barrier_free/services/test_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakaomap_webview/kakaomap_webview.dart';
@@ -141,7 +142,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     final provider = Provider.of<TextProvider>(context);
     final isLoggedIn = Provider.of<UserProvider>(context).isLoggedIn();
     final TestService testService = TestService();
+    final userProvider = Provider.of<UserProvider>(context);
 
+    final profileImageUrl = userProvider.profileImage;
     String customScript = """
         var mapContainer = document.getElementById('map');
         var mapOption = {
@@ -410,10 +413,10 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                             ),
                           );
                         } else {
-                          return Text('배리어프리 시설 정보가 없습니다');
+                          return Center(child: Text('배리어프리 시설 정보가 없습니다'));
                         }
                       } else {
-                        return Text('배리어프리 시설 정보가 없습니다.');
+                        return Center(child: Text('배리어프리 시설 정보가 없습니다.'));
                       }
                     },
                   ),
@@ -460,6 +463,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                   side: BorderSide(
                                     color: mainOrange,
                                   ),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10.0)),
                                   backgroundColor: Colors.white,
                                   foregroundColor: mainOrange),
                             );
@@ -476,28 +482,90 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                   side: BorderSide(
                                     color: mainOrange,
                                   ),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10.0)),
                                   backgroundColor: Colors.white,
                                   foregroundColor: mainOrange),
                             );
                           }).toList();
 
-                          return ListTile(
-                            leading: review['img'] != null &&
-                                    review['img'].isNotEmpty
-                                ? Image.network(
-                                    review['img'][0],
-                                    width: 130,
-                                    height: 130,
-                                  )
-                                : null,
-                            title: Text(review['nickname']),
-                            subtitle: Column(
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 20.0),
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(review['content']),
-                                Wrap(
-                                  spacing: 8.0,
-                                  children: likeButtons + unlikeButtons,
+                                Row(
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 16.0),
+                                      child: CircleAvatar(
+                                        backgroundImage:
+                                            NetworkImage(profileImageUrl!),
+                                      ),
+                                    ),
+                                    Text(
+                                      review['nickname'],
+                                      style: TextStyle(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 16.0),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (review['img'] != null &&
+                                        review['img'].isNotEmpty)
+                                      Image.network(
+                                        review['img'][0],
+                                        width: 120,
+                                        height: 120,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // 버튼들을 가로로 배열
+                                          SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            child: Row(
+                                              children: [
+                                                ...likeButtons.map((button) =>
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              horizontal: 4.0),
+                                                      // 원하는 간격으로 조정
+                                                      child: button,
+                                                    )),
+                                                ...unlikeButtons.map((button) =>
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              horizontal: 4.0),
+                                                      // 원하는 간격으로 조정
+                                                      child: button,
+                                                    )),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(height: 8.0),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 8.0),
+                                            child: Text(review['content']),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -505,7 +573,11 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         },
                       );
                     } else {
-                      return Text('리뷰가 없습니다.');
+                      return Center(
+                          child: Text(
+                        '리뷰가 없습니다.',
+                        style: TextStyle(fontSize: 16.0),
+                      ));
                     }
                   }),
 

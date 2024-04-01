@@ -20,6 +20,8 @@ class TaxiPathMap extends StatefulWidget {
 
   final String? vehicleType;
 
+  final List<String> formattedCoordinates;
+
   const TaxiPathMap({
     super.key,
     this.initialSearchAddress,
@@ -29,6 +31,8 @@ class TaxiPathMap extends StatefulWidget {
     this.endLat,
     this.endLon,
     this.vehicleType,
+
+    required this.formattedCoordinates,
   });
 
   @override
@@ -38,34 +42,16 @@ class TaxiPathMap extends StatefulWidget {
 class _TaxiPathMapState extends State<TaxiPathMap> {
   // late List<Position> _markerPositions;
   String customScript = '';
-
+  // late String formattedCoordinates;
 
   @override
   void initState() {
     super.initState();
-    _fetchTaxiDirections(); // 택시 경로 데이터 가져오기
     _addMarkers(); // 출발지와 도착지 마커 추가
     WidgetsBinding.instance.addPostFrameCallback((_) {});
   }
 
-  void _fetchTaxiDirections() async {
-    try {
-      final taxiDirections = await TaxiPathService().fetchTaxiDirectionsResults(
-        type: widget.vehicleType!,
-        startLat: widget.startLat!,
-        startLon: widget.startLon!,
-        endLat: widget.endLat!,
-        endLon: widget.endLon!,
-      );
-      print('taxiDirections = ${taxiDirections}');
-    } catch (e) {
-      print('Error fetching taxi directions: $e');
-      // 에러 처리
-    }
-  }
-
   void _addMarkers() {
-    // 출발지 마커 생성
     String script = """
     var markers = [];
 
@@ -77,16 +63,8 @@ class _TaxiPathMapState extends State<TaxiPathMap> {
       addMarker(new kakao.maps.LatLng(${widget.endLat}, ${widget.endLon}));
       addMarker(new kakao.maps.LatLng(${widget.startLat}, ${widget.startLon}));
 
-     var pathCoordinates = [];
-
-      // 각 좌표 쌍을 LatLng 객체로 변환하여 pathCoordinates 배열에 추가
-      for (var i = 0; i < taxiDirections.length; i++) {
-          var coordinate = taxiDirections[i];
-          var latitude = Number(coordinate[1]); // 위도를 부동소수점으로 변환
-          var longitude =Number(coordinate[0]); // 경도를 부동소수점으로 변환
-          var latLng = new kakao.maps.LatLng(latitude, longitude);
-          pathCoordinates.push(latLng);
-      }
+    var pathCoordinates = ${widget.formattedCoordinates};
+    console.log(pathCoordinates);
 
       // 지도에 표시할 선을 생성합니다
       var polyline = new kakao.maps.Polyline({

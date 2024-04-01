@@ -17,6 +17,7 @@ import java.util.*;
 public class H3 {
 
     private final H3IndexService h3IndexService;
+    private final S3Util s3Util;
     public static double xMax, yMax, xMin, yMin;
     public static Map<Long,Double> daejeonH3Index = new HashMap<>();
 
@@ -157,6 +158,7 @@ public class H3 {
 //
 //        System.out.println("max : "+max);
 //        System.out.println("min : "+min);
+        elevationBfs(s3Util.readExcelFromS3("Data/godo.xlsx"));
         h3IndexService.saveH3IndexSet(daejeonH3Index);
     }
 
@@ -189,10 +191,9 @@ public class H3 {
 
     }
 
-    public static void elevationBfs(List<Double[]> list) throws IOException{
+    public void elevationBfs(List<Double[]> list) throws IOException{
         H3Core h3 = H3Core.newInstance();
         Queue<Long> que = new LinkedList<>();
-
         for(Double[] coor : list){
             Double lat = coor[0];
             Double lng = coor[1];
@@ -203,20 +204,18 @@ public class H3 {
 
             if(!daejeonH3Index.containsKey(h3Index))
                 continue;
-            daejeonH3Index.put(h3Index,daejeonH3Index.getOrDefault(h3Index,elevation));
+            daejeonH3Index.put(h3Index,elevation);
             que.add(h3Index);
         }
-
         while(!que.isEmpty()){
             long h3Index = que.poll();
-            double elevation = daejeonH3Index.get(h3Index);
+            Double elevation = daejeonH3Index.get(h3Index);
 
             for(long neighborIndex : h3.kRing(h3Index,1)){
 
-                if(!daejeonH3Index.containsKey(neighborIndex) || daejeonH3Index.get(neighborIndex)>0)
+                if(!daejeonH3Index.containsKey(neighborIndex) || daejeonH3Index.get(neighborIndex)>0.0)
                     continue;
                 daejeonH3Index.put(neighborIndex,elevation);
-
                 que.add(neighborIndex);
             }
         }

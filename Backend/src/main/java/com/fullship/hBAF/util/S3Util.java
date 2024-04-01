@@ -114,6 +114,10 @@ public class S3Util {
             Sheet sheet = workbook.getSheetAt(0); // 첫 번째 시트만 읽기
             Iterator<Row> rowIterator = sheet.iterator();
 
+            if (rowIterator.hasNext()) {
+                rowIterator.next(); // 첫 번째 행을 건너뜁니다.
+            }
+
             // 각 행을 읽어서 리스트에 추가
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();

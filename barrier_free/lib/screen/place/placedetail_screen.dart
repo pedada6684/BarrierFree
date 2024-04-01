@@ -112,6 +112,25 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     final isLoggedIn = Provider.of<UserProvider>(context).isLoggedIn();
     final TestService testService = TestService();
 
+    String customScript = """
+        var mapContainer = document.getElementById('map');
+        var mapOption = {
+            center: new kakao.maps.LatLng(${widget.placeDetail['y']}, ${widget.placeDetail['x']}),
+            level: 3
+        };
+        var detailMap = new kakao.maps.Map(mapContainer, mapOption);
+        
+        // 드래그 비활성화
+        detailMap.setDraggable(false);
+        
+        var markerPosition = new kakao.maps.LatLng(${widget.placeDetail['y']}, ${widget.placeDetail['x']});
+        var marker = new kakao.maps.Marker({
+            position: markerPosition
+        });
+        marker.setMap(detailMap);
+        
+      """;
+
     return Scaffold(
       appBar: CustomAppBar(title: '장소 상세'),
       body: SingleChildScrollView(
@@ -213,16 +232,23 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               SizedBox(height: 20.0),
               // 지도 위젯
               Center(
-                child: KakaoMapView(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  height: MediaQuery.of(context).size.width * 0.8,
-                  kakaoMapKey: appKey!,
-                  lat: double.tryParse(widget.placeDetail['y'].toString()) ??
-                      0.0,
-                  lng: double.tryParse(widget.placeDetail['x'].toString()) ??
-                      0.0,
-                  showZoomControl: false,
-                  showMapTypeControl: false,
+                child: Stack(
+                  children: [
+                    KakaoMapView(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      height: MediaQuery.of(context).size.width * 0.8,
+                      kakaoMapKey: appKey!,
+                      lat:
+                          double.tryParse(widget.placeDetail['y'].toString()) ??
+                              0.0,
+                      lng:
+                          double.tryParse(widget.placeDetail['x'].toString()) ??
+                              0.0,
+                      showZoomControl: false,
+                      showMapTypeControl: false,
+                      customScript: customScript,
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 20.0),
@@ -336,29 +362,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       color: mainBlack,
                     ),
                   ),
-                  ElevatedButton(
-                      onPressed: () async {
-                        // 배리어프리 시설 상세 정보를 기다립니다.
-                        List<String> barrierFreeItemsToSend =
-                            barrierFreeDetails ?? [];
-
-                        // ReviewScreen으로 이동합니다.
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ReviewScreen(
-                              poiId: widget.placeDetail['id'],
-                              barrierFreeItems: barrierFreeItemsToSend,
-                            ),
-                          ),
-                        );
-
-                        // 필요하다면 리뷰 목록을 새로고침 합니다.
-                        if (result == true) {
-                          refreshReviews();
-                        }
-                      },
-                      child: Text('리뷰 작성하기')),
                 ],
               ),
               SizedBox(height: 20.0),
@@ -463,8 +466,25 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               SizedBox(height: 10.0), // 간격
 
               ElevatedButton(
-                onPressed: () {
-                  // 버튼이 눌렸을 때 수행할 동작 추가
+                onPressed: () async {
+                  // 배리어프리 시설 상세 정보를 기다립니다.
+                  List<String> barrierFreeItemsToSend =
+                      barrierFreeDetails ?? [];
+
+                  // ReviewScreen으로 이동합니다.
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ReviewScreen(
+                        poiId: widget.placeDetail['id'],
+                        barrierFreeItems: barrierFreeItemsToSend,
+                      ),
+                    ),
+                  );
+                  // 필요하다면 리뷰 목록을 새로고침 합니다.
+                  if (result == true) {
+                    refreshReviews();
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: mainOrange, // 배경 투명
@@ -477,7 +497,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '리뷰 더보기',
+                      '리뷰 작성하기',
                       style: TextStyle(
                         fontSize: 18.0,
                         fontWeight: FontWeight.bold,

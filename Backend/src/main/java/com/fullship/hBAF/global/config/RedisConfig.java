@@ -24,10 +24,11 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<?, ?> redisTemplate() {
-        RedisTemplate<?, ?> redisTemplate = new RedisTemplate<>();
+    public RedisTemplate<String, Object> redisTemplateForToken() {
+        RedisTemplate<String , Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
-        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Long.class));
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
         redisTemplate.setEnableTransactionSupport(true);
         return redisTemplate;
     }

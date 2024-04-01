@@ -2,8 +2,7 @@ package com.fullship.hBAF.global.auth.jwt;
 
 import com.fullship.hBAF.domain.member.service.MemberService;
 import com.fullship.hBAF.domain.member.service.command.FindMemberByIdCommand;
-import com.fullship.hBAF.global.auth.entity.RedisRefreshToken;
-import com.fullship.hBAF.global.auth.repository.RefreshTokenRepository;
+import com.fullship.hBAF.global.auth.service.RefreshTokenService;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import com.fullship.hBAF.util.Auth;
@@ -28,20 +27,20 @@ public class AuthInterceptor implements HandlerInterceptor {
     private static final String REFRESH_TOKEN_NAME = "refreshToken";
     private final MemberService memberService;
     private final JwtTokenProvider jwtTokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final AuthTokenGenerator authTokenGenerator;
     private final CookieProvider cookieProvider;
+    private final RefreshTokenService refreshTokenService;
 
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        log.info("Login Interceptor preHandlerpreHandler");
         if (HttpMethod.OPTIONS.matches(request.getMethod())){
             return true;
         }
         if (!checkAnnotation(handler, Auth.class)){//@Auth 어노테이션 없으면
             return true; // 로그인 검증 넘어감
         }
+        log.info("Login Interceptor preHandlerpreHandler");
 
         //JWT 추출
         String accessToken = resolveTokenInRequest(request);
@@ -53,10 +52,10 @@ public class AuthInterceptor implements HandlerInterceptor {
         } catch (ExpiredJwtException e) {//AT만료
             jwtTokenProvider.validateRefreshToken(refreshToken);
             String strMemberId = getMemberIdFromToken(refreshToken);
-            RedisRefreshToken redisRefreshToken = refreshTokenRepository.findById(strMemberId).orElseThrow(
-                    () -> new CustomException(ErrorCode.TOKEN_NOT_FOUND)
-            );
-            if (jwtTokenProvider.validateRefreshToken(redisRefreshToken.getRefreshToken())){
+            String redisRefreshToken = refreshTokenService.findTokenByMemberId(Long.parseLong(strMemberId));
+            if (redisRefreshToken == null) {
+                throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
+            }else if (jwtTokenProvider.validateRefreshToken(redisRefreshToken)){
                 return allowAccess(response, accessToken);
             }
         }

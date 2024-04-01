@@ -24,7 +24,6 @@ public class GetBookmarkPlaceByMemberIdResponseCommand {
     private List<String> img;
 
     public static GetBookmarkPlaceByMemberIdResponseCommand from(Place place) {
-        BarrierFreeInfo barrierFreeInfo = new BarrierFreeInfo();
 
         return GetBookmarkPlaceByMemberIdResponseCommand.builder()
                 .placeId(place.getId())
@@ -34,7 +33,7 @@ public class GetBookmarkPlaceByMemberIdResponseCommand {
                 .lng(place.getLongitude())
                 .poi(place.getPoiId())
                 .category(place.getCategory())
-                .barrierFree(barrierFreeInfo.makeBafArrInfo(place.getBarrierFree()))
+                .barrierFree(BarrierFreeInfo.makeBafArrInfo(place.getBarrierFree()))
                 .img(createToCommand(place.getImages()))
                 .build();
     }

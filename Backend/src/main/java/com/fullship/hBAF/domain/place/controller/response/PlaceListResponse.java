@@ -24,8 +24,6 @@ public class PlaceListResponse {
     private List<String> img;
 
     public static PlaceListResponse from(Place place) {
-        BarrierFreeInfo barrierFreeInfo = new BarrierFreeInfo();
-
         return PlaceListResponse.builder()
                 .placeId(place.getId())
                 .placeName(place.getPlaceName())
@@ -34,7 +32,7 @@ public class PlaceListResponse {
                 .lng(place.getLongitude())
                 .poi(place.getPoiId())
                 .category(place.getCategory())
-                .barrierFree(barrierFreeInfo.makeBafArrInfo(place.getBarrierFree()))
+                .barrierFree(BarrierFreeInfo.makeBafArrInfo(place.getBarrierFree()))
                 .img(createToCommand(place.getImages()))
                 .build();
     }

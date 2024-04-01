@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 public class ImageCrawler {
     private final PlaceService placeService;
-    private final ImageUtil imageUtil;
+    private final S3Util s3Util;
 
     /**
      * 베리어프리 장소 썸네일 이미지 업데이트 메서드
@@ -81,7 +81,7 @@ public class ImageCrawler {
             String searchNB = searchKey.replaceAll(" ", "");
             String altNB = alt.replaceAll(" ", "");
             if (altNB.charAt(0) == searchNB.charAt(0) && altNB.contains(searchNB)){ //이미지 S3 저장
-                return imageUtil.uploadImageToS3(src, "ThumbNail",searchKey);
+                return s3Util.uploadImageToS3(src, "ThumbNail",searchKey);
             }else { // 검색결과가 매칭되지 않으면 저장하지 않음
                 log.info("NOT MATCH");
                 log.info("alt: " + altNB);
@@ -113,7 +113,7 @@ public class ImageCrawler {
             WebElement element = webDriver.findElement(By.cssSelector("li[data-title='"+searchKey +"'] .wrap_img img"));
             // src 속성 값 가져오기
             String src = element.getAttribute("src");
-            return imageUtil.uploadImageToS3(src, "ThumbNail",searchKey);
+            return s3Util.uploadImageToS3(src, "ThumbNail",searchKey);
         } catch (NoSuchElementException e) {
             return null;
         }

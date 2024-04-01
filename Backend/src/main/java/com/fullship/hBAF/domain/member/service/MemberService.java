@@ -8,7 +8,7 @@ import com.fullship.hBAF.global.auth.jwt.AuthTokenGenerator;
 import com.fullship.hBAF.global.auth.service.RefreshTokenService;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
-import com.fullship.hBAF.util.ImageUtil;
+import com.fullship.hBAF.util.S3Util;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class MemberService {
 
   private final MemberRepository memberRepository;
   private final AuthTokenGenerator authTokenGenerator;
-  private final ImageUtil imageUtil;
+  private final S3Util s3Util;
   private final RefreshTokenService refreshTokenService;
 
 
@@ -60,7 +60,7 @@ public class MemberService {
     newMember = memberRepository.save(newMember);
 
     //트랜젝션 유의
-    URL S3Url = imageUtil.uploadImageToS3(command.getProfileImage(), "profile", newMember.getId().toString());
+    URL S3Url = s3Util.uploadImageToS3(command.getProfileImage(), "profile", newMember.getId().toString());
     Objects.requireNonNull(S3Url);
     newMember.updateProfileUrl(S3Url.toString());
     return newMember;
@@ -75,7 +75,7 @@ public class MemberService {
   public String updateProfileImg(UpdateProfileImgCommand command) {
     Member member = memberRepository.findById(command.getMemberId())
             .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
-    URL S3Url = imageUtil.uploadImageToS3(command.getProfileImg(), "profile", member.getId().toString());
+    URL S3Url = s3Util.uploadImageToS3(command.getProfileImg(), "profile", member.getId().toString());
     Objects.requireNonNull(S3Url);
     member.updateProfileUrl(S3Url.toString());
     return S3Url.toString();

@@ -1,3 +1,9 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:path/path.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:barrier_free/screen/login/login_platform.dart';
 import 'package:barrier_free/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
@@ -54,9 +60,8 @@ class UserProvider with ChangeNotifier {
 
   //로그아웃
   Future<void> signOut() async {
-
-      //네이버일경우
-      await FlutterNaverLogin.logOutAndDeleteToken();
+    //네이버일경우
+    await FlutterNaverLogin.logOutAndDeleteToken();
 
     _loginPlatform = LoginPlatform.none; //플랫폼 초기화\
     notifyListeners();
@@ -70,6 +75,35 @@ class UserProvider with ChangeNotifier {
     _userId = userId;
     print('userId 세팅 완료');
     notifyListeners();
+  }
+
+  Future<void> updateProfileImage(File image) async {
+    var _baseUri = 'https://hbaf.site/api/member';
+    try {
+      var uri = Uri.parse('$_baseUri/profile');
+      var request = http.MultipartRequest('POST', uri)
+        ..fields['memberId'] = _userId.toString()
+        ..files.add(await http.MultipartFile.fromPath('profileImg', image.path,
+            filename: basename(image.path)));
+
+      var streamedResponse = await request.send();
+
+      if (streamedResponse.statusCode == 200) {
+        var response = await http.Response.fromStream(streamedResponse);
+        var responseData = json.decode(response.body);
+        print(responseData);
+        String newProfileImgUrl = responseData['profileImgUrl'];
+        if (newProfileImgUrl != null) {
+          _profileImage = newProfileImgUrl;
+          notifyListeners();
+          // print('프로필 이미지 업데이트 얄루');
+        }
+      } else {
+        print('프로필 이미지 업로드 실패');
+      }
+    } catch (e) {
+      print(e.toString());
+    }
   }
 
   bool isLoggedIn() => _loginPlatform != LoginPlatform.none;

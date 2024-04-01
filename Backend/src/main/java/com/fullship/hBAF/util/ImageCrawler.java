@@ -63,7 +63,7 @@ public class ImageCrawler {
         try {
             String searchUrl = "https://map.naver.com/p/search/"+ URLEncoder.encode(searchKey, "utf-8");
             webDriver.get(searchUrl);
-            Thread.sleep(1000);
+            Thread.sleep(300);
             webDriver.switchTo().frame("searchIframe");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);//TODO: 커스텀 Exception으로 수정필요
@@ -78,12 +78,14 @@ public class ImageCrawler {
         for (WebElement element : elements) {
             String src = element.getAttribute("src");
             String alt = element.getAttribute("alt");
-            if (alt.equals(searchKey)){ //이미지 S3 저장
-                return imageUtil.uploadImageToS3(src, "ThumbNail",alt);
+            String searchNB = searchKey.replaceAll(" ", "");
+            String altNB = alt.replaceAll(" ", "");
+            if (altNB.charAt(0) == searchNB.charAt(0) && altNB.contains(searchNB)){ //이미지 S3 저장
+                return imageUtil.uploadImageToS3(src, "ThumbNail",searchKey);
             }else { // 검색결과가 매칭되지 않으면 저장하지 않음
                 log.info("NOT MATCH");
-                log.info("alt: " + alt);
-                log.info("search: " + searchKey);
+                log.info("alt: " + altNB);
+                log.info("search: " + searchNB);
             }
         }
         return null;
@@ -100,7 +102,7 @@ public class ImageCrawler {
         try {
             String searchUrl = "https://m.map.kakao.com/actions/searchView?q="+ URLEncoder.encode(searchKey, "utf-8");
             webDriver.get(searchUrl);
-            Thread.sleep(1000);
+            Thread.sleep(300);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         } catch (InterruptedException e) {

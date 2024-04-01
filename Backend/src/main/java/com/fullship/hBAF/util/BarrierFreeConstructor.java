@@ -65,7 +65,7 @@ public class BarrierFreeConstructor {
 //        saveBarrierFreePlace(places);
 //        setBarrierfreeInfo();
 //        addBFPlaceInBuilding();
-        setBarrierfreeThumbnail();
+//        setBarrierfreeThumbnail();
     }
 
     private void setBarrierfreeThumbnail() {

@@ -42,10 +42,15 @@ public class MemberController {
   }
 
   @GetMapping("/withdraw")
-  @Operation(summary = "프로필 이미지 변경", description = "프로필 이미지 변경")
+  @Operation(summary = "회원 탈퇴", description = "회원 탈퇴")
   @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = UpdateProfileResponse.class)))
-  public ResponseEntity<UpdateProfileResponse> updateProfileImg2() {
-    //유저 아이디 검증 메서드 하나 추가해야함 with jwt
+  public ResponseEntity<?> withdrawMember(@RequestParam("memberId") Long memberId) {
+    WithdrawMemberCommand command = WithdrawMemberCommand.builder()
+            .memberId(memberId)
+            .build();
+    memberService.withdrawMember(command);
+    return ResponseEntity.ok().build();
+  }
 
   @GetMapping
   @Operation(summary = "유저 정보 요청", description = "유저 정보 요청")

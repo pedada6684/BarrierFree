@@ -80,6 +80,14 @@ public class MemberService {
     member.updateProfileUrl(S3Url.toString());
     return S3Url.toString();
   }
+
+  public void withdrawMember(WithdrawMemberCommand command) {
+    Member member = memberRepository.findById(command.getMemberId())
+            .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
+    member.withdraw();
+    return;
+  }
+
   public void logout(LogoutCommand command) {
     refreshTokenService.removeRefreshToken(command.getMemberId());
     return;

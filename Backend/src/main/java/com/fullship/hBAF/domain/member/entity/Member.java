@@ -29,7 +29,7 @@ public class Member {
   private Long role;
   private LocalDateTime regDate;
   private Long status;
-  private Long delDate;
+  private LocalDateTime delDate;
   private OAuthProvider provider;
 
   @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
@@ -49,7 +49,14 @@ public class Member {
     member.password = password;
     member.nickname = nickname;
     member.username = username;
+    member.status = 1L;
+    member.regDate = LocalDateTime.now();
     return member;
+  }
+
+  public void withdraw(){
+    this.status = 0L;
+    this.delDate = LocalDateTime.now();
   }
 
   public void updateProfileUrl(String profileUrl){

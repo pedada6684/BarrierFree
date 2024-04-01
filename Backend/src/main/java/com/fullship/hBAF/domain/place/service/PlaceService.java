@@ -30,6 +30,7 @@ import com.fullship.hBAF.global.api.service.GoogleApiService;
 import com.fullship.hBAF.global.api.service.OdSayApiService;
 import com.fullship.hBAF.domain.place.service.command.CreatePlaceCommand;
 import com.fullship.hBAF.domain.place.service.command.UpdatePlaceImageCommand;
+import com.fullship.hBAF.global.H3.service.H3IndexService;
 import com.fullship.hBAF.global.api.service.TMapApiService;
 import com.fullship.hBAF.global.api.service.TagoApiService;
 import com.fullship.hBAF.global.api.response.BusesCurLocation;
@@ -46,7 +47,6 @@ import java.io.IOException;
 
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
-import com.fullship.hBAF.util.H3;
 import com.uber.h3core.H3Core;
 import com.uber.h3core.util.GeoCoord;
 import lombok.RequiredArgsConstructor;
@@ -56,8 +56,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-
-import static com.fullship.hBAF.util.H3.daejeonH3Index;
 
 @Service
 @Slf4j
@@ -76,6 +74,7 @@ public class PlaceService {
   private final MetroInfoRepository metroInfoRepository;
   private final StationStopInfoRepository stationStopInfoRepository;
   private final ImageRepository imageRepository;
+  private final H3IndexService h3IndexService;
 
   public List<OdSayPath> useTransitPath(OdSayPathCommand command) {
     List<OdSayPath> list = odSayApiService.searchPathToTransit(command);
@@ -274,8 +273,8 @@ public class PlaceService {
         Double.parseDouble(arr[arr.length - 1][0]));
     long lastH3Index = h3.geoToH3(coord.lat, coord.lng, 8);
 
-    int clockIdx = arr.length - 1;
-    if (!daejeonH3Index.containsKey(lastH3Index)) {
+    int clockIdx = arr.length-1;
+    if (!h3IndexService.isContainInRedisH3(lastH3Index)){
       clockIdx = findClock(arr);
     }
 
@@ -318,12 +317,11 @@ public class PlaceService {
     while (l < r) {
       int mid = (l + r) >>> 1;
 
-      GeoCoord coord = new GeoCoord(Double.parseDouble(arr[mid][1]),
-          Double.parseDouble(arr[mid][0]));
+      GeoCoord coord = new GeoCoord(Double.parseDouble(arr[mid][1]),Double.parseDouble(arr[mid][0]));
       long findH3Index = h3.geoToH3(coord.lat, coord.lng, 12);
-      if (daejeonH3Index.containsKey(findH3Index)) {
+      if(h3IndexService.isContainInRedisH3(findH3Index)) {
         l = mid + 1;
-      } else {
+      }else{
         r = mid;
       }
     }
@@ -495,7 +493,7 @@ public class PlaceService {
     GeoCoord endGeo = new GeoCoord(eY,eX);
     long start = h3.geoToH3(startGeo.lat, startGeo.lng,12);
     long end = h3.geoToH3(endGeo.lat, endGeo.lng,12);
-    if(!daejeonH3Index.containsKey(start))
+    if(!h3IndexService.isContainInRedisH3(start))
       return null;
     NodeAStar startNode = new NodeAStar(start);
     openMap.put(start,startNode);
@@ -511,7 +509,7 @@ public class PlaceService {
         List<double[]> path = new ArrayList<>();
         while(current != null){
           GeoCoord geoCoord = h3.h3ToGeo(current.h3Index);
-          path.add(new double[]{geoCoord.lat,geoCoord.lng,daejeonH3Index.get(current.h3Index)});
+          path.add( new double[] {geoCoord.lat, geoCoord.lng, h3IndexService.getAltitude(current.h3Index)});
           current = current.preNode;
         }
         Collections.reverse(path);
@@ -523,14 +521,14 @@ public class PlaceService {
       closeMap.put(current.h3Index,current);
 
       for(long h3Index : h3.kRing(current.h3Index,1)){
-        if(!daejeonH3Index.containsKey(h3Index))
+        if(!h3IndexService.isContainInRedisH3(h3Index))
           continue;
 
         if(closeMap.containsKey(h3Index))
           continue;
 
         //Math.abs() : 현재 인덱스와 이동할 인덱스의 고도 차이, 가중치 계산 필요
-        double tentativeG = current.g + Math.abs(daejeonH3Index.get(current.h3Index)-daejeonH3Index.get(h3Index));
+        double tentativeG = current.g + Math.abs(h3IndexService.getAltitude(current.h3Index)-h3IndexService.getAltitude(h3Index));
         //openMap에 없거나, 이미 openMap에 존재하는 인덱스보다 가중치가 작은 경우
         if(!openMap.containsKey(h3Index) || tentativeG<openMap.get(h3Index).g){
           NodeAStar node = new NodeAStar(h3Index);

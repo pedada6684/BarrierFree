@@ -23,6 +23,7 @@ public class DataConstructor {
     private final BarrierFreeConstructor barrierFreeConstructor;
     private final DummyGenerator dummyGenerator;
     private final MemberRepository memberRepository;
+    private final H3 h3;
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
@@ -32,7 +33,7 @@ public class DataConstructor {
 //        dataApiService.saveDetailRoute();
 //        dataApiService.saveStopInfo();
 //        dataApiService.saveSubway();
-//        H3.setH3Index();
+        h3.setH3Index();
 //        barrierFreeConstructor.saveBarrierFree();
 //        barrierFreeConstructor.saveElectricWheelchairExcel();
 //        dummyGenerator.createDummyMembers();

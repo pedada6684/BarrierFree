@@ -377,7 +377,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               ),
               SizedBox(height: 40.0),
               Text(
-                '베리어프리 시설',
+                '배리어프리 시설',
                 style: TextStyle(
                   fontSize: 20.0,
                   fontWeight: FontWeight.bold,
@@ -391,7 +391,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     future: barrierFreeDetailsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator();
+                        return Center(child: CircularProgressIndicator());
                       } else if (snapshot.hasError) {
                         return Text('장애물 없는 시설 정보를 가져오는 데 실패했습니다.');
                       } else if (snapshot.hasData && snapshot.data != null) {
@@ -439,101 +439,77 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   future: reviewListFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: Text(
-                            '${widget.placeDetail['place_name']}의 리뷰를 불러오고 있습니다.'),
-                      );
+                      return Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
-                      return Column(
-                        children: [
-                          Text('리뷰를 불러오는데 실패했습니다 :${snapshot.error}'),
-                        ],
-                      );
+                      return Text('리뷰를 불러오는데 실패했습니다: ${snapshot.error}');
                     } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                       return ListView.builder(
-                        physics: NeverScrollableScrollPhysics(), // 스크롤 중첩 문제 해결
-                        shrinkWrap: true, // 내부 ListView 스크롤 가능하도록
+                        physics: NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, index) {
                           var review = snapshot.data![index];
+                          List<Widget> likeButtons =
+                              review['lik'].map<Widget>((item) {
+                            return ElevatedButton.icon(
+                              icon: Icon(Icons.thumb_up_outlined,
+                                  color: mainOrange),
+                              label: Text(item),
+                              onPressed: () {}, // 더미 함수, 필요한 기능으로 채울 것
+                              style: ElevatedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: mainOrange,
+                                  ),
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: mainOrange),
+                            );
+                          }).toList();
 
-                          return Row(
-                            children: [
-                              Container(
-                                // if(review['img']!=null && review['img'].isNotEmpty)
-                                width: 130, // 원하는 너비
-                                height: 130, // 원하는 높이
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                      image: NetworkImage(
-                                        review['img'][0],
-                                      ),
-                                      fit: BoxFit.cover),
+                          List<Widget> unlikeButtons =
+                              review['unlik'].map<Widget>((item) {
+                            return ElevatedButton.icon(
+                              icon: Icon(Icons.thumb_down_outlined,
+                                  color: mainOrange),
+                              label: Text(item),
+                              onPressed: () {}, // 더미 함수, 필요한 기능으로 채울 것
+                              style: ElevatedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: mainOrange,
+                                  ),
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: mainOrange),
+                            );
+                          }).toList();
+
+                          return ListTile(
+                            leading: review['img'] != null &&
+                                    review['img'].isNotEmpty
+                                ? Image.network(
+                                    review['img'][0],
+                                    width: 130,
+                                    height: 130,
+                                  )
+                                : null,
+                            title: Text(review['nickname']),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(review['content']),
+                                Wrap(
+                                  spacing: 8.0,
+                                  children: likeButtons + unlikeButtons,
                                 ),
-                              ),
-                              SizedBox(width: 20), // 간격
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {},
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Color(0xffffffff),
-                                        // 배경 투명
-                                        side: BorderSide(
-                                            color: mainOrange, width: 1),
-                                        // 테두리 오렌지
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                              10), // 테두리 반경 10px
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            '엘레베이터',
-                                            style: TextStyle(
-                                              fontSize: 18.0,
-                                              color: mainBlack,
-                                            ),
-                                          ),
-                                          SizedBox(width: 10),
-                                          Icon(Icons.thumb_up_alt_outlined,
-                                              color: mainOrange), // 아이콘
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 10.0, horizontal: 5.0),
-                                      child: Text(
-                                        review['content'],
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ); // Custom Review Widget
+                              ],
+                            ),
+                          );
                         },
                       );
                     } else {
-                      return Center(
-                        child: Text(
-                          '리뷰가 없습니다.',
-                          style: TextStyle(fontSize: 16.0),
-                        ),
-                      );
+                      return Text('리뷰가 없습니다.');
                     }
                   }),
-              SizedBox(height: 10.0), // 간격
+
+              SizedBox(height: 40.0), // 간격
 
               ElevatedButton(
                 onPressed: () async {

@@ -23,9 +23,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final NaverLoginResult result = await FlutterNaverLogin.logIn();
 
     if (result.status == NaverLoginStatus.loggedIn) {
-      print('===================네이버로그인====================');
-      print('네이버 로그인 결과 ${result.account}');
-      print('===================네이버로그인====================');
+      // print('===================네이버로그인====================');
+      // print('네이버 로그인 결과 ${result.account}');
+      // print('===================네이버로그인====================');
 
       if (!mounted) return;
       //사용자 정보 받아오기
@@ -41,13 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // 백으로 정보 전달
       final userId = await sendNaverLoginInfo(result.account);
-      // if (response != null) {
-      //   //토큰 저장 by secure storage
-      //   final secureStorageService = SecureStorageService();
-      //   await secureStorageService.saveToken(response);
-      // }
       if (!mounted) return;
-
       //네이버 로그인
       Provider.of<UserProvider>(context, listen: false)
           .signIn(LoginPlatform.naver, userId);

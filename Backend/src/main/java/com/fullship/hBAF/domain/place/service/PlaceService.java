@@ -20,11 +20,13 @@ import com.fullship.hBAF.domain.stationInfo.entity.StationInfo;
 import com.fullship.hBAF.domain.stationInfo.repository.StationInfoRepository;
 import com.fullship.hBAF.domain.stationStopInfo.entity.StationStopInfo;
 import com.fullship.hBAF.domain.stationStopInfo.repository.StationStopInfoRepository;
+import com.fullship.hBAF.global.api.response.GeoCode;
 import com.fullship.hBAF.global.api.response.OdSayPath;
 import com.fullship.hBAF.global.api.response.OdSayPath.SubPath;
 import com.fullship.hBAF.global.api.response.OdSayPath.SubPath.Bus;
 import com.fullship.hBAF.global.api.response.PathGeoCode;
 import com.fullship.hBAF.global.api.response.PointGeoCode;
+import com.fullship.hBAF.global.api.response.TaxiPathForm;
 import com.fullship.hBAF.global.api.response.WheelPathForm;
 import com.fullship.hBAF.global.api.service.GoogleApiService;
 import com.fullship.hBAF.global.api.service.OdSayApiService;
@@ -37,6 +39,7 @@ import com.fullship.hBAF.global.api.response.BusesCurLocation;
 import com.fullship.hBAF.global.api.service.command.ElevationForPathCommand;
 import com.fullship.hBAF.global.api.service.command.OdSayGeoCommand;
 import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
+import com.fullship.hBAF.global.api.service.command.SearchPathToTrafficCommand;
 import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -76,6 +79,22 @@ public class PlaceService {
   private final ImageRepository imageRepository;
   private final H3IndexService h3IndexService;
 
+  private final double errorRate = 0.05;
+
+  /**
+   * 도보 경로 탐색
+   */
+  public WheelPathForm useWheelPath(SearchPathToWheelCommand command) {
+    WheelPathForm wheelPathForm = tMapApiService.searchPathToWheel(command);
+    ElevationForPathCommand elevation = ElevationForPathCommand.createElevateCommand(
+        wheelPathForm.getGeoCode());
+    wheelPathForm.setGeoCode(googleApiService.elevationForPath(elevation).getGeoCode());
+    return wheelPathForm;
+  }
+
+  /**
+   * 대중교통 경로 탐색
+   */
   public List<OdSayPath> useTransitPath(OdSayPathCommand command) {
     List<OdSayPath> list = odSayApiService.searchPathToTransit(command);
 
@@ -226,54 +245,61 @@ public class PlaceService {
     return list;
   }
 
-  @Transactional(readOnly = false)
-  public Long createPlace(CreatePlaceCommand command) {
-    //poiId를 통해 존재확인
-    if (placeRepository.existsByPoiId(command.getPoiId())) {
-      return null;
-//      throw new IllegalStateException("이미 존재하는 장소 :" + command.getPoiId()+" "+command.getPlaceName());
-    }
-    Place newPlace = Place.createNewPlace(
-        command.getPlaceName(),
-        command.getAddress(),
-        command.getLatitude(),
-        command.getLongitude(),
-        command.getPoiId(),
-        command.getCategory(),
-        command.getBarrierFree(),
-        command.getWtcltId(),
-        command.getType()
-    );
+  /**
+   * 택시 경로 탐색
+   */
+  public TaxiPathForm useTaxiPath(SearchPathToTrafficCommand command) {
+    TaxiPathForm taxiPathForm = tMapApiService.searchPathToCar(command);
+    try {
+      Double cost = calculateCost(taxiPathForm.getGeoCode());
 
-    if (command.getType()) {
-      newPlace.insertWtcltId(command.getWtcltId());
+      taxiPathForm.setMaxCost(String.valueOf(Math.round(cost * (1 + errorRate)) / 10 * 10));
+      taxiPathForm.setMinCost(String.valueOf(Math.round(cost * (1 - errorRate)) / 10 * 10));
+      return taxiPathForm;
+    } catch (IOException e) {
+      throw new CustomException(ErrorCode.FAIL_CALCULATE_COST);
     }
-    //검색결과를 기반으로 save함
-    return placeRepository.save(newPlace).getId();
   }
 
-  @Transactional(readOnly = false)
-  public Long updatePlaceImageUrl(UpdatePlaceImageCommand command) {
-    Place place = placeRepository.findById(command.getPlaceId())
+  /**
+   * 배리어프리 시설 세부 정보
+   */
+  public GetPlaceResponse getPlace(String poiId) {
+    Place place = placeRepository.findPlaceByPoiIdWithImage(poiId)
         .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
-    Optional<Image> imageOptional = imageRepository.findByPlaceAndImageType(place, 0);
-    if (imageOptional.isPresent()) {
-      Image image = imageOptional.get();
-      image.updateImageUrl(command.getImageUrl());
-    } else { // 썸네일 이미지 없는 생성
-      Image newImage = Image.createNewImage(place, command.getImageUrl(), 0);
-      imageRepository.save(newImage);
-    }
-    return place.getId();
+    return GetPlaceResponse.from(place);
   }
 
-  public Double calculateCost(String[][] arr) throws IOException {
+  /**
+   * 장애인 시설 카테고리별 불러오기
+   *
+   * @return
+   */
+  public List<PlaceListResponse> getPlaceList(GetPlaceListRequestComment comment) {
+    List<Place> placeEntityList = placeRepository.findByTypeWithImage(true);
+    double lat = Double.parseDouble(comment.getLat());
+    double lng = Double.parseDouble(comment.getLng());
+
+    List<PlaceListResponse> placeList = new ArrayList<>();
+    for (Place place : placeEntityList) {
+      if (calculateDistance(lat, lng, Double.parseDouble(place.getLatitude()),
+          Double.parseDouble(place.getLongitude())) <= 3000) {
+        placeList.add(PlaceListResponse.from(place));
+      }
+    }
+    return placeList;
+  }
+
+  /**
+   * 택시 요금 계산
+   */
+  public Double calculateCost(List<GeoCode> arr) throws IOException {
     H3Core h3 = H3Core.newInstance();
-    GeoCoord coord = new GeoCoord(Double.parseDouble(arr[arr.length - 1][1]),
-        Double.parseDouble(arr[arr.length - 1][0]));
+    GeoCoord coord = new GeoCoord(Double.parseDouble(arr.get(arr.size() - 1).getLatitude()),
+        Double.parseDouble(arr.get(arr.size() - 1).getLongitude()));
     long lastH3Index = h3.geoToH3(coord.lat, coord.lng, 8);
 
-    int clockIdx = arr.length-1;
+    int clockIdx = arr.size() - 1;
     if (!h3IndexService.isContainInRedisH3(lastH3Index)){
       clockIdx = findClock(arr);
     }
@@ -282,11 +308,11 @@ public class PlaceService {
     double totalDis = 0;
     double totalCostDis = -3000;
     double totalClockDis = 0;
-    double preLat = Double.parseDouble(arr[0][1]);
-    double preLng = Double.parseDouble(arr[0][0]);
-    for (int i = 1; i < arr.length; i++) {
-      double curLat = Double.parseDouble(arr[i][1]);
-      double curLng = Double.parseDouble(arr[i][0]);
+    double preLat = Double.parseDouble(arr.get(0).getLatitude());
+    double preLng = Double.parseDouble(arr.get(0).getLongitude());
+    for (int i = 1; i < arr.size(); i++) {
+      double curLat = Double.parseDouble(arr.get(i).getLatitude());
+      double curLng = Double.parseDouble(arr.get(i).getLongitude());
 
       double dis = calculateDistance(preLat, preLng, curLat, curLng);
       totalDis += dis;
@@ -302,22 +328,24 @@ public class PlaceService {
     }
     totalCostDis = Math.max(0, totalCostDis);
     System.out.println("토탈 거리 : " + totalDis);
-    System.out.println("시계 위치 : " + arr[clockIdx][1] + " " + arr[clockIdx][0]);
+    System.out.println(
+        "시계 위치 : " + arr.get(clockIdx).getLatitude() + " " + arr.get(clockIdx).getLongitude());
     System.out.println("시계 거리 : " + totalClockDis);
     System.out.println("금액 : " + (cost + totalCostDis * 100 / 440));
     return (cost + totalCostDis * 100 / 440);
   }
 
-  public int findClock(String[][] arr) throws IOException {
+  public int findClock(List<GeoCode> arr) throws IOException {
     int l = 0;
-    int r = arr.length - 1;
+    int r = arr.size() - 1;
 
     H3Core h3 = H3Core.newInstance();
 
     while (l < r) {
       int mid = (l + r) >>> 1;
 
-      GeoCoord coord = new GeoCoord(Double.parseDouble(arr[mid][1]),Double.parseDouble(arr[mid][0]));
+      GeoCoord coord = new GeoCoord(Double.parseDouble(arr.get(mid).getLatitude()),
+          Double.parseDouble(arr.get(mid).getLongitude()));
       long findH3Index = h3.geoToH3(coord.lat, coord.lng, 12);
       if(h3IndexService.isContainInRedisH3(findH3Index)) {
         l = mid + 1;
@@ -381,31 +409,6 @@ public class PlaceService {
     return Precision.round(s, 3);
   }
 
-  public GetPlaceResponse getPlace(String poiId){
-    Place place = placeRepository.findPlaceByPoiIdWithImage(poiId)
-            .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
-    return GetPlaceResponse.from(place);
-  }
-  /**
-   * 장애인 시설 카테고리별 불러오기
-   * @return
-   */
-  public List<PlaceListResponse> getPlaceList(GetPlaceListRequestComment comment) {
-    List<Place> placeEntityList = placeRepository.findByTypeWithImage(true);
-    double lat = Double.parseDouble(comment.getLat());
-    double lng = Double.parseDouble(comment.getLng());
-
-    List<PlaceListResponse> placeList = new ArrayList<>();
-    for (Place place : placeEntityList) {
-      if(calculateDistance(lat,lng,Double.parseDouble(place.getLatitude()),Double.parseDouble(place.getLongitude()))<=3000) {
-        placeList.add(PlaceListResponse.from(place));
-      }
-    }
-
-
-    return placeList;
-  }
-
   public static List<PathGeoCode> setWheelGeoCode(
       List<PathGeoCode> origin, WheelPathForm wheel, int idx) {
     if (wheel == null) {
@@ -422,23 +425,20 @@ public class PlaceService {
   public List<PathGeoCode> calculateAngle(AngleSlopeCommand command) {
     List<PathGeoCode> pathGeoCodes = command.getGeoCodes();
     log.info("pathGeoCode = {}", pathGeoCodes);
-    for(PathGeoCode pathGeoCode : pathGeoCodes){
-      if(pathGeoCode == null)
+    for (PathGeoCode pathGeoCode : pathGeoCodes) {
+      if (pathGeoCode == null) {
         continue;
-      if(pathGeoCode.getTrafficType() == 3){
-        ElevationForPathCommand elevation = ElevationForPathCommand.createElevateCommand(pathGeoCode.getGeoCode());
+      }
+      if (pathGeoCode.getTrafficType() == 3) {
+        ElevationForPathCommand elevation = ElevationForPathCommand.createElevateCommand(
+            pathGeoCode.getGeoCode());
         pathGeoCode.setGeoCode(googleApiService.elevationForPath(elevation).getGeoCode());
       }
     }
     return pathGeoCodes;
   }
 
-  public WheelPathForm useWheelPath(SearchPathToWheelCommand command) {
-    WheelPathForm wheelPathForm = tMapApiService.searchPathToWheel(command);
-    ElevationForPathCommand elevation = ElevationForPathCommand.createElevateCommand(wheelPathForm.getGeoCode());
-    wheelPathForm.setGeoCode(googleApiService.elevationForPath(elevation).getGeoCode());
-    return wheelPathForm;
-  }
+  /* 아래 코드 부터는 경사로를 가중치로 완만한 경로를 추천 하는 aStar 알고리즘 */
 
   /**
    * 도보 경로를 넣었을 때, 급경사의 시작과 끝을 출력해주는 함수
@@ -453,24 +453,24 @@ public class PlaceService {
     int cal = 0;
 
     for (String[] strings : arr) {
-        double slope = Double.parseDouble(strings[2]);
+      double slope = Double.parseDouble(strings[2]);
 
-        if (slope >= slope) {
-            if (cal == 0) {
-                result[0][0] = Double.parseDouble(strings[0]);
-                result[0][1] = Double.parseDouble(strings[1]);
-                cal = 1;
-            }
-            result[1][0] = Double.parseDouble(strings[0]);
-            result[1][1] = Double.parseDouble(strings[1]);
+      if (slope >= slope) {
+        if (cal == 0) {
+          result[0][0] = Double.parseDouble(strings[0]);
+          result[0][1] = Double.parseDouble(strings[1]);
+          cal = 1;
         }
+        result[1][0] = Double.parseDouble(strings[0]);
+        result[1][1] = Double.parseDouble(strings[1]);
+      }
     }
 
     return result;
   }
 
-  /*아래 코드 부터는 경사로를 가중치로 완만한 경로를 추천 하는 aStar 알고리즘*/
-  public static class NodeAStar{
+  public static class NodeAStar {
+
     long h3Index;
     double g, h, f;
     NodeAStar preNode;
@@ -479,7 +479,8 @@ public class PlaceService {
       this.h3Index = h3Index;
     }
   }
-  public List<double[]> findPathByAStar(double[][] se) throws IOException{
+
+  public List<double[]> findPathByAStar(double[][] se) throws IOException {
     double sX = se[0][0];
     double sY = se[0][1];
     double eX = se[1][0];
@@ -495,19 +496,21 @@ public class PlaceService {
     long end = h3.geoToH3(endGeo.lat, endGeo.lng,12);
     if(!h3IndexService.isContainInRedisH3(start))
       return null;
-    NodeAStar startNode = new NodeAStar(start);
-    openMap.put(start,startNode);
 
-    while (!openMap.isEmpty()){
+    NodeAStar startNode = new NodeAStar(start);
+    openMap.put(start, startNode);
+
+    while (!openMap.isEmpty()) {
       NodeAStar current = null;
-      for(NodeAStar node : openMap.values()){
-        if(current == null || node.f<current.f)
-          current=node;
+      for (NodeAStar node : openMap.values()) {
+        if (current == null || node.f < current.f) {
+          current = node;
+        }
       }
 
-      if(current.h3Index == end){
+      if (current.h3Index == end) {
         List<double[]> path = new ArrayList<>();
-        while(current != null){
+        while (current != null) {
           GeoCoord geoCoord = h3.h3ToGeo(current.h3Index);
           path.add( new double[] {geoCoord.lat, geoCoord.lng, h3IndexService.getAltitude(current.h3Index)});
           current = current.preNode;
@@ -518,25 +521,26 @@ public class PlaceService {
       }
 
       openMap.remove(current.h3Index);
-      closeMap.put(current.h3Index,current);
+      closeMap.put(current.h3Index, current);
 
       for(long h3Index : h3.kRing(current.h3Index,1)){
         if(!h3IndexService.isContainInRedisH3(h3Index))
           continue;
 
-        if(closeMap.containsKey(h3Index))
+        if (closeMap.containsKey(h3Index))
           continue;
 
         //Math.abs() : 현재 인덱스와 이동할 인덱스의 고도 차이, 가중치 계산 필요
         double tentativeG = current.g + Math.abs(h3IndexService.getAltitude(current.h3Index)-h3IndexService.getAltitude(h3Index));
         //openMap에 없거나, 이미 openMap에 존재하는 인덱스보다 가중치가 작은 경우
-        if(!openMap.containsKey(h3Index) || tentativeG<openMap.get(h3Index).g){
+        if (!openMap.containsKey(h3Index) || tentativeG < openMap.get(h3Index).g) {
           NodeAStar node = new NodeAStar(h3Index);
           node.preNode = current;
           node.g = tentativeG;
-          node.h = Math.pow(Math.abs(h3.h3ToGeo(h3Index).lat-eY),2)+Math.pow(Math.abs(h3.h3ToGeo(h3Index).lng-eX),2);
-          node.f = node.g+ node.h;
-          openMap.put(h3Index,node);
+          node.h = Math.pow(Math.abs(h3.h3ToGeo(h3Index).lat - eY), 2) + Math.pow(
+              Math.abs(h3.h3ToGeo(h3Index).lng - eX), 2);
+          node.f = node.g + node.h;
+          openMap.put(h3Index, node);
         }
 
       }
@@ -545,4 +549,50 @@ public class PlaceService {
     return null;
   }
 
+  /**
+   * 배리어프리 시설 정보 저장
+   */
+  @Transactional(readOnly = false)
+  public Long createPlace(CreatePlaceCommand command) {
+    //poiId를 통해 존재확인
+    if (placeRepository.existsByPoiId(command.getPoiId())) {
+      return null;
+//      throw new IllegalStateException("이미 존재하는 장소 :" + command.getPoiId()+" "+command.getPlaceName());
+    }
+    Place newPlace = Place.createNewPlace(
+        command.getPlaceName(),
+        command.getAddress(),
+        command.getLatitude(),
+        command.getLongitude(),
+        command.getPoiId(),
+        command.getCategory(),
+        command.getBarrierFree(),
+        command.getWtcltId(),
+        command.getType()
+    );
+
+    if (command.getType()) {
+      newPlace.insertWtcltId(command.getWtcltId());
+    }
+    //검색결과를 기반으로 save함
+    return placeRepository.save(newPlace).getId();
+  }
+
+  /**
+   * 배리어프리 시설 이미지 저장
+   */
+  @Transactional(readOnly = false)
+  public Long updatePlaceImageUrl(UpdatePlaceImageCommand command) {
+    Place place = placeRepository.findById(command.getPlaceId())
+        .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
+    Optional<Image> imageOptional = imageRepository.findByPlaceAndImageType(place, 0);
+    if (imageOptional.isPresent()) {
+      Image image = imageOptional.get();
+      image.updateImageUrl(command.getImageUrl());
+    } else { // 썸네일 이미지 없는 생성
+      Image newImage = Image.createNewImage(place, command.getImageUrl(), 0);
+      imageRepository.save(newImage);
+    }
+    return place.getId();
+  }
 }

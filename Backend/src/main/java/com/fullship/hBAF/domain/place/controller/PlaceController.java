@@ -75,7 +75,7 @@ public class PlaceController {
   @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = TaxiPathForm.class)))
   public ResponseEntity<CommonResponseEntity> searchPathByTaxi(@RequestBody PathSearchToTrafficRequest requestDto) {
     SearchPathToTrafficCommand command = requestDto.createForTaxi();
-    return getResponseEntity(SuccessCode.OK, tMapApiService.searchPathToCar(command));
+    return getResponseEntity(SuccessCode.OK, placeService.useTaxiPath(command));
   }
 
   @PostMapping("/list")
@@ -90,9 +90,7 @@ public class PlaceController {
   @GetMapping
   @Operation(summary = "장애 편의 시설 불러오기", description = "장애 편의 시설 불러오기")
   public ResponseEntity<GetPlaceResponse> getPlace(@RequestParam("poiId") String poiId){
-
     GetPlaceResponse response = placeService.getPlace(poiId);
-
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 

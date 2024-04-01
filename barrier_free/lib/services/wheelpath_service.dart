@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class TaxiPathService {
-  static const String _baseUrl = 'https://hbaf.site/api/place/path/taxi';
+class WheelPathService {
+  static const String _baseUrl = 'https://hbaf.site/api/place/path/wheel';
 
-  Future<List<dynamic>> fetchTaxiDirectionsResults({
+  Future<List<dynamic>> fetchWheelDirectionsResults({
     required String type,
     required double startLat,
     required double startLon,
@@ -35,7 +35,7 @@ class TaxiPathService {
       print(parsedJson);
       return parsedJson['data']['geoCode'];
     } else {
-      throw Exception('택시 경로 불러오기 실패: ${response.statusCode} ${response.reasonPhrase}');
+      throw Exception('휠체어 경로 불러오기 실패: ${response.statusCode} ${response.reasonPhrase}');
     }
   }
 }

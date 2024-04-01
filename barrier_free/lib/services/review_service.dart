@@ -17,7 +17,10 @@ class ReviewService {
     print('리뷰ㅜ리뷰리뷰리ㅠ비류ㅣ뷰리뷰립류ㅣㅂ리뷰${response.body}');
     print(response.statusCode);
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      final String decodedBody = utf8.decode(response.bodyBytes);
+      final data = json.decode(decodedBody);
+
+      print(data);
       //빈배열에도 오류 안나게
       final List<dynamic> reviewList = data['list'] as List<dynamic>;
 
@@ -60,8 +63,8 @@ class ReviewService {
     required String poiId,
     required int userId,
     required String content,
-    String? lik,
-    String? unlik,
+    String? thumbsUp,
+    String? thumbsDown,
     required String? imageUrl,
   }) async {
     String? accessToken = await _secureStorageService.getToken();
@@ -78,8 +81,8 @@ class ReviewService {
         'poiId': poiId,
         'memberId': userId,
         'content': content,
-        'lik':lik,
-        'unlik':unlik,
+        'lik': thumbsUp ?? '',
+        'unlik': thumbsDown ?? '',
         'img': imageUrl != null ? [imageUrl] : [],
       }),
     );

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
+import 'package:barrier_free/screen/place/placedetail_screen.dart';
 import 'package:barrier_free/services/review_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -92,7 +93,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         color: isSelected ? mainOrange : mainGray,
       ),
       style: ElevatedButton.styleFrom(
-        foregroundColor: mainBlack,
+        foregroundColor: isSelected ? mainOrange : mainGray,
         // backgroundColor: isSelected ? mainOrange : Colors.white,
         side: BorderSide(color: mainOrange, width: 2),
         shape: RoundedRectangleBorder(
@@ -144,25 +145,94 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final userId = userProvider.userId;
 
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('로그인이 필요한 기능입니다'),
+        ),
+      );
+      return;
+    }
+
     String? imageUrl;
     if (_image != null) {
       imageUrl = await ReviewService().uploadImage(_image!);
     }
 
-    String likString = mapSelectedToString(likeState);
-    String unlikString = mapSelectedToString(unlikeState);
+    String likCode = '';
+    String unlikCode = '';
+
+    if (_reviewController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('리뷰 내용을 입력해주세요.')),
+      );
+      return; // 리뷰 내용이 비어있으면 함수 종료
+    }
+
+    likeState.forEach((item, selected) {
+      if (selected) {
+        switch (item) {
+          case '화장실':
+            likCode += 'a';
+            break;
+          case '주차':
+            likCode += 'b';
+            break;
+          case '경사로':
+            likCode += 'c';
+            break;
+          case '접근로':
+            likCode += 'd';
+            break;
+          case '출입문':
+            likCode += 'e';
+            break;
+          case '승강기':
+            likCode += 'f';
+            break;
+        }
+      }
+      print(likCode);
+    });
+
+    unlikeState.forEach((item, selected) {
+      if (selected) {
+        switch (item) {
+          case '화장실':
+            unlikCode += 'a';
+            break;
+          case '주차':
+            unlikCode += 'b';
+            break;
+          case '경사로':
+            unlikCode += 'c';
+            break;
+          case '접근로':
+            unlikCode += 'd';
+            break;
+          case '출입문':
+            unlikCode += 'e';
+            break;
+          case '승강기':
+            unlikCode += 'f';
+            break;
+        }
+      }
+      print(unlikCode);
+    });
 
     try {
       bool isSuccess = await ReviewService().addReview(
         poiId: widget.poiId,
         userId: userId!,
         content: _reviewController.text,
-        lik: likString.isEmpty ? null : likString,
-        unlik: unlikString.isEmpty ? null : unlikString,
+        thumbsUp: likCode.isEmpty ? null : likCode,
+        thumbsDown: unlikCode.isEmpty ? null : unlikCode,
         imageUrl: imageUrl,
       );
       if (isSuccess) {
         //다시 상세 페이지로 이동시키기
+        print(isSuccess);
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -197,7 +267,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
               onCameraTap: _pickImage,
               pickedImage: _image,
             ),
-            SizedBox(height: 16.0,),
+            SizedBox(
+              height: 16.0,
+            ),
             Row(
               children: [
                 Expanded(

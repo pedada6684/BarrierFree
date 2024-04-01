@@ -10,14 +10,11 @@ import com.fullship.hBAF.domain.review.service.command.response.*;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import com.fullship.hBAF.util.BarrierFreeInfo;
-import com.fullship.hBAF.util.ImageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

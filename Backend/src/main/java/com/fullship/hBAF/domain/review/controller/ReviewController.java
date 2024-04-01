@@ -6,7 +6,7 @@ import com.fullship.hBAF.domain.review.controller.request.ModifyReviewRequest;
 import com.fullship.hBAF.domain.review.controller.response.*;
 import com.fullship.hBAF.domain.review.service.ReviewService;
 import com.fullship.hBAF.domain.review.service.command.request.*;
-import com.fullship.hBAF.util.ImageUtil;
+import com.fullship.hBAF.util.S3Util;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,7 +27,7 @@ import java.util.UUID;
 public class ReviewController {
 
     private final ReviewService reviewService;
-    private final ImageUtil imageUtil;
+    private final S3Util s3Util;
 
     @PostMapping("/img")
     @Operation(summary = "리뷰 이미지 등록", description = "리뷰 작성 중 등록한 이미지 저장")
@@ -36,7 +36,7 @@ public class ReviewController {
         List<String> list = new ArrayList<>();
         for(MultipartFile i : img) {
             System.out.println(i.getOriginalFilename());
-            list.add(imageUtil.uploadImageToS3(i, "review", UUID.randomUUID().toString().replace("-", "") + i.getOriginalFilename()).toString());
+            list.add(s3Util.uploadImageToS3(i, "review", UUID.randomUUID().toString().replace("-", "") + i.getOriginalFilename()).toString());
         }
 
         UploadImgResponse response = UploadImgResponse.builder()

@@ -14,6 +14,9 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -25,6 +28,8 @@ public class DataConstructor {
     private final MemberRepository memberRepository;
     private final H3 h3;
 
+    private final S3Util s3Util;
+
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void dataConstructor() throws LineUndefinedException, IOException, ParserConfigurationException, SAXException, ParseException {
@@ -33,10 +38,11 @@ public class DataConstructor {
 //        dataApiService.saveDetailRoute();
 //        dataApiService.saveStopInfo();
 //        dataApiService.saveSubway();
-        h3.setH3Index();
+//        h3.setH3Index();
 //        barrierFreeConstructor.saveBarrierFree();
 //        barrierFreeConstructor.saveElectricWheelchairExcel();
 //        dummyGenerator.createDummyMembers();
+        s3Util.readExcelFromS3("Data/godo.xlsx");
     }
 
 }

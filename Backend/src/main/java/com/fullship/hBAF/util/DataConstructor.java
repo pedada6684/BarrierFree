@@ -23,6 +23,7 @@ public class DataConstructor {
     private final BarrierFreeConstructor barrierFreeConstructor;
     private final DummyGenerator dummyGenerator;
     private final MemberRepository memberRepository;
+    private final AltitudeCrawler altitudeCrawler;
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
@@ -38,6 +39,7 @@ public class DataConstructor {
 //        barrierFreeConstructor.saveBarrierFree();
 //        barrierFreeConstructor.setBarrierfreeInfo();
 //        dummyGenerator.createDummyMembers();
+        altitudeCrawler.crawling();
     }
 
 }

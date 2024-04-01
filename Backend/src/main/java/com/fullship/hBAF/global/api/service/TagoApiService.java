@@ -47,24 +47,20 @@ public class TagoApiService {
     return headers;
   }
 
-  /**
-   * 저상 정보 필터링 메서드
-   *
-   * @param publicBusId: 노선 번호
-   * @param direction:   방향(상, 하행)
-   * @return BusesCurLocation
-   */
-  @Transactional(readOnly = true)
-  public List<BusesCurLocation> findBusesByPublicId(String publicBusId, String direction) {
-
-    try {
+  public List<BusesCurLocation> findBusesByPublicId(String publicBusId, String direction){
+    try{
       URI uri = UriComponentsBuilder
-          .fromHttpUrl("http://openapitraffic.daejeon.go.kr/api/rest/busposinfo/getBusPosByRtid")
-          .queryParam("serviceKey", routeKey)
-          .queryParam("busRouteId", publicBusId)
-          .build(true).toUri();
+          .fromHttpUrl("https://apis.data.go.kr/1613000/BusLcInfoInqireService/getRouteAcctoBusLcList")
+          .queryParam("serviceKey", TagoKey)
+          .queryParam("pageNo", 1)
+          .queryParam("numOfRows", 100)
+          .queryParam("_type", "xml")
+          .queryParam("cityCode", 25)
+          .queryParam("routeId", "DJB" + publicBusId)
+          .build().toUri();
 
       ResponseEntity<String> response = apiService.get(uri, setHttpHeaders(), String.class);
+
       log.info("curBusPos = {}", response.getBody());
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();
@@ -72,24 +68,17 @@ public class TagoApiService {
       Document document = builder.parse(
           new InputSource(new StringReader(response.getBody())));
       document.getDocumentElement().normalize();
-      NodeList itemList = document.getElementsByTagName("itemList");
-      NodeList busNodeId = document.getElementsByTagName("BUS_NODE_ID");
-      NodeList dir = document.getElementsByTagName("DIR");
-      NodeList arsId = document.getElementsByTagName("BUS_STOP_ID");
-      NodeList license = document.getElementsByTagName("PLATE_NO");
+      NodeList item = document.getElementsByTagName("item");
+      NodeList busNodeId = document.getElementsByTagName("nodeid");
+      NodeList license = document.getElementsByTagName("vehicleno");
 
       List<BusesCurLocation> list = new ArrayList<>();
-      for (int i = 0; i < itemList.getLength(); i++) {
+      for (int i = 0; i < item.getLength(); i++) {
         BusesCurLocation command = BusesCurLocation.builder()
             .localStationId(busNodeId.item(i).getTextContent())
-            .dir(dir.item(i).getTextContent())
-            .arsId(arsId.item(i).getTextContent())
             .license(license.item(i).getTextContent())
             .build();
 
-        if (!direction.equals(command.getDir())) {
-          continue;
-        }
         if (busInfoRepository.findBusInfoByBusRegNo(license.item(i).getTextContent()) == null) {
           continue;
         }
@@ -101,8 +90,5 @@ public class TagoApiService {
     } catch (ParserConfigurationException | IOException | SAXException e) {
       throw new CustomException(ErrorCode.NO_AVAILABLE_API);
     }
-
   }
-
-
 }

@@ -44,8 +44,7 @@ public class OdSayApiService {
       throw new CustomException(ErrorCode.URI_SYNTAX_ERROR);
     }
 
-    ResponseEntity<String> responseEntity =
-        apiService.get(uri, setHttpHeaders(), String.class);
+    ResponseEntity<String> responseEntity = apiService.get(uri, setHttpHeaders(), String.class);
 
     List<OdSayPath> odSayPaths = OdSayPath.jsonToO(responseEntity);
 

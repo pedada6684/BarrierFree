@@ -1,13 +1,13 @@
 import 'package:barrier_free/screen/place/placedetail_screen.dart';
 import 'package:flutter/material.dart';
 
-class MapSearchResultList extends StatelessWidget {
+class DirectionSearchResultList extends StatelessWidget {
   final List<dynamic> searchResults;
   final List<dynamic> startsearchResults;
   final List<dynamic> destinationsearchResults;
 
 
-  const MapSearchResultList({
+  const DirectionSearchResultList({
     super.key,
     required this.searchResults,
     required this.startsearchResults,
@@ -16,47 +16,35 @@ class MapSearchResultList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //distance 있을때 만 필터링
-    List<dynamic> filteredResults = searchResults
-        .where((result) =>
-            result.containsKey('distance') && result['distance'] != null)
-        .toList();
-
-
     return ListView(
       children: [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            '검색 결과',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 18.0,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+        // const Padding(
+        //   padding: EdgeInsets.all(16.0),
+        //   child: Text(
+        //     '검색 결과',
+        //     textAlign: TextAlign.center,
+        //     style: TextStyle(
+        //       fontSize: 18.0,
+        //       fontWeight: FontWeight.bold,
+        //     ),
+        //   ),
+        // ),
         const SizedBox(height: 8.0),
-        ...filteredResults.map((result) {
-          double distanceInKm = int.parse(result['distance']) / 1000;
+        ...searchResults.map((result) {
+          // print('searchResults=========================');
+          // print(result);
           String categoryName = result['category_name'];
           List<String> categoryDetail = categoryName.split('>');
           String categoryReal = categoryDetail.length > 1
               ? categoryDetail[1].trim()
               : categoryName;
           return ListTile(
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  result['place_name'],
-                  style: const TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text('${distanceInKm.toStringAsFixed(1)}km'),
-              ],
+            title: Text(
+              result['place_name'],
+              style: const TextStyle(
+                fontSize: 20.0,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,6 +66,8 @@ class MapSearchResultList extends StatelessWidget {
         }).toList(),
         const SizedBox(height: 8.0),
         ...startsearchResults.map((result) {
+          // print('startSearchResults=========================');
+          // print(result);
           String categoryName = result['category_name'];
           List<String> categoryDetail = categoryName.split('>');
           String categoryReal = categoryDetail.length > 1

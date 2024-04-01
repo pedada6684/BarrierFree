@@ -27,12 +27,12 @@ class _SearchScreenState extends State<SearchScreen> {
     PlaceItem(
       title: '삼성화재 유성연수원',
       address: '대전광역시 유성구',
-      builder: (context) => PlaceDetailScreen(placeDetail: {}, placeCategory: '',),
+      builder: (context) => PlaceDetailScreen(placeDetail: {}, placeCategory: '', isStart: true,),
     ),
     PlaceItem(
       title: '하이테이블',
       address: '대전광역시 유성구',
-      builder: (context) => PlaceDetailScreen(placeDetail: {}, placeCategory: '',),
+      builder: (context) => PlaceDetailScreen(placeDetail: {}, placeCategory: '', isStart: true,),
     ),
   ];
 

@@ -172,7 +172,11 @@ class _MapResultScreenState extends State<MapResultScreen> {
   }
 
   Widget _buildPanel() {
-    return MapSearchResultList(searchResults: widget.searchResults);
+    return MapSearchResultList(
+      searchResults: widget.searchResults, // 빈 리스트로 전달해도 됨
+      startsearchResults: [], // 빈 리스트로 전달해도 됨
+      destinationsearchResults: [],
+    );
   }
 
   Widget _buildCollapsedPanel() {

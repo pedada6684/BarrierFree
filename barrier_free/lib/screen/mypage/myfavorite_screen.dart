@@ -90,7 +90,7 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
                                       placeDetail: bookmark,
                                       // 예제에서는 {}로 되어 있지만, 실제 데이터로 변경
                                       placeCategory: bookmark[
-                                          'category'], // 'category' 필드 사용 예시
+                                          'category'], isStart: false, // 'category' 필드 사용 예시
                                     ),
                                   ),
                                 );

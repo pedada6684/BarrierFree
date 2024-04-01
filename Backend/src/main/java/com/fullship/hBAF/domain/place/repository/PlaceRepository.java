@@ -14,7 +14,7 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     @Query("""
     select p from Place p
     left join fetch p.images
-    where p.id = :poiId
+    where p.poiId = :poiId
 """)
     Optional<Place> findPlaceByPoiIdWithImage(@Param("poiId") String poiId);
 

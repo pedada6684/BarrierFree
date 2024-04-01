@@ -5,6 +5,7 @@ import 'package:barrier_free/component/mapsearch_result_list.dart';
 // import 'package:barrier_free/component/mapsearch_result_list.dart';
 import 'package:barrier_free/screen/directions/directionssearch_result_list.dart';
 import 'package:barrier_free/services/search_service.dart';
+import 'package:barrier_free/services/taxipath_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -37,10 +38,6 @@ class DirectionsScreen extends StatefulWidget {
 
   @override
   State<DirectionsScreen> createState() => _DirectionsScreenState(
-    // startLat: startLat,
-    // startLon: startLon,
-    // endLat: endLat,
-    // endLon: endLon,
   );
 }
 
@@ -51,8 +48,6 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
   late String startkeyWord = '';
   late String destinationkeyWord = '';
 
-  // final TextEditingController _originController = TextEditingController();
-  // final TextEditingController _destinationController = TextEditingController();
   late TextEditingController _originController;
   late TextEditingController _destinationController;
 
@@ -63,9 +58,38 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
   String? _selectedVehicles;
   Position? _currentPosition;
 
+  late String formattedCoordinates = '';
+
+  void _fetchTaxiDirections() async {
+    try {
+      final taxiDirections = await TaxiPathService().fetchTaxiDirectionsResults(
+        type: '휠체어',
+        startLat: widget.startLat!,
+        startLon: widget.startLon!,
+        endLat: widget.endLat!,
+        endLon: widget.endLon!,
+      );
+
+      // 택시 경로에서 좌표 데이터를 가져와서 포맷합니다.
+      List<String> coordinatesList = taxiDirections.map((direction) =>
+      'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})').toList();
+      String newFormattedCoordinates = '[${coordinatesList.join(', ')}]';
+
+      setState(() {
+        formattedCoordinates = newFormattedCoordinates; // 포맷된 좌표 데이터를 상태에 저장합니다.
+      print('formattedCoordinates = ${formattedCoordinates}');
+      });
+    } catch (e) {
+      print('Error fetching taxi directions: $e');
+      // 에러 처리
+    }
+  }
+
+
   @override
   void initState() {
     super.initState();
+    _fetchTaxiDirections();
     _originController = TextEditingController(
         text: Provider.of<TextProvider>(context, listen: false).originText);
     _destinationController = TextEditingController(
@@ -121,8 +145,6 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         });
         print(
             '=================================================================');
-        // print(result);
-        // print(searchResults);
         //검색결과 화면에 표시 로직 짜기
       } catch (e) {
         print("============= 검색 실패임: $e =============");
@@ -137,8 +159,6 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
       });
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -334,7 +354,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                               startLon: widget.startLon!,
                               endLat: widget.endLat!,
                               endLon: widget.endLon!,
-                              vehicleType: _selectedVehicles!, // 선택된 이동 방식 전달
+                              vehicleType: _selectedVehicles!,
+                              formattedCoordinates: [formattedCoordinates],
                             ),
                           ),
                         );
@@ -421,82 +442,4 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
       destinationsearchResults: destinationsearchResults,
     );
   }
-
-  // Widget _buildCollapsedPanel() {
-  //   if (_showSearchResults) { // 검색 결과가 있을 때만 패널을 보이지 않음
-  //     return Column(
-  //       children: [
-  //         Container(
-  //           decoration: const BoxDecoration(
-  //             color: Colors.white,
-  //             borderRadius: BorderRadius.only(
-  //               topRight: Radius.circular(25.0),
-  //               topLeft: Radius.circular(25.0),
-  //             ),
-  //           ),
-  //           child: const Column(
-  //             crossAxisAlignment: CrossAxisAlignment.center,
-  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //             children: [
-  //               Padding(
-  //                 padding: EdgeInsets.all(16.0),
-  //                 child: Text(
-  //                   '검색 결과',
-  //                   style: TextStyle(
-  //                     fontSize: 18.0,
-  //                     fontWeight: FontWeight.bold,
-  //                   ),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       ],
-  //     ); // 패널을 보이지 않음
-  //   } else {
-  //     return Container();
-  //   }
-  // }
-
-
-  // Widget _buildToggleButton() {// 검색 결과가 있을 때만 버튼을 보이도록 함
-  //     return Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //       children: [
-  //         Visibility(
-  //           visible: _showSearchResults,
-  //           child: ElevatedButton(
-  //             style: ElevatedButton.styleFrom(
-  //               backgroundColor: Colors.white,
-  //               foregroundColor: mainBlack,
-  //             ),
-  //             child: const Padding(
-  //               padding: EdgeInsets.all(4.0),
-  //               child: Row(
-  //                 mainAxisAlignment: MainAxisAlignment.center,
-  //                 children: [
-  //                   Icon(
-  //                     Icons.list,
-  //                     color: mainOrange,
-  //                   ),
-  //                   SizedBox(
-  //                     width: 8.0,
-  //                   ),
-  //                   Text(
-  //                     '목록보기',
-  //                     style: TextStyle(fontSize: 16.0),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //             onPressed: () {
-  //               _panelController.isPanelClosed
-  //                   ? _panelController.open()
-  //                   : _panelController.close();
-  //             },
-  //           ),
-  //         ),
-  //       ],
-  //     );
-  // }
 }

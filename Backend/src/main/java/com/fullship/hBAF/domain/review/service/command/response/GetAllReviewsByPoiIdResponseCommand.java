@@ -13,8 +13,8 @@ public class GetAllReviewsByPoiIdResponseCommand {
     Long memberId;
     String nickname;
     String content;
-    String lik;
-    String unlik;
+    List<String> lik;
+    List<String> unlik;
     LocalDateTime regDate;
     LocalDateTime modifyDate;
     Long status;

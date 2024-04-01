@@ -9,6 +9,7 @@ import com.fullship.hBAF.domain.review.service.command.request.*;
 import com.fullship.hBAF.domain.review.service.command.response.*;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
+import com.fullship.hBAF.util.BarrierFreeInfo;
 import com.fullship.hBAF.util.ImageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -47,8 +48,8 @@ public class ReviewService {
                 .memberId(responseCommand.getMemberId())
                 .nickname(responseCommand.getNickname())
                 .content(responseCommand.getContent())
-                .lik(responseCommand.getLik())
-                .unlik(responseCommand.getUnlik())
+                .lik(BarrierFreeInfo.makeBafArrInfo(responseCommand.getLik()))
+                .unlik(BarrierFreeInfo.makeBafArrInfo(responseCommand.getUnlik()))
                 .regDate(review.getRegDate())
                 .modifyDate(responseCommand.getModifyDate())
                 .status(responseCommand.getStatus())
@@ -71,8 +72,8 @@ public class ReviewService {
                     .memberId(member.getId())
                     .nickname(member.getNickname())
                     .content(review.getContent())
-                    .lik(review.getLik())
-                    .unlik(review.getUnlik())
+                    .lik(BarrierFreeInfo.makeBafArrInfo(review.getLik()))
+                    .unlik(BarrierFreeInfo.makeBafArrInfo(review.getUnlik()))
                     .regDate(review.getRegDate())
                     .modifyDate(review.getModifyDate())
                     .status(review.getStatus())
@@ -101,8 +102,8 @@ public class ReviewService {
                     .memberId(member.getId())
                     .nickname(member.getNickname())
                     .content(review.getContent())
-                    .lik(review.getLik())
-                    .unlik(review.getUnlik())
+                    .lik(BarrierFreeInfo.makeBafArrInfo(review.getLik()))
+                    .unlik(BarrierFreeInfo.makeBafArrInfo(review.getUnlik()))
                     .regDate(review.getRegDate())
                     .modifyDate(review.getModifyDate())
                     .status(review.getStatus())

@@ -10,23 +10,31 @@ import 'package:barrier_free/services/test_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakaomap_webview/kakaomap_webview.dart';
+import 'package:barrier_free/screen/directions/directions_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:barrier_free/providers/text_provider.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> placeDetail;
   final String placeCategory;
-
-  const PlaceDetailScreen({
-    super.key,
-    required this.placeDetail,
-    required this.placeCategory,
-  });
+  final bool isStart;
+  
+  const PlaceDetailScreen(
+      {super.key,
+      required this.placeDetail,
+      required this.placeCategory,
+      required this.isStart});
 
   @override
   State<PlaceDetailScreen> createState() => _PlaceDetailScreenState();
 }
 
 class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
+  late double startLat;
+  late double startLon;
+  late double endLat;
+  late double endLon;
+
   int? userId;
   bool isStarFilled = false;
   late Future<List<dynamic>> reviewListFuture;
@@ -39,6 +47,27 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // 장소 상세 정보에서 위도와 경도를 가져옵니다.
+    if (widget.isStart) {
+      startLat = double.tryParse(widget.placeDetail['y'].toString()) ?? 0.0;
+      startLon = double.tryParse(widget.placeDetail['x'].toString()) ?? 0.0;
+      endLat = Provider.of<TextProvider>(context, listen: false).endLat ?? 0.0;
+      endLon = Provider.of<TextProvider>(context, listen: false).endLon ?? 0.0;
+
+      // Provider를 사용하여 위도와 경도 설정
+      Provider.of<TextProvider>(context, listen: false).setStartLat(startLat);
+      Provider.of<TextProvider>(context, listen: false).setStartLon(startLon);
+    } else {
+      // 위젯이 생성될 때 도착지의 위도와 경도는 초기화하지 않습니다.
+      endLat = double.tryParse(widget.placeDetail['y'].toString()) ?? 0.0;
+      endLon = double.tryParse(widget.placeDetail['x'].toString()) ?? 0.0;
+      startLat = Provider.of<TextProvider>(context, listen: false).startLat ?? 0.0;
+      startLon = Provider.of<TextProvider>(context, listen: false).startLon ?? 0.0;
+
+      Provider.of<TextProvider>(context, listen: false).setEndLat(endLat);
+      Provider.of<TextProvider>(context, listen: false).setEndLon(endLon);
+    }
+
     _initializeUserId();
     reviewListFuture =
         ReviewService().fetchReviewByPlaceId(widget.placeDetail['id']);
@@ -47,13 +76,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       setState(() {
         barrierFreeDetails = List<String>.from(details['barrierFree']).toList();
       });
-    });
-  }
-
-  void refreshReviews() {
-    setState(() {
-      reviewListFuture =
-          ReviewService().fetchReviewByPlaceId(widget.placeDetail['id']);
     });
   }
 
@@ -72,7 +94,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     // Map<String, dynamic> details = {};
     try {
       final details =
-          await PlaceService().fetchBfByPoiId(widget.placeDetail['id']);
+      await PlaceService().fetchBfByPoiId(widget.placeDetail['id']);
       return details;
     } catch (e) {
       print('배리어프리 정보 가져오기 실패: $e');
@@ -106,9 +128,17 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     return buttons;
   }
 
+  void refreshReviews() {
+    setState(() {
+      reviewListFuture =
+          ReviewService().fetchReviewByPlaceId(widget.placeDetail['id']);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final appKey = dotenv.env['APP_KEY'];
+    final provider = Provider.of<TextProvider>(context);
     final isLoggedIn = Provider.of<UserProvider>(context).isLoggedIn();
     final TestService testService = TestService();
 
@@ -163,7 +193,27 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               Row(
                 children: [
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // 출발 버튼이 눌렸을 때 DirectionsScreen으로 이동하며 출발지를 설정합니다.
+                      Provider.of<TextProvider>(context, listen: false)
+                          .setOriginText(widget.placeDetail['place_name']);
+                      Provider.of<TextProvider>(context, listen: false)
+                          .setStartLat(startLat);
+                      Provider.of<TextProvider>(context, listen: false)
+                          .setStartLon(startLon);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DirectionsScreen(
+                            initialSearchAddress: widget.placeDetail['place_name'],
+                            startLat: startLat,
+                            startLon: startLon,
+                            endLat: endLat,
+                            endLon: endLon,
+                          ),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xffffffff), // 배경 투명지
                       side: BorderSide(color: mainOrange, width: 1), // 테두리 오렌지
@@ -182,7 +232,27 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   ),
                   SizedBox(width: 10.0),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // 도착 버튼이 눌렸을 때 DirectionsScreen으로 이동하며 도착지를 설정합니다.
+                      Provider.of<TextProvider>(context, listen: false)
+                          .setDestinationText(widget.placeDetail['place_name']);
+                      Provider.of<TextProvider>(context, listen: false)
+                          .setEndLat(endLat);
+                      Provider.of<TextProvider>(context, listen: false)
+                          .setEndLon(endLon);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DirectionsScreen(
+                            initialDestinationSearchAddress: widget.placeDetail['place_name'],
+                            startLat: startLat,
+                            startLon: startLon,
+                            endLat: endLat,
+                            endLon: endLon,
+                          ),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: mainOrange,
                       side: BorderSide(color: mainOrange, width: 1), // 테두리 오렌지

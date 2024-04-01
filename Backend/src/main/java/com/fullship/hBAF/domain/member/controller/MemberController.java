@@ -1,9 +1,12 @@
 package com.fullship.hBAF.domain.member.controller;
 
 import com.fullship.hBAF.domain.member.controller.request.UpdateProfileImgRequest;
+import com.fullship.hBAF.domain.member.controller.response.GetMemberInfoResponse;
 import com.fullship.hBAF.domain.member.controller.response.UpdateProfileResponse;
+import com.fullship.hBAF.domain.member.entity.Member;
 import com.fullship.hBAF.domain.member.service.MemberService;
-import com.fullship.hBAF.util.CookieProvider;
+import com.fullship.hBAF.domain.member.service.command.FindMemberByIdCommand;
+import com.fullship.hBAF.domain.member.service.command.WithdrawMemberCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -44,8 +47,15 @@ public class MemberController {
   public ResponseEntity<UpdateProfileResponse> updateProfileImg2() {
     //유저 아이디 검증 메서드 하나 추가해야함 with jwt
 
-    UpdateProfileResponse response = UpdateProfileResponse.builder()
+  @GetMapping
+  @Operation(summary = "유저 정보 요청", description = "유저 정보 요청")
+  @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = GetMemberInfoResponse.class)))
+  public ResponseEntity<GetMemberInfoResponse> getMemberInfo(@RequestParam("memberId") Long memberId) {
+    FindMemberByIdCommand command = FindMemberByIdCommand.builder()
+            .id(memberId)
             .build();
+    Member member = memberService.findMemberById(command);
+    GetMemberInfoResponse response = GetMemberInfoResponse.from(member);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }

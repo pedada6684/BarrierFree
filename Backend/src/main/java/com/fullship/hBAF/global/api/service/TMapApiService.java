@@ -50,9 +50,11 @@ public class TMapApiService {
     ResponseEntity<String> responseEntity =
         apiService.post(command.getUri(), setHttpHeaders(),command.getRequestBody(), String.class);
 
+    log.info("taxiApiResult = {}", responseEntity.getBody());
     TaxiPathForm taxiPathForm = TaxiPathForm.jsonToO(responseEntity);
 
     if (responseEntity.getStatusCode() == HttpStatus.OK) {
+      log.info("taxiPathForm = {}", taxiPathForm);
       return taxiPathForm;
     } else {
       throw new CustomException(ErrorCode.NO_AVAILABLE_API);

@@ -16,16 +16,17 @@ import org.springframework.http.ResponseEntity;
 @Builder
 public class TaxiPathForm {
 
-  List<String[]> geoCode;
-
+  String totalDistance;
+  String totalTime;
+  List<GeoCode> geoCode;
 
   public static TaxiPathForm jsonToO(ResponseEntity<String> result) {
-    List<String[]> geoCode = new ArrayList<>();
+    List<GeoCode> geoCode = new ArrayList<>();
     try {
       JSONParser parser = new JSONParser();
       JSONObject object = (JSONObject) parser.parse(result.getBody());
-      System.out.println(object);
       JSONArray features = (JSONArray) object.get("features");
+      JSONObject properties = (JSONObject) ((JSONObject) features.get(0)).get("properties");
       for (Object o : features) {
         JSONObject feature = (JSONObject) o;
         JSONObject geometry = (JSONObject) feature.get("geometry");
@@ -33,18 +34,22 @@ public class TaxiPathForm {
         if (coordinates.get(0).getClass() != Double.class) {
           for (Object value : coordinates) {
             JSONArray coordinate = (JSONArray) value;
-            geoCode.add(new String[]{coordinate.get(0).toString(), coordinate.get(1).toString()});
+            geoCode.add(GeoCode.builder()
+                .longitude(coordinate.get(0).toString())
+                .latitude(coordinate.get(1).toString())
+                .build());
           }
         } else {
-          geoCode.add(new String[]{coordinates.get(0).toString(), coordinates.get(1).toString()});
+          geoCode.add(GeoCode.builder()
+              .longitude(coordinates.get(0).toString())
+              .latitude(coordinates.get(1).toString())
+              .build());
         }
       }
-      System.out.print("{");
-      for (String[] strings : geoCode) {
-        System.out.print("{\"" + strings[0] + "\", \"" + strings[1] + "\"}, ");
-      }
-      System.out.println("}");
-      return TaxiPathForm.builder().geoCode(geoCode).build();
+      return TaxiPathForm.builder()
+          .totalDistance(properties.get("totalDistance").toString())
+          .totalTime(properties.get("totalTime").toString())
+          .geoCode(geoCode).build();
     } catch (ParseException e) {
       throw new CustomException(ErrorCode.JSON_PARSE_IMPOSSIBLE);
     }

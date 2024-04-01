@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,6 +28,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class TagoApiService {
 
@@ -63,7 +65,7 @@ public class TagoApiService {
           .build(true).toUri();
 
       ResponseEntity<String> response = apiService.get(uri, setHttpHeaders(), String.class);
-
+      log.info("curBusPos = {}", response.getBody());
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();
 
@@ -94,6 +96,7 @@ public class TagoApiService {
         list.add(command);
       }
 
+      log.info("curBusPosResult = {}", list);
       return list;
     } catch (ParserConfigurationException | IOException | SAXException e) {
       throw new CustomException(ErrorCode.NO_AVAILABLE_API);

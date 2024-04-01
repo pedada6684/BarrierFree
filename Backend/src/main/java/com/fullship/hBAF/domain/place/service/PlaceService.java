@@ -78,7 +78,6 @@ public class PlaceService {
 
   public List<OdSayPath> useTransitPath(OdSayPathCommand command) {
     List<OdSayPath> list = odSayApiService.searchPathToTransit(command);
-    log.info("대중교통 이용 경로 호출 결과 = {}", list);
 
     /* 총합 시간 순 정렬 (오름차순) */
     list.sort((o1, o2) -> (int) (o1.getTotalTime() - o2.getTotalTime()));
@@ -90,7 +89,6 @@ public class PlaceService {
         list = list.subList(0, i);
       }
     }
-    log.info("소요시간 이상치 제거 결과 = {}", list);
 
     /* 환승 횟수 정렬 (오름차순) */
     list.sort((o1, o2) -> (int) (o1.getTotalTransferCount() - o2.getTotalTransferCount()));
@@ -102,7 +100,6 @@ public class PlaceService {
         break;
       }
     }
-    log.info("환승 횟수 이상치 제거 결과 = {}", list);
 
     for (OdSayPath odSayPath : list) {
       /* 대중교통 경로 좌표 */

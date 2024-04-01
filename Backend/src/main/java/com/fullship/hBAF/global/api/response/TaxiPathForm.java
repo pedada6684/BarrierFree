@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 @Builder
 public class TaxiPathForm {
 
+  String minCost;
+  String maxCost;
   String totalDistance;
   String totalTime;
   List<GeoCode> geoCode;

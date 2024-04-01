@@ -32,7 +32,7 @@ Future<List<dynamic>> fetchMainSearchResults(
   final appKey = dotenv.env['REST_API_KEY'];
   final response = await http.get(
     Uri.parse(
-        'https://dapi.kakao.com/v2/local/search/keyword.json?query=$keyword&size=10&x=${currentPosition.longitude}&y=${currentPosition.latitude}&radius=20000&sort=distance'),
+        'https://dapi.kakao.com/v2/local/search/keyword.json?query=$keyword&size=10&x=${currentPosition.longitude}&y=${currentPosition.latitude}&radius=10000&sort=distance'),
     headers: {
       'Authorization': 'KakaoAK $appKey',
     },
@@ -40,38 +40,7 @@ Future<List<dynamic>> fetchMainSearchResults(
 
   if (response.statusCode == 200) {
     Map<String, dynamic> data = json.decode(response.body);
-    // print('==============================================');
-    // print(response);
-    // print(data);
     List<dynamic> documents = data['documents'];
-    //
-    // List<dynamic> filteredDocuments = documents.where((document) {
-    //   double distance = Geolocator.distanceBetween(
-    //     currentPosition.latitude,
-    //     currentPosition.longitude,
-    //     double.parse(document['y']),
-    //     double.parse(document['x']),
-    //   );
-    //   return distance <= radius;
-    // }).toList();
-    //
-    // filteredDocuments.sort((a, b) {
-    //   double distanceA = Geolocator.distanceBetween(
-    //     currentPosition.latitude,
-    //     currentPosition.longitude,
-    //     double.parse(a['y']),
-    //     double.parse(a['x']),
-    //   );
-    //   double distanceB = Geolocator.distanceBetween(
-    //     currentPosition.latitude,
-    //     currentPosition.longitude,
-    //     double.parse(b['y']),
-    //     double.parse(b['x']),
-    //   );
-    //   return distanceA.compareTo(distanceB);
-    // });
-    //
-    // return filteredDocuments;
     print(documents);
     return documents;
   } else {

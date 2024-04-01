@@ -38,7 +38,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _initializeUserId();
     reviewListFuture =
@@ -77,7 +76,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       return details;
     } catch (e) {
       print('배리어프리 정보 가져오기 실패: $e');
-      return {}; // 오류 발생시 빈 맵 반환
+      return {};
     }
   }
 
@@ -112,6 +111,25 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     final appKey = dotenv.env['APP_KEY'];
     final isLoggedIn = Provider.of<UserProvider>(context).isLoggedIn();
     final TestService testService = TestService();
+
+    String customScript = """
+        var mapContainer = document.getElementById('map');
+        var mapOption = {
+            center: new kakao.maps.LatLng(${widget.placeDetail['y']}, ${widget.placeDetail['x']}),
+            level: 3
+        };
+        var detailMap = new kakao.maps.Map(mapContainer, mapOption);
+        
+        // 드래그 비활성화
+        detailMap.setDraggable(false);
+        
+        var markerPosition = new kakao.maps.LatLng(${widget.placeDetail['y']}, ${widget.placeDetail['x']});
+        var marker = new kakao.maps.Marker({
+            position: markerPosition
+        });
+        marker.setMap(detailMap);
+        
+      """;
 
     return Scaffold(
       appBar: CustomAppBar(title: '장소 상세'),
@@ -214,16 +232,23 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               SizedBox(height: 20.0),
               // 지도 위젯
               Center(
-                child: KakaoMapView(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  height: MediaQuery.of(context).size.width * 0.8,
-                  kakaoMapKey: appKey!,
-                  lat: double.tryParse(widget.placeDetail['y'].toString()) ??
-                      0.0,
-                  lng: double.tryParse(widget.placeDetail['x'].toString()) ??
-                      0.0,
-                  showZoomControl: false,
-                  showMapTypeControl: false,
+                child: Stack(
+                  children: [
+                    KakaoMapView(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      height: MediaQuery.of(context).size.width * 0.8,
+                      kakaoMapKey: appKey!,
+                      lat:
+                          double.tryParse(widget.placeDetail['y'].toString()) ??
+                              0.0,
+                      lng:
+                          double.tryParse(widget.placeDetail['x'].toString()) ??
+                              0.0,
+                      showZoomControl: false,
+                      showMapTypeControl: false,
+                      customScript: customScript,
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 20.0),
@@ -280,7 +305,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: 20.0),
+              SizedBox(height: 40.0),
               Text(
                 '베리어프리 시설',
                 style: TextStyle(
@@ -299,25 +324,33 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         return CircularProgressIndicator();
                       } else if (snapshot.hasError) {
                         return Text('장애물 없는 시설 정보를 가져오는 데 실패했습니다.');
-                      } else if (snapshot.hasData) {
-                        var barrierFreeList = List<String>.from(
-                            snapshot.data!['barrierFree'] as List);
-                        return SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: _buildBarrierFreeButtons(
-                                barrierFreeList), // 캐스팅된 리스트를 전달
-                          ),
-                        );
+                      } else if (snapshot.hasData && snapshot.data != null) {
+                        var barrierFreeDetailList =
+                            snapshot.data!['barrierFree'];
+                        if (barrierFreeDetailList != null &&
+                            barrierFreeDetailList.isNotEmpty) {
+                          var barrierFreeList =
+                              List<String>.from(barrierFreeDetailList as List);
+
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: _buildBarrierFreeButtons(
+                                  barrierFreeList), // 캐스팅된 리스트를 전달
+                            ),
+                          );
+                        } else {
+                          return Text('배리어프리 시설 정보가 없습니다');
+                        }
                       } else {
-                        return Text('배리어프리 정보가 없습니다.');
+                        return Text('배리어프리 시설 정보가 없습니다.');
                       }
                     },
                   ),
                   // SizedBox(width: 10.0),
                 ],
               ),
-              SizedBox(height: 20.0),
+              SizedBox(height: 40.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -329,28 +362,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       color: mainBlack,
                     ),
                   ),
-                  ElevatedButton(
-                      onPressed: () async {
-                        // 배리어프리 시설 상세 정보를 기다립니다.
-                        List<String> barrierFreeItemsToSend = barrierFreeDetails ?? [];
-
-                        // ReviewScreen으로 이동합니다.
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ReviewScreen(
-                              poiId: widget.placeDetail['id'],
-                              barrierFreeItems: barrierFreeItemsToSend,
-                            ),
-                          ),
-                        );
-
-                        // 필요하다면 리뷰 목록을 새로고침 합니다.
-                        if (result == true) {
-                          refreshReviews();
-                        }
-                      },
-                      child: Text('리뷰 작성하기')),
                 ],
               ),
               SizedBox(height: 20.0),
@@ -455,8 +466,25 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               SizedBox(height: 10.0), // 간격
 
               ElevatedButton(
-                onPressed: () {
-                  // 버튼이 눌렸을 때 수행할 동작 추가
+                onPressed: () async {
+                  // 배리어프리 시설 상세 정보를 기다립니다.
+                  List<String> barrierFreeItemsToSend =
+                      barrierFreeDetails ?? [];
+
+                  // ReviewScreen으로 이동합니다.
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ReviewScreen(
+                        poiId: widget.placeDetail['id'],
+                        barrierFreeItems: barrierFreeItemsToSend,
+                      ),
+                    ),
+                  );
+                  // 필요하다면 리뷰 목록을 새로고침 합니다.
+                  if (result == true) {
+                    refreshReviews();
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: mainOrange, // 배경 투명
@@ -469,7 +497,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '리뷰 더보기',
+                      '리뷰 작성하기',
                       style: TextStyle(
                         fontSize: 18.0,
                         fontWeight: FontWeight.bold,

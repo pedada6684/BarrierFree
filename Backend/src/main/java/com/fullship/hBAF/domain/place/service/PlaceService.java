@@ -79,8 +79,6 @@ public class PlaceService {
   private final ImageRepository imageRepository;
   private final H3IndexService h3IndexService;
 
-  private final double errorRate = 0.05;
-
   /**
    * 도보 경로 탐색
    */
@@ -253,6 +251,7 @@ public class PlaceService {
     try {
       Double cost = calculateCost(taxiPathForm.getGeoCode());
 
+      double errorRate = 0.05;
       taxiPathForm.setMaxCost(String.valueOf(Math.round(cost * (1 + errorRate)) / 10 * 10));
       taxiPathForm.setMinCost(String.valueOf(Math.round(cost * (1 - errorRate)) / 10 * 10));
       return taxiPathForm;
@@ -272,8 +271,6 @@ public class PlaceService {
 
   /**
    * 장애인 시설 카테고리별 불러오기
-   *
-   * @return
    */
   public List<PlaceListResponse> getPlaceList(GetPlaceListRequestComment comment) {
     List<Place> placeEntityList = placeRepository.findByTypeWithImage(true);

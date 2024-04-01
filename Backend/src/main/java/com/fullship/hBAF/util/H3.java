@@ -188,4 +188,37 @@ public class H3 {
         return map;
 
     }
+
+    public static void elevationBfs(List<Double[]> list) throws IOException{
+        H3Core h3 = H3Core.newInstance();
+        Queue<Long> que = new LinkedList<>();
+
+        for(Double[] coor : list){
+            Double lat = coor[0];
+            Double lng = coor[1];
+            Double elevation = coor[2];
+
+            GeoCoord geoCoord = new GeoCoord(lat,lng);
+            long h3Index = h3.geoToH3(geoCoord.lat, geoCoord.lng, 12);
+
+            if(!daejeonH3Index.containsKey(h3Index))
+                continue;
+            daejeonH3Index.put(h3Index,daejeonH3Index.getOrDefault(h3Index,elevation));
+            que.add(h3Index);
+        }
+
+        while(!que.isEmpty()){
+            long h3Index = que.poll();
+            double elevation = daejeonH3Index.get(h3Index);
+
+            for(long neighborIndex : h3.kRing(h3Index,1)){
+
+                if(!daejeonH3Index.containsKey(neighborIndex) || daejeonH3Index.get(neighborIndex)>0)
+                    continue;
+                daejeonH3Index.put(neighborIndex,elevation);
+
+                que.add(neighborIndex);
+            }
+        }
+    }
 }

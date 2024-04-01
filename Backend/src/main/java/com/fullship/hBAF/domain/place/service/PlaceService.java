@@ -44,6 +44,7 @@ import java.time.format.TextStyle;
 
 import java.io.IOException;
 
+import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import com.fullship.hBAF.util.H3;
 import com.uber.h3core.H3Core;
@@ -255,7 +256,7 @@ public class PlaceService {
   @Transactional(readOnly = false)
   public Long updatePlaceImageUrl(UpdatePlaceImageCommand command) {
     Place place = placeRepository.findById(command.getPlaceId())
-        .orElseThrow(() -> new IllegalStateException());
+        .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
     Optional<Image> imageOptional = imageRepository.findByPlaceAndImageType(place, 0);
     if (imageOptional.isPresent()) {
       Image image = imageOptional.get();
@@ -383,11 +384,8 @@ public class PlaceService {
   }
 
   public GetPlaceResponse getPlace(String poiId){
-    Place place = placeRepository.findPlaceByPoiId(poiId);
-
-    if (place == null) return null;
-//    if (place == null) throw new CustomException(ErrorCode.PLACE_NOT_FOUND);
-
+    Place place = placeRepository.findPlaceByPoiIdWithImage(poiId)
+            .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
     return GetPlaceResponse.from(place);
   }
   /**
@@ -395,14 +393,15 @@ public class PlaceService {
    * @return
    */
   public List<PlaceListResponse> getPlaceList(GetPlaceListRequestComment comment) {
-    List<Place> placeEntityList = placeRepository.findByType(true);
+    List<Place> placeEntityList = placeRepository.findByTypeWithImage(true);
     double lat = Double.parseDouble(comment.getLat());
     double lng = Double.parseDouble(comment.getLng());
 
     List<PlaceListResponse> placeList = new ArrayList<>();
     for (Place place : placeEntityList) {
-      if(calculateDistance(lat,lng,Double.parseDouble(place.getLatitude()),Double.parseDouble(place.getLongitude()))<=3000)
+      if(calculateDistance(lat,lng,Double.parseDouble(place.getLatitude()),Double.parseDouble(place.getLongitude()))<=3000) {
         placeList.add(PlaceListResponse.from(place));
+      }
     }
 
 

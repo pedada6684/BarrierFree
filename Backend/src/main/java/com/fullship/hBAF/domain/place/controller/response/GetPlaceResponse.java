@@ -1,10 +1,12 @@
 package com.fullship.hBAF.domain.place.controller.response;
 
+import com.fullship.hBAF.domain.place.entity.Image;
 import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.util.BarrierFreeInfo;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -18,11 +20,10 @@ public class GetPlaceResponse {
     String lng;
     String poiId;
     String category;
-    private List<String> barrierFree;
+    List<String> barrierFree;
+    List<String> img;
 
     public static GetPlaceResponse from(Place place) {
-        BarrierFreeInfo barrierFreeInfo = new BarrierFreeInfo();
-
         return GetPlaceResponse.builder()
                 .placeId(place.getId())
                 .placeName(place.getPlaceName())
@@ -31,8 +32,15 @@ public class GetPlaceResponse {
                 .lng(place.getLongitude())
                 .poiId(place.getPoiId())
                 .category(place.getCategory())
-                .barrierFree(barrierFreeInfo.makeBafArrInfo(place.getBarrierFree()))
+                .barrierFree(BarrierFreeInfo.makeBafArrInfo(place.getBarrierFree()))
+                .img(createToCommand(place.getImages()))
                 .build();
     }
-
+    public static List<String> createToCommand(List<Image> list){
+        List<String> result = new ArrayList<>();
+        for(Image img : list){
+            result.add(img.getImageUrl());
+        }
+        return result;
+    }
 }

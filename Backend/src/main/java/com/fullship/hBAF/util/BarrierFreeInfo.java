@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 public class BarrierFreeInfo {
-    private final Map<Character, String> bafInfo;
 
-    public BarrierFreeInfo() {
-        this.bafInfo = new HashMap<>();
+    private static final Map<Character, String> bafInfo;
+    static {
+        bafInfo = new HashMap<>();
         bafInfo.put('a', "화장실");
         bafInfo.put('b', "주차");
         bafInfo.put('c', "경사로");
@@ -39,7 +39,7 @@ public class BarrierFreeInfo {
      * client에 반환할 배리어프리 배열 반환
      * @return ["승강기", "출입문"]
      */
-    public List<String> makeBafArrInfo(String strBafInfo) {
+    public static List<String> makeBafArrInfo(String strBafInfo) {
         List<String> bafInfoList = new ArrayList<>();
 
         if (strBafInfo == null) return bafInfoList;

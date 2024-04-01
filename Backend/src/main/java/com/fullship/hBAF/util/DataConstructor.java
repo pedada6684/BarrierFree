@@ -28,8 +28,6 @@ public class DataConstructor {
     private final MemberRepository memberRepository;
     private final H3 h3;
 
-    private final S3Util s3Util;
-
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void dataConstructor() throws LineUndefinedException, IOException, ParserConfigurationException, SAXException, ParseException {
@@ -42,7 +40,6 @@ public class DataConstructor {
 //        barrierFreeConstructor.saveBarrierFree();
 //        barrierFreeConstructor.saveElectricWheelchairExcel();
 //        dummyGenerator.createDummyMembers();
-        s3Util.readExcelFromS3("Data/godo.xlsx");
     }
 
 }

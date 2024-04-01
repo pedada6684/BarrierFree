@@ -1,10 +1,8 @@
 package com.fullship.hBAF.global.auth.service;
 
-import com.fullship.hBAF.global.auth.entity.RedisRefreshToken;
-import com.fullship.hBAF.global.auth.repository.RefreshTokenRepository;
-import com.fullship.hBAF.global.response.ErrorCode;
-import com.fullship.hBAF.global.response.exception.CustomException;
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,23 +10,31 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class RefreshTokenService {
-    private final RefreshTokenRepository refreshTokenRedisRepository;
+    @Resource(name = "redisTemplateForToken")
+    private HashOperations<String, Long, String> hashOperations;
+    private final String key = "RefreshToken";
 
-    @Transactional(readOnly = false)
     public void saveTokenInfo(Long memberId, String refreshToken) {
-        RedisRefreshToken redisRefreshToken = new RedisRefreshToken(String.valueOf(memberId), refreshToken);
-        refreshTokenRedisRepository.save(redisRefreshToken);
+        hashOperations.put(key, memberId, refreshToken);
     }
 
-    @Transactional(readOnly = false)
     public void removeRefreshToken(Long memberId) {
-        refreshTokenRedisRepository.findById(String.valueOf(memberId))
-                .ifPresent(refreshToken -> refreshTokenRedisRepository.delete(refreshToken));
+        if (hashOperations.hasKey(key, memberId)){
+            hashOperations.delete(key, memberId);
+        }
     }
 
     public String findTokenByMemberId(Long memberId){
-        RedisRefreshToken redisRefreshToken = refreshTokenRedisRepository.findById(String.valueOf(memberId))
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_TOKEN));
-        return redisRefreshToken.getRefreshToken();
+        if (existTokenByMemberId(memberId)){
+            return hashOperations.get(key, memberId);
+        }else{
+            return null;
+        }
     }
+
+    public boolean existTokenByMemberId(Long memberId){
+        return hashOperations.hasKey(key, memberId);
+    }
+
+
 }

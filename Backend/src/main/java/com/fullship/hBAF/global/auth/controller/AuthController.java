@@ -1,5 +1,7 @@
 package com.fullship.hBAF.global.auth.controller;
 
+import com.fullship.hBAF.domain.member.controller.response.UpdateProfileResponse;
+import com.fullship.hBAF.domain.member.service.command.LogoutCommand;
 import com.fullship.hBAF.global.auth.controller.request.AppLoginRequest;
 import com.fullship.hBAF.global.auth.controller.response.LoginResult;
 import com.fullship.hBAF.domain.member.service.MemberService;
@@ -79,6 +81,18 @@ public class AuthController {
     response.addCookie(cookie);
     return new ResponseEntity<>(accessToken, HttpStatus.OK);
   }
+
+  @GetMapping("/logout")
+  @Operation(summary = "로그아웃", description = "로그아웃")
+  @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = UpdateProfileResponse.class)))
+  public ResponseEntity<?> logout(@RequestParam("memberId") Long memberId) {
+    LogoutCommand command = LogoutCommand.builder()
+            .memberId(memberId)
+            .build();
+    memberService.logout(command);
+    return ResponseEntity.ok().build();
+  }
+
   @Auth
   @GetMapping("/test")
   @Operation(summary = "로그인 여부 확인 테스트", description = "로그인 여부 확인 테스트")

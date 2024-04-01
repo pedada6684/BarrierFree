@@ -1,13 +1,11 @@
 package com.fullship.hBAF.domain.member.service;
 
+import com.fullship.hBAF.domain.member.service.command.*;
 import com.fullship.hBAF.global.auth.controller.response.LoginResult;
 import com.fullship.hBAF.domain.member.entity.Member;
 import com.fullship.hBAF.domain.member.repository.MemberRepository;
-import com.fullship.hBAF.domain.member.service.command.FindMemberByIdCommand;
-import com.fullship.hBAF.domain.member.service.command.JoinMemberCommand;
-import com.fullship.hBAF.domain.member.service.command.NaverLoginCommand;
-import com.fullship.hBAF.domain.member.service.command.UpdateProfileImgCommand;
 import com.fullship.hBAF.global.auth.jwt.AuthTokenGenerator;
+import com.fullship.hBAF.global.auth.service.RefreshTokenService;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import com.fullship.hBAF.util.ImageUtil;
@@ -28,6 +26,7 @@ public class MemberService {
   private final MemberRepository memberRepository;
   private final AuthTokenGenerator authTokenGenerator;
   private final ImageUtil imageUtil;
+  private final RefreshTokenService refreshTokenService;
 
 
   public Member findMemberById(FindMemberByIdCommand command){
@@ -80,5 +79,9 @@ public class MemberService {
     Objects.requireNonNull(S3Url);
     member.updateProfileUrl(S3Url.toString());
     return S3Url.toString();
+  }
+  public void logout(LogoutCommand command) {
+    refreshTokenService.removeRefreshToken(command.getMemberId());
+    return;
   }
 }

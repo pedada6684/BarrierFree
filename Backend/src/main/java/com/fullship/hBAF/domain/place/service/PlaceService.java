@@ -94,6 +94,7 @@ public class PlaceService {
   /**
    * 대중교통 경로 탐색
    */
+  @Cacheable(value = "TransitPath", key = "#command", cacheManager = "BAFCacheManager")
   public List<OdSayPath> useTransitPath(OdSayPathCommand command) {
     List<OdSayPath> list = odSayApiService.searchPathToTransit(command);
 

@@ -7,8 +7,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -17,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Schema(description = "대중교통 경로 탐색 결과")
 public class OdSayPath {
 
@@ -51,6 +56,8 @@ public class OdSayPath {
 
   @Data
   @Builder
+  @AllArgsConstructor
+  @NoArgsConstructor
   public static class SubPath {
 
     /* 경로 정보 */
@@ -106,6 +113,8 @@ public class OdSayPath {
 
     @Data
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Bus {
 
       /* 버스 정보 */

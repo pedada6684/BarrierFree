@@ -7,8 +7,11 @@ import com.fullship.hBAF.global.response.exception.CustomException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -19,6 +22,8 @@ import org.springframework.http.ResponseEntity;
 @Data
 @Slf4j
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class PathGeoCode {
 
   @Schema(description = "경로 구분")

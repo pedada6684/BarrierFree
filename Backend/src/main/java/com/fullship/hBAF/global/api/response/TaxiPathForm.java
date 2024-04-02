@@ -4,8 +4,11 @@ import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -14,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TaxiPathForm {
 
   String minCost;

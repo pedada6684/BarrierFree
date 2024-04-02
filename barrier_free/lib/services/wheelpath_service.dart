@@ -32,8 +32,9 @@ class WheelPathService {
       final String decodedBody = utf8.decode(response.bodyBytes);
       final Map<String, dynamic> parsedJson = json.decode(decodedBody);
       print("=====================");
-      print(parsedJson);
-      return parsedJson['data']['geoCode'];
+      print(parsedJson['data']);
+
+      return parsedJson['data'][0]['geoCode'];
     } else {
       throw Exception('휠체어 경로 불러오기 실패: ${response.statusCode} ${response.reasonPhrase}');
     }

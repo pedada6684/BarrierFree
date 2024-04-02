@@ -6,6 +6,7 @@ import 'package:barrier_free/services/location_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:kakaomap_webview/kakaomap_webview.dart';
+
 // import 'package:barrier_free/services/transitpath_service.dart';
 import 'package:barrier_free/services/taxipath_service.dart';
 
@@ -19,6 +20,7 @@ class WheelPathMap extends StatefulWidget {
   final double? endLon;
 
   final String? vehicleType;
+  final List<dynamic> wheelDirections;
 
   final List<String> formattedCoordinates;
 
@@ -31,8 +33,8 @@ class WheelPathMap extends StatefulWidget {
     this.endLat,
     this.endLon,
     this.vehicleType,
-
     required this.formattedCoordinates,
+    required this.wheelDirections,
   });
 
   @override
@@ -42,6 +44,7 @@ class WheelPathMap extends StatefulWidget {
 class _WheelPathMapState extends State<WheelPathMap> {
   // late List<Position> _markerPositions;
   String customScript = '';
+
   // late String formattedCoordinates;
 
   @override
@@ -55,14 +58,52 @@ class _WheelPathMapState extends State<WheelPathMap> {
     double averageLat = (widget.startLat! + widget.endLat!) / 2;
     double averageLon = (widget.startLon! + widget.endLon!) / 2;
 
+
+    String getColorForSlope(double slope) {
+      if (slope >= 7 || slope <= -7) {
+        return '#FF0000'; // 붉은색
+      } else if ((slope > 5 && slope < 7) || (slope < -5 && slope > -7)) {
+        return '#FF0000'; // 붉은색
+      } else if ((slope >= 3 && slope <= 5) || (slope <= -3 && slope >= -5)) {
+        return '#FFA500'; // 주황색
+      } else if ((slope > 0.5 && slope < 3) || (slope < -0.5 && slope > -3)) {
+        return '#FFFF00'; // 노란색
+      } else {
+        return '#90EE90'; // 연두색
+      }
+    }
+
+    String pathScript = widget.wheelDirections.map((direction) {
+      double latitude = double.parse(direction['latitude'].toString()); // Ensure latitude is a double
+      double longitude =double.parse(direction['longitude'].toString()); // Ensure longitude is a double
+      String color = getColorForSlope(double.tryParse(direction['angleSlope']?.toString() ?? '0.0') ?? 0.0);
+
+      // Directly interpolate numbers without quotes, and use quotes only for strings
+      return "{lat: $latitude, lng: $longitude, color: '$color'}";
+    }).join(", ");
+
+
     String script = """
     map.setCenter(new kakao.maps.LatLng($averageLat, $averageLon));
     
     var sw = new kakao.maps.LatLng(${widget.endLat}, ${widget.endLon}),
     ne = new kakao.maps.LatLng(${widget.startLat}, ${widget.startLon});
-
     var bounds = new kakao.maps.LatLngBounds(sw, ne);
     map.setBounds(bounds);
+    
+    
+    var path = [$pathScript];
+    for (var i = 0; i < path.length - 1; i++) {
+      var polyline = new kakao.maps.Polyline({
+          path: [new kakao.maps.LatLng(path[i].lat, path[i].lng), new kakao.maps.LatLng(path[i + 1].lat, path[i + 1].lng)],
+          strokeWeight: 10,
+          strokeColor: path[i].color,
+          strokeOpacity: 1,
+          strokeStyle: 'solid'
+      });
+      polyline.setMap(map);
+    }
+
     
     var markers = [];
 
@@ -75,19 +116,18 @@ class _WheelPathMapState extends State<WheelPathMap> {
       addMarker(new kakao.maps.LatLng(${widget.startLat}, ${widget.startLon}));
 
     var pathCoordinates = ${widget.formattedCoordinates};
-    console.log(pathCoordinates);
+      //
+      // // 지도에 표시할 선을 생성합니다
+      // var polyline = new kakao.maps.Polyline({
+      //     path: pathCoordinates, // 선을 구성하는 좌표배열 입니다
+      //     strokeWeight: 5, // 선의 두께 입니다
+      //     strokeColor: '#FFAE00', // 선의 색깔입니다
+      //     strokeOpacity: 0.7, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
+      //     strokeStyle: 'solid' // 선의 스타일입니다
+      // });
 
-      // 지도에 표시할 선을 생성합니다
-      var polyline = new kakao.maps.Polyline({
-          path: pathCoordinates, // 선을 구성하는 좌표배열 입니다
-          strokeWeight: 5, // 선의 두께 입니다
-          strokeColor: '#FFAE00', // 선의 색깔입니다
-          strokeOpacity: 0.7, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
-          strokeStyle: 'solid' // 선의 스타일입니다
-      });
-
-      // 지도에 선을 표시합니다
-      polyline.setMap(map);
+      // // 지도에 선을 표시합니다
+      // polyline.setMap(map);
   """;
     setState(() {
       customScript = script; // 최종적으로 생성된 스크립트를 상태에 저장
@@ -120,7 +160,8 @@ class _WheelPathMapState extends State<WheelPathMap> {
                   kakaoMapKey: appKey!,
                   lat: currentPosition!.latitude,
                   lng: currentPosition!.longitude,
-                  markerImageURL: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                  markerImageURL:
+                      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
                   showZoomControl: false,
                   showMapTypeControl: false,
                   draggableMarker: true,

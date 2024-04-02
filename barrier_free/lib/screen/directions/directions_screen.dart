@@ -36,11 +36,12 @@ class DirectionsScreen extends StatefulWidget {
   });
 
   @override
-  State<DirectionsScreen> createState() => _DirectionsScreenState(
-  );
+  State<DirectionsScreen> createState() => _DirectionsScreenState();
 }
 
 class _DirectionsScreenState extends State<DirectionsScreen> {
+  late List<dynamic> wheelDirections = [];
+
   late List<dynamic> startsearchResults = [];
   late List<dynamic> destinationsearchResults = [];
 
@@ -70,8 +71,10 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
 
   void _fetchTaxiDirections() async {
     try {
+      print(_selectedVehicles);
+
       final taxiDirections = await TaxiPathService().fetchTaxiDirectionsResults(
-        type: '휠체어',
+        type: _selectedVehicles!,
         startLat: widget.startLat!,
         startLon: widget.startLon!,
         endLat: widget.endLat!,
@@ -92,8 +95,10 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
       // });
 
       // 택시 경로에서 좌표 데이터를 가져와서 포맷합니다.
-      List<String> coordinatesList = geoCodeData.map((direction) =>
-      'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})').toList();
+      List<String> coordinatesList = geoCodeData
+          .map((direction) =>
+              'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})')
+          .toList();
       String newFormattedCoordinates = '[${coordinatesList.join(', ')}]';
 
       setState(() {
@@ -117,7 +122,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
 
   void _fetchWheelDirections() async {
     try {
-      final wheelDirections = await WheelPathService().fetchWheelDirectionsResults(
+      final directions = await WheelPathService().fetchWheelDirectionsResults(
         type: '휠체어',
         startLat: widget.startLat!,
         startLon: widget.startLon!,
@@ -125,15 +130,22 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         endLon: widget.endLon!,
       );
 
+      print('API response: $directions');
+
       // 택시 경로에서 좌표 데이터를 가져와서 포맷합니다.
-      List<String> coordinatesList = wheelDirections.map((direction) =>
-      'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})').toList();
-      String newFormattedCoordinates = '[${coordinatesList.join(', ')}]';
+      List<String> coordinatesList = directions
+          .map<String>((direction) =>
+              'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})')
+          .toList();
+      // String newFormattedCoordinates = '[${coordinatesList.join(', ')}]';
 
       setState(() {
-        wheelCoordinates = newFormattedCoordinates; // 포맷된 좌표 데이터를 상태에 저장합니다.
+        wheelCoordinates =
+            '[${coordinatesList.join(', ')}]'; // 포맷된 좌표 데이터를 상태에 저장합니다.
         print('===============휠체어===================');
-        print('formattedCoordinates = ${wheelCoordinates}');
+        print('formattedCoordinates = $wheelCoordinates');
+
+        wheelDirections = directions;
       });
     } catch (e) {
       print('=========================================');
@@ -183,10 +195,10 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
     _originController = TextEditingController(
         text: Provider.of<TextProvider>(context, listen: false).originText);
     _destinationController = TextEditingController(
-        text: Provider.of<TextProvider>(context, listen: false).destinationText);
+        text:
+            Provider.of<TextProvider>(context, listen: false).destinationText);
     WidgetsBinding.instance!.addPostFrameCallback((_) {});
   }
-
 
   // 검색
   Future<void> _search() async {
@@ -220,7 +232,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
   Future<void> _destinationsearch() async {
     if (_destinationController.text.isNotEmpty) {
       try {
-        final destinationResult = await fetchSearchResults(_destinationController.text);
+        final destinationResult =
+            await fetchSearchResults(_destinationController.text);
 
         setState(() {
           destinationsearchResults = destinationResult;
@@ -368,7 +381,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                           MaterialPageRoute(
                             builder: (context) => TransitPathMap(
                               initialSearchAddress: _originController.text,
-                              initialDestinationSearchAddress: _destinationController.text,
+                              initialDestinationSearchAddress:
+                                  _destinationController.text,
                               startLat: widget.startLat!,
                               startLon: widget.startLon!,
                               endLat: widget.endLat!,
@@ -424,7 +438,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                           MaterialPageRoute(
                             builder: (context) => TaxiPathMap(
                               initialSearchAddress: _originController.text,
-                              initialDestinationSearchAddress: _destinationController.text,
+                              initialDestinationSearchAddress:
+                                  _destinationController.text,
                               startLat: widget.startLat!,
                               startLon: widget.startLon!,
                               endLat: widget.endLat!,
@@ -477,6 +492,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                   SizedBox(width: 10), // 버튼들 사이 간격 조절
                   ElevatedButton(
                     onPressed: () {
+                      // print(wheelDirections);
                       if (_originController.text.isNotEmpty &&
                           _destinationController.text.isNotEmpty &&
                           _selectedVehicles != null) {
@@ -485,13 +501,15 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                           MaterialPageRoute(
                             builder: (context) => WheelPathMap(
                               initialSearchAddress: _originController.text,
-                              initialDestinationSearchAddress: _destinationController.text,
+                              initialDestinationSearchAddress:
+                                  _destinationController.text,
                               startLat: widget.startLat!,
                               startLon: widget.startLon!,
                               endLat: widget.endLat!,
                               endLon: widget.endLon!,
                               vehicleType: _selectedVehicles!,
                               formattedCoordinates: [wheelCoordinates],
+                              wheelDirections: wheelDirections,
                             ),
                           ),
                         );
@@ -538,16 +556,16 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
           // _buildToggleButton(),
           _showSearchResults
               ? SlidingUpPanel(
-            // controller: _panelController,
-            panel: _buildPanel(), // 검색 결과가 있을 때만 패널을 보이도록 설정
-            // collapsed: _buildCollapsedPanel(),
-            // borderRadius: const BorderRadius.only(
-            //   topRight: Radius.circular(30.0),
-            //   topLeft: Radius.circular(30.
-            // ),
-            minHeight: 100.0,
-            maxHeight: MediaQuery.of(context).size.height * 0.35,
-          )
+                  // controller: _panelController,
+                  panel: _buildPanel(), // 검색 결과가 있을 때만 패널을 보이도록 설정
+                  // collapsed: _buildCollapsedPanel(),
+                  // borderRadius: const BorderRadius.only(
+                  //   topRight: Radius.circular(30.0),
+                  //   topLeft: Radius.circular(30.
+                  // ),
+                  minHeight: 100.0,
+                  maxHeight: MediaQuery.of(context).size.height * 0.35,
+                )
               : SizedBox(), // 검색 결과가 없으면 아무것도 보이지 않게 함
           Container(
             height: 0.3, // 수평선의 높이 설정

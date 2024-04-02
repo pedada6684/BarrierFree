@@ -38,8 +38,8 @@ public class KakaoMapApiService {
     //일치하는지 검사하는 코드
     //일치하는 하나의 장소만 리턴
     for (KakaoPlace kaKaoPlace : kakaoPlaces) {
-      String kakaoPlaceDW = StringUtils.deleteWhitespace(kaKaoPlace.getName());
-      if (kakaoPlaceDW.contains(searchKeywordDW)) { //검색결과 일치 검사
+      String kakaoPlaceNameDW = StringUtils.deleteWhitespace(kaKaoPlace.getName());
+      if (kakaoPlaceNameDW.contains(searchKeywordDW)) { //검색결과 일치 검사
         return kaKaoPlace;
       }
     }

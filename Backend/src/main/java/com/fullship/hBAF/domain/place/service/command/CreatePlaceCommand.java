@@ -14,6 +14,8 @@ public class CreatePlaceCommand {
     private String poiId;
     private String category;
     private String barrierFree;
+    private String phone;
+    private String placeUrl;
     private String wtcltId;
     private Boolean type;
 
@@ -24,6 +26,8 @@ public class CreatePlaceCommand {
                 .latitude(kakaoPlace.getFrontLat())
                 .longitude(kakaoPlace.getFrontLon())
                 .poiId(kakaoPlace.getId())
+                .placeUrl(kakaoPlace.getPlaceUrl())
+                .phone(kakaoPlace.getPhone())
                 .type(true)
                 .build();
         return createCommand;

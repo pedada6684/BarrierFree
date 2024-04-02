@@ -194,6 +194,8 @@ public class BarrierFreeConstructor {
                             .poiId(kakaoPlace.getId())
                             .category(kakaoPlace.getCategory())
                             .barrierFree(building.getBarrierFree())
+                            .phone(kakaoPlace.getPhone())
+                            .placeUrl(kakaoPlace.getPlaceUrl())
                             .type(true)
                             .build();
                     placeService.createPlace(createPlaceCommand);

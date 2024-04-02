@@ -27,7 +27,8 @@ public class KakaoPlace {
   private String frontLon;
   private String id;
   private String category;
-  private String distance;
+  private String phone;
+  private String placeUrl;
 
   public static List<KakaoPlace> jsonToO(ResponseEntity<String> result) {
 //    log.info("result = {}", result.getBody());
@@ -44,7 +45,9 @@ public class KakaoPlace {
         String id = (String) document.get("id");
         String x = (String) document.get("x");
         String y = (String) document.get("y");
-        String distance = (String) document.get("distance");
+        String phone = (String) document.get("phone");
+        String placeUrl = (String) document.get("place_url");
+
 
         String categoryName = (String) document.get("category_name");
         String category = categoryName.split(">")[0].trim();
@@ -53,11 +56,12 @@ public class KakaoPlace {
         KakaoPlace kaKaoPlace = KakaoPlace.builder()
                 .id(id)
                 .name(placeName)
-                .distance(distance)
                 .frontLon(x)
                 .frontLat(y)
                 .category(convertedCategory)
                 .fullAddressRoad(roadAddressName)
+                .phone(phone)
+                .placeUrl(placeUrl)
                 .build();
         kakaoPlaces.add(kaKaoPlace);
       }

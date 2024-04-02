@@ -93,4 +93,27 @@ class ReviewService {
       throw Exception('리뷰업로드에러');
     }
   }
+
+  Future<List<dynamic>> fetchReviewByMemberid(int userId) async {
+    String? accessToken = await _secureStorageService.getToken();
+    String? cookies = await _secureStorageService.getCookies();
+
+    final response = await http.get(
+      Uri.parse('${_baseUrl}/list-by-memberId?memberId=$userId'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Cookie': cookies!,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final String decodedBody = utf8.decode(response.bodyBytes);
+      final data = json.decode(decodedBody);
+      return data['list'];
+    } else {
+      print('${response.statusCode}');
+      print(response.body);
+      throw Exception('Failed to load reviews');
+    }
+  }
 }

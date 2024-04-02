@@ -25,7 +25,6 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(create: (context) => LocationProvider()),
-        // LocationProvider 추가
       ],
       child: MyApp(),
     ),

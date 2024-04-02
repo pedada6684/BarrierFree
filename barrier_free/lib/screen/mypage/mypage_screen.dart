@@ -4,12 +4,7 @@ import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/login/login_screen.dart';
-import 'package:barrier_free/screen/map/map_screen.dart';
-import 'package:barrier_free/screen/mypage/myplace_screen.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 

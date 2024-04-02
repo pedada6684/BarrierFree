@@ -2,7 +2,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
   profiles:
-    include: secret, prod
+    include: auth, secret, prod
   servlet:
     multipart:
       max-file-size: 50MB

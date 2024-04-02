@@ -5,14 +5,19 @@ import com.uber.h3core.H3Core;
 import com.uber.h3core.exceptions.LineUndefinedException;
 import com.uber.h3core.util.GeoCoord;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.joda.time.LocalDateTime;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class H3 {
@@ -21,6 +26,7 @@ public class H3 {
     private final S3Util s3Util;
     public static double xMax, yMax, xMin, yMin;
     public static Map<Long,Double> daejeonH3Index = new HashMap<>();
+    public static Map<Long,Boolean> originalH3Index = new HashMap<>();
 
     public void setH3Index() throws IOException, LineUndefinedException {
         H3Core h3 = H3Core.newInstance();
@@ -193,6 +199,11 @@ public class H3 {
 
     }
 
+    /**
+     * S3에서 가져온 고도 정보를 활용하여 빈 h3index에 고도 데이터를 채우는 메서드
+     * @param list
+     * @throws IOException
+     */
     public void elevationBfs(List<Double[]> list) throws IOException{
         H3Core h3 = H3Core.newInstance();
         Queue<Long> que = new LinkedList<>();
@@ -204,21 +215,60 @@ public class H3 {
             GeoCoord geoCoord = new GeoCoord(lat,lng);
             long h3Index = h3.geoToH3(geoCoord.lat, geoCoord.lng, 12);
 
-            if(!daejeonH3Index.containsKey(h3Index))
-                continue;
+            //대전 외부인 경우 제외
+            if(!daejeonH3Index.containsKey(h3Index)) continue;
+
             daejeonH3Index.put(h3Index,elevation);
             que.add(h3Index);
-        }
+            originalH3Index.put(h3Index, true);
+        } // 대전 내부의 고도데이터를 가진 h3 queue 생성완료
+
+        Queue<Long> queClone = new LinkedList<>(que);
+
         while(!que.isEmpty()){
             long h3Index = que.poll();
             Double elevation = daejeonH3Index.get(h3Index);
 
             for(long neighborIndex : h3.kRing(h3Index,1)){
 
-                if(!daejeonH3Index.containsKey(neighborIndex) || daejeonH3Index.get(neighborIndex)>0.0)
-                    continue;
+                if(!daejeonH3Index.containsKey(neighborIndex) || daejeonH3Index.get(neighborIndex)>0.0) continue;
+
                 daejeonH3Index.put(neighborIndex,elevation);
                 que.add(neighborIndex);
+            }
+        }
+        //평탄화 작업
+        log.info("flattening start");
+        for (int i = 0; i < 4; i++) {
+            flattening(new LinkedList<>(queClone));
+        }
+        log.info("flattening end");
+    }
+
+    /**
+     * 셀간 고도차이 평탄화 메서드
+     * @param que : 초기 고도를 가지고 있는 queue
+     * @throws IOException
+     */
+    private void flattening(Queue<Long> que) throws IOException {
+        HashMap<Long, Double> visited = new HashMap<>(daejeonH3Index);
+        H3Core h3 = H3Core.newInstance();
+        while (!que.isEmpty()){
+            long h3Index = que.poll();
+            if (visited.get(h3Index) == -1.0) continue;
+            visited.put(h3Index, -1.0);
+
+            Double elevation = 0.0;
+            int cnt = 0;
+            for(long neighborIndex : h3.kRing(h3Index,1)){
+                if (!daejeonH3Index.containsKey(neighborIndex)|| neighborIndex == h3Index) continue;
+                elevation += daejeonH3Index.get(neighborIndex);
+                cnt++;
+                if (visited.get(neighborIndex)<0.0) continue;
+                que.add(neighborIndex);
+            }
+            if (!originalH3Index.containsKey(h3Index)){ // 원본은 업데이트 하지 않음
+                daejeonH3Index.put(h3Index, elevation/cnt);
             }
         }
     }

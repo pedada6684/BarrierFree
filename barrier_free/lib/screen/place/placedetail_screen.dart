@@ -19,7 +19,7 @@ class PlaceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> placeDetail;
   final String placeCategory;
   final bool isStart;
-  
+
   const PlaceDetailScreen(
       {super.key,
       required this.placeDetail,
@@ -62,8 +62,10 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       // 위젯이 생성될 때 도착지의 위도와 경도는 초기화하지 않습니다.
       endLat = double.tryParse(widget.placeDetail['y'].toString()) ?? 0.0;
       endLon = double.tryParse(widget.placeDetail['x'].toString()) ?? 0.0;
-      startLat = Provider.of<TextProvider>(context, listen: false).startLat ?? 0.0;
-      startLon = Provider.of<TextProvider>(context, listen: false).startLon ?? 0.0;
+      startLat =
+          Provider.of<TextProvider>(context, listen: false).startLat ?? 0.0;
+      startLon =
+          Provider.of<TextProvider>(context, listen: false).startLon ?? 0.0;
 
       Provider.of<TextProvider>(context, listen: false).setEndLat(endLat);
       Provider.of<TextProvider>(context, listen: false).setEndLon(endLon);
@@ -95,7 +97,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     // Map<String, dynamic> details = {};
     try {
       final details =
-      await PlaceService().fetchBfByPoiId(widget.placeDetail['id']);
+          await PlaceService().fetchBfByPoiId(widget.placeDetail['id']);
       return details;
     } catch (e) {
       print('배리어프리 정보 가져오기 실패: $e');
@@ -144,7 +146,16 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     final TestService testService = TestService();
     final userProvider = Provider.of<UserProvider>(context);
 
-    final profileImageUrl = userProvider.profileImage;
+    final String? profileImageUrl = userProvider.profileImage;
+
+    ImageProvider imageProvider;
+
+    if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
+      imageProvider = NetworkImage(profileImageUrl);
+    } else {
+      imageProvider = AssetImage('assets/default_profile.png');
+    }
+
     String customScript = """
         var mapContainer = document.getElementById('map');
         var mapOption = {
@@ -208,7 +219,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => DirectionsScreen(
-                            initialSearchAddress: widget.placeDetail['place_name'],
+                            initialSearchAddress:
+                                widget.placeDetail['place_name'],
                             startLat: startLat,
                             startLon: startLon,
                             endLat: endLat,
@@ -247,7 +259,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => DirectionsScreen(
-                            initialDestinationSearchAddress: widget.placeDetail['place_name'],
+                            initialDestinationSearchAddress:
+                                widget.placeDetail['place_name'],
                             startLat: startLat,
                             startLon: startLon,
                             endLat: endLat,
@@ -501,8 +514,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                       padding:
                                           const EdgeInsets.only(right: 16.0),
                                       child: CircleAvatar(
-                                        backgroundImage:
-                                            NetworkImage(profileImageUrl!),
+                                        backgroundImage: imageProvider,
                                       ),
                                     ),
                                     Text(

@@ -36,7 +36,7 @@ public class DataConstructor {
 //        dataApiService.saveDetailRoute();
 //        dataApiService.saveStopInfo();
 //        dataApiService.saveSubway();
-//        h3.setH3Index();
+        h3.setH3Index();
 //        barrierFreeConstructor.saveBarrierFree();
 //        barrierFreeConstructor.saveElectricWheelchairExcel();
 //        dummyGenerator.createDummyMembers();

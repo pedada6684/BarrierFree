@@ -194,7 +194,7 @@ public class PlaceService {
             // 5. 몇 정류장 전에 있는지 확인
             for (BusesCurLocation busesCurLocation : lowFilter) {
               BusStop curBusStop =
-                  busStopRepository.findBusStopByArsIdAndBusId(busesCurLocation.getArsId(),
+                  busStopRepository.findBusStopByLocalStationIdAndBusId(busesCurLocation.getLocalStationId(),
                       bus.getBusId());
               long countStop = Math.abs(busStop.getId() - curBusStop.getId());
               odSayPath.getSubPaths().get(j).setBeforeCount(countStop);

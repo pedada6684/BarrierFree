@@ -15,7 +15,6 @@ import 'services/location_service.dart';
 import 'package:barrier_free/providers/text_provider.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
 late PersistentTabController globalPersistentTabController;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -160,7 +160,9 @@ public class PlaceService {
           } else {
             WheelPathForm wheelForm = tMapApiService.searchPathToWheel(
                 createForWheel(startGeo, endGeo, command.getType()));
+            odSayPath.setTotalTime(odSayPath.getTotalTime() - odSayPath.getSubPaths().get(j).getSectionTime());
             odSayPath.getSubPaths().set(j, changeSubPathToWheel(wheelForm));
+            odSayPath.setTotalTime(odSayPath.getTotalTime() + odSayPath.getSubPaths().get(j).getSectionTime());
             odSayPath.setGeoCode(setWheelGeoCode(odSayPath.getGeoCode(), wheelForm, j));
           }
         }

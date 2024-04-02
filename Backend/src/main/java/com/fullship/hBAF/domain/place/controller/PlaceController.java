@@ -97,6 +97,6 @@ public class PlaceController {
   @Operation(summary = "통신 테스트", description = "통신 테스트")
   public ResponseEntity<CommonResponseEntity> test() throws ParseException {
     System.out.println("통신 테스트");
-    return getResponseEntity(SuccessCode.OK, "[0402-0115]테스트입니다.");
+    return getResponseEntity(SuccessCode.OK, "[0402-0648]테스트입니다.");
   }
 }

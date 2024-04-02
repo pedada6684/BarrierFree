@@ -228,8 +228,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
             ),
             onTap: () async {
               // await FlutterNaverLogin.logOut();
-              await Provider.of<UserProvider>(context, listen: false).signOut();
-              Navigator.pop(context);
+              await Provider.of<UserProvider>(context, listen: false)
+                  .signOut(context);
             },
           ),
         ),

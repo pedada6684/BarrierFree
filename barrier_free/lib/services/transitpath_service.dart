@@ -31,7 +31,8 @@ class TransitPathService {
     if (response.statusCode == 200) {
       final String decodedBody = utf8.decode(response.bodyBytes);
       final Map<String, dynamic> parsedJson = json.decode(decodedBody);
-      // print(parsedJson);
+      print("====================버스 버스 서비스 =======================");
+      print(parsedJson);
       return parsedJson['data'];
     } else {
       throw Exception('대중교통 경로 불러오기 실패: ${response.statusCode} ${response.reasonPhrase}');

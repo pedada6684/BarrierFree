@@ -19,6 +19,8 @@ class TransitPathMap extends StatefulWidget {
 
   final String? vehicleType;
 
+  final List<String> formattedCoordinates;
+
   const TransitPathMap({
     super.key,
     this.initialSearchAddress,
@@ -28,6 +30,8 @@ class TransitPathMap extends StatefulWidget {
     this.endLat,
     this.endLon,
     this.vehicleType,
+
+    required this.formattedCoordinates,
   });
 
   @override
@@ -38,59 +42,12 @@ class _TransitPathMapState extends State<TransitPathMap> {
   // late List<Position> _markerPositions;
   String customScript = '';
 
-  late Future<List<dynamic>> _busDirectionsFuture;
-
   @override
   void initState() {
     super.initState();
-    _busDirectionsFuture = _fetchBusDirections(
-      type: widget.vehicleType ?? '휠체어',
-      startLat: widget.startLat ?? 0.0, // null일 경우 기본값으로 0.0 사용
-      startLon: widget.startLon ?? 0.0,
-      endLat: widget.endLat ?? 0.0,
-      endLon: widget.endLon ?? 0.0,
-    );
     _addMarkers(); // 출발지와 도착지 마커 추가
     WidgetsBinding.instance.addPostFrameCallback((_) {});
-    // print('================');
-    // print('StartLat: ${widget.startLat}, StartLon: ${widget.startLon}');
-    // print('EndLat: ${widget.endLat}, EndLon: ${widget.endLon}');
   }
-
-  Future<List<dynamic>> _fetchBusDirections({
-    required String type,
-    required double startLat,
-    required double startLon,
-    required double endLat,
-    required double endLon,
-  }) async {
-    TransitPathService transitPathService = TransitPathService();
-    try {
-      return await transitPathService.fetchBusDirectionsResults(
-        type: type,
-        startLat: startLat,
-        startLon: startLon,
-        endLat: endLat,
-        endLon: endLon,
-      );
-    } catch (e) {
-      print('Error fetching bus directions: $e');
-      return [];
-    }
-  }
-
-  // Future<List<dynamic>> _fetchBusDirections() async {
-  //   TransitPathService transitPathService = TransitPathService();
-  //   try {
-  //     return await transitPathService.fetchBusDirectionsResults(
-  //         'startLat=${widget.startLat}&startLon=${widget.startLon}&endLat=${widget.endLat}&endLon=${widget.endLon}'
-  //     );
-  //     print(transitPathService);
-  //   } catch (e) {
-  //     print('Error fetching bus directions: $e');
-  //     return [];
-  //   }
-  // }
 
   void _addMarkers() {
     // 출발지 마커 생성

@@ -5,10 +5,11 @@ import 'package:barrier_free/screen/directions/directionssearch_result_list.dart
 import 'package:barrier_free/screen/directions/taxi_path_map.dart';
 import 'package:barrier_free/screen/directions/transit_path_map.dart';
 import 'package:barrier_free/screen/directions/wheel_path_map.dart';
-import 'package:barrier_free/services/buspath_service.dart';
 import 'package:barrier_free/services/search_service.dart';
 import 'package:barrier_free/services/taxipath_service.dart';
+import 'package:barrier_free/services/transitpath_service.dart';
 import 'package:barrier_free/services/wheelpath_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
@@ -64,6 +65,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
   late String maxCost = '';
   late String totalDistance = '';
   late String totalTime = '';
+
+  late List<dynamic> busDirections = [];
 
   void _fetchTaxiDirections() async {
     try {
@@ -141,7 +144,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
 
   void _fetchBusDirections() async {
     try {
-      final busDirections = await BusPathService().fetchBusDirectionsResults(
+      final busDirections = await TransitPathService().fetchBusDirectionsResults(
         type: '휠체어',
         startLat: widget.startLat!,
         startLon: widget.startLon!,
@@ -149,19 +152,23 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         endLon: widget.endLon!,
       );
 
-      // 택시 경로에서 좌표 데이터를 가져와서 포맷합니다.
-      List<String> coordinatesList = busDirections.map((direction) =>
-      'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})').toList();
-      String newFormattedCoordinates = '[${coordinatesList.join(', ')}]';
+      List<dynamic> coordinatesList = busDirections[0]["subPaths"][1]["passStationGeo"];
+      List<String> formattedCoordinatesList = coordinatesList.map((direction) =>
+      'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})'
+      ).toList();
+      String newFormattedCoordinates = '[${formattedCoordinatesList.join(', ')}]';
+
 
       setState(() {
         transitCoordinates = newFormattedCoordinates; // 포맷된 좌표 데이터를 상태에 저장합니다.
-        print('===============버스===================');
+        this.busDirections = busDirections;
+        print('===============버스 ===================');
         print('formattedCoordinates = ${transitCoordinates}');
+        print('busDirections = ${busDirections}');
       });
     } catch (e) {
       print('=========================================');
-      print('Error fetching wheel directions: $e');
+      print('Error fetching 버스 directions: $e');
       // 에러 처리
     }
   }
@@ -366,6 +373,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                               startLon: widget.startLon!,
                               endLat: widget.endLat!,
                               endLon: widget.endLon!,
+                              formattedCoordinates: [transitCoordinates],
                               vehicleType: _selectedVehicles!, // 선택된 이동 방식 전달
                             ),
                           ),
@@ -526,7 +534,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
               ),
             ),
           ),
-          SizedBox(height: 10), // 드롭다운과 패널 슬라이딩 사이의 간격
+          SizedBox(height: 10), // 드롭다운과 패널 슬라이딩 사이의 간격TransitPath
           // _buildToggleButton(),
           _showSearchResults
               ? SlidingUpPanel(
@@ -541,10 +549,286 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
             maxHeight: MediaQuery.of(context).size.height * 0.35,
           )
               : SizedBox(), // 검색 결과가 없으면 아무것도 보이지 않게 함
+          Container(
+            height: 0.3, // 수평선의 높이 설정
+            width: double.infinity, // 수평선이 가로로 전체로 펼쳐지도록 설정
+            color: Colors.grey, // 수평선의 색상 설정
+          ),
+          _TransitList(),
         ],
       ),
     );
   }
+
+  Widget _TransitList() {
+    if (busDirections.isNotEmpty && (_selectedVehicles == '목발' || _selectedVehicles == '휠체어' || _selectedVehicles == '전동휠체어')) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 40.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '최적',
+              style: TextStyle(
+                fontSize: 20.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.redAccent, // 텍스트 색상 설정
+              ),
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Text(
+                  '${busDirections.isNotEmpty ? busDirections[0]['totalTime'] : '?'}분', // 버스 소요 시간 출력
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(width: 20),
+                // Text(
+                //   '${busDirections[0]['subPaths'].length}/${busDirections.isNotEmpty ? '${busDirections[0]['totalTime'] * 60}/${busDirections[0]['subPaths'][0]['sectionTime']}/${busDirections[0]['subPaths'][1]['sectionTime']}/${busDirections[0]['subPaths'][2]['sectionTime']}' : '?'}', // 버스 소요 시간 출력
+                //   style: TextStyle(
+                //     fontSize: 20.0,
+                //     color: Colors.black,
+                //   ),
+                // ),
+              ],
+            ),
+            SizedBox(height: 20),
+            Stack(
+              children: [
+                Container(
+                  height: 20, // 바의 높이
+                  width: MediaQuery.of(context).size.width - 80,
+                  decoration: BoxDecoration(
+                    color: const Color(0xffE2E2E2),
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                ),
+                  Positioned(
+                    left: (MediaQuery.of(context).size.width - 80) * busDirections[0]['subPaths'][0]['sectionTime'] / busDirections[0]['totalTime'] / 60, // i = 0, 1, 2, ...
+                    child: Container(
+                      height: 20, // 바의 높이
+                      width: ((MediaQuery.of(context).size.width - 80) ) * busDirections[0]['subPaths'][0]['sectionTime'] / busDirections[0]['totalTime'] / 60, // i = 0, 1, 2, ...
+                      decoration: BoxDecoration(
+                        color: busDirections[0]['pathType'] == 1 ? Colors.blue : Colors.green,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${busDirections[0]['pathType'] == 1 ? '지하철' : '버스'}', // 여기에 표시할 텍스트 입력
+                          style: TextStyle(
+                            color: Colors.white, // 텍스트 색상 설정
+                            fontSize: 14, // 텍스트 크기 설정
+                            fontWeight: FontWeight.bold, // 텍스트 굵기 설정
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(height: 20),
+            Row(
+              children: [
+                Icon(
+                  Icons.accessible, // 휠체어 아이콘
+                  color: Colors.grey, // 휠체어 아이콘 색상
+                  size: 22, // 휠체어 아이콘 크기
+                ),
+                Text(
+                  '${_selectedVehicles}',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
+                ),
+                SizedBox(width: 20),
+                Text(
+                  '${_originController.text}',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                SizedBox(width: 10),
+                Container(
+                  height: 50, // 선의 높이
+                  width: 2, // 선의 너비
+                  color: Colors.grey, // 선의 색상
+                ),
+                SizedBox(width: 75),
+                Text(
+                  '${busDirections[0]["subPaths"][0]["sectionDistance"]}m, ${busDirections[0]["subPaths"][0]["sectionTime"] ~/ 60}분',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Icon(
+                  Icons.directions_bus, // 휠체어 아이콘
+                  color: Colors.green, // 휠체어 아이콘 색상
+                  size: 22, // 휠체어 아이콘 크기
+                ),
+                Text(
+                  '저상',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.green,
+                  ),
+                ),
+                SizedBox(width: 20),
+                Text(
+                  '${busDirections[0]["subPaths"][1]["startStationName"]} 정류장',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                SizedBox(width: 10),
+                Container(
+                  height: 70, // 선의 높이
+                  width: 2, // 선의 너비
+                  color: Colors.green, // 선의 색상
+                ),
+                SizedBox(width: 75),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 40, // 원의 지름
+                          height: 24, // 원의 지름
+                          decoration: BoxDecoration(
+                            color: Colors.green, // 배경색
+                            shape: BoxShape.rectangle, // 동그란 모양 지정
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${busDirections[0]["subPaths"][1]["busList"][0]["busNo"]}',
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                color: Colors.white, // 글자색
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 5),
+                        Text(
+                          '${busDirections[0]["subPaths"][1]["waitTime"]} 분 후 도착',
+                          style: TextStyle(
+                            fontSize: 16.0, // 글자색
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      '${busDirections[0]["subPaths"][1]["passStation"].length} 정거장',
+                      style: TextStyle(
+                        fontSize: 16.0,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                SizedBox(width: 5),
+                Icon(
+                  Icons.lens, // 휠체어 아이콘
+                  color: Colors.green, // 휠체어 아이콘 색상
+                  size: 10, // 휠체어 아이콘 크기
+                ),
+                SizedBox(width: 6),
+                Text(
+                  '하차',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.green,
+                  ),
+                ),
+                SizedBox(width: 20),
+                Text(
+                  '${busDirections[0]["subPaths"][1]["endStationName"]} 정류장',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                SizedBox(width: 10),
+                Container(
+                  height: 50, // 선의 높이
+                  width: 2, // 선의 너비
+                  color: Colors.grey, // 선의 색상
+                ),
+                SizedBox(width: 75),
+                Text(
+                  '${busDirections[0]["subPaths"][2]["sectionDistance"]}m, ${busDirections[0]["subPaths"][2]["sectionTime"] ~/ 60}분',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                SizedBox(width: 5),
+                Icon(
+                  Icons.lens, // 휠체어 아이콘
+                  color: Colors.grey, // 휠체어 아이콘 색상
+                  size: 10, // 휠체어 아이콘 크기
+                ),
+                SizedBox(width: 6),
+                Text(
+                  '도착',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
+                ),
+                SizedBox(width: 20),
+                Text(
+                  '${_destinationController.text}',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                  ),
+                ),
+              ],
+            ),
+            // SizedBox(height: 10),
+            // Container(
+            //   height: 0.3, // 수평선의 높이 설정
+            //   width: double.infinity, // 수평선이 가로로 전체로 펼쳐지도록 설정
+            //   color: Colors.grey, // 수평선의 색상 설정
+            // ),
+          ],
+        ),
+      );
+    } else {
+      return SizedBox(); // 아무것도 표시하지 않음
+    }
+  }
+
 
   Widget _buildPanel() {
     return DirectionSearchResultList(

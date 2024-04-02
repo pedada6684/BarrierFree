@@ -145,7 +145,7 @@ public class OdSayPath {
             .latitude(wheelPath.getEndLat())
             .build())
         .sectionDistance(wheelPath.getTotalDistance())
-        .sectionTime(wheelPath.getTotalTime())
+        .sectionTime(wheelPath.getTotalTime() / 60)
         .build();
   }
 

@@ -20,7 +20,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +36,7 @@ public class AuthController {
   private final MemberService memberService;
 
   @GetMapping("/OauthNaver")
-  public ResponseEntity<AccessToken> webLogin(String code, String state, HttpServletResponse response){
+  public ResponseEntity<?> appLogin(String code, String state, HttpServletResponse response){
     log.info("request: " + code);
     NaverLoginRequest request = new NaverLoginRequest(code, state);
     LoginResult result = oAuthLoginService.login(request);
@@ -50,7 +49,8 @@ public class AuthController {
     );
     //헤더에 refreshToken 삽입
     response.addCookie(cookie);
-    return new ResponseEntity<>(accessToken, HttpStatus.OK);
+    response.setHeader("Authorization", "Bearer " + accessToken.getAccessToken());
+    return ResponseEntity.ok().build();
   }
 
   /**
@@ -65,7 +65,7 @@ public class AuthController {
   @PostMapping("/appLogin")
   @Operation(summary = "토큰 가져오기", description = "로그인 후 토큰 생성")
   @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = AuthToken.class)))
-  public ResponseEntity<AccessToken> webLogin(AppLoginRequest request, HttpServletResponse response) {
+  public ResponseEntity<?> appLogin(AppLoginRequest request, HttpServletResponse response) {
     log.info("AppLoginRequest: " + request);
     LoginResult result = memberService.login(request.toCommand());
 
@@ -77,9 +77,10 @@ public class AuthController {
             refreshToken.getRefreshToken(),
             Long.valueOf(refreshToken.getExpiresIn()/1000L).intValue()
     );
-    //헤더에 refreshToken 삽입
+    //헤더에 jwt 삽입
     response.addCookie(cookie);
-    return new ResponseEntity<>(accessToken, HttpStatus.OK);
+    response.setHeader("Authorization", "Bearer " + accessToken.getAccessToken());
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/logout")

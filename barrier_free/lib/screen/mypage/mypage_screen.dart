@@ -1,11 +1,16 @@
+import 'dart:io';
+
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/login/login_screen.dart';
 import 'package:barrier_free/screen/map/map_screen.dart';
 import 'package:barrier_free/screen/mypage/myplace_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'myfavorite_screen.dart';
@@ -19,7 +24,6 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
-
   final Map<String, Widget Function(BuildContext)> menuItems = {
     '즐겨찾기': (context) => const MyFavoriteScreen(),
     '게시글': (context) => const MyReviewScreen(),
@@ -72,19 +76,52 @@ class _MyPageScreenState extends State<MyPageScreen> {
             Text(
               '$nickname 님,\n환영합니다.',
               style: TextStyle(
-                fontSize: 20.0,
+                fontSize: 22.0,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.white,
-              backgroundImage:
-                  profileImageUrl != null && profileImageUrl is String
-                      ? NetworkImage(profileImageUrl)
-                      : const AssetImage('assets/image/default_profile.png')
-                          as ImageProvider,
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: Colors.white,
+                  backgroundImage:
+                      profileImageUrl != null && profileImageUrl is String
+                          ? NetworkImage(profileImageUrl)
+                          : const AssetImage('assets/image/default_profile.png')
+                              as ImageProvider,
+                ),
+                Positioned(
+                  bottom: -10,
+                  right: -7,
+                  child: IconButton(
+                    onPressed: () async {
+                      final pickedFile = await ImagePicker()
+                          .pickImage(source: ImageSource.gallery);
+                      if (pickedFile != null) {
+                        var userProvider =
+                            Provider.of<UserProvider>(context, listen: false);
+                        await userProvider
+                            .updateProfileImage(File(pickedFile.path));
+                      }
+                    },
+                    icon: Container(
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          border: Border.all(color: mainOrange, width: 3)),
+                      child: Icon(
+                        Icons.camera_alt,
+                        color: mainGray,
+                      ),
+                      padding: EdgeInsets.all(4.0),
+                      constraints: BoxConstraints(),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -197,8 +234,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
             onTap: () async {
               // await FlutterNaverLogin.logOut();
               await Provider.of<UserProvider>(context, listen: false).signOut();
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => MapScreen()));
+              Navigator.pop(context);
             },
           ),
         ),

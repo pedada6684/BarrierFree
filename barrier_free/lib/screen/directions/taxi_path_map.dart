@@ -21,6 +21,12 @@ class TaxiPathMap extends StatefulWidget {
   final String? vehicleType;
 
   final List<String> formattedCoordinates;
+  final List<String> taxiInfo;
+
+  final String minCost;
+  final String maxCost;
+  final String totalDistance;
+  final String totalTime;
 
   const TaxiPathMap({
     super.key,
@@ -31,8 +37,13 @@ class TaxiPathMap extends StatefulWidget {
     this.endLat,
     this.endLon,
     this.vehicleType,
+    required this.minCost,
+    required this.maxCost,
+    required this.totalDistance,
+    required this.totalTime,
 
     required this.formattedCoordinates,
+    required this.taxiInfo,
   });
 
   @override
@@ -52,7 +63,18 @@ class _TaxiPathMapState extends State<TaxiPathMap> {
   }
 
   void _addMarkers() {
+    double averageLat = (widget.startLat! + widget.endLat!) / 2;
+    double averageLon = (widget.startLon! + widget.endLon!) / 2;
+
     String script = """
+    map.setCenter(new kakao.maps.LatLng($averageLat, $averageLon));
+    
+    var sw = new kakao.maps.LatLng(${widget.endLat}, ${widget.endLon}),
+    ne = new kakao.maps.LatLng(${widget.startLat}, ${widget.startLon});
+
+    var bounds = new kakao.maps.LatLngBounds(sw, ne);
+    map.setBounds(bounds);
+    
     var markers = [];
 
     function addMarker(position) {
@@ -88,6 +110,8 @@ class _TaxiPathMapState extends State<TaxiPathMap> {
     final appKey = dotenv.env['APP_KEY'];
     final currentPosition = LocationService().currentPosition;
 
+    print(widget.minCost);
+
     if (currentPosition == null) {
       return const Scaffold(
         appBar: CustomAppBar(title: '위치 정보 없음'),
@@ -114,6 +138,72 @@ class _TaxiPathMapState extends State<TaxiPathMap> {
                   showMapTypeControl: false,
                   draggableMarker: true,
                   customScript: customScript,
+                ),
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  right: 10,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 5,
+                          blurRadius: 7,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    height: 140, // 적절한 높이 조정
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(30.0, 12.0, 30.0, 12.0),
+                      child: Center(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '예상',
+                              style: TextStyle(
+                                fontSize: 23,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.redAccent,
+                              ),
+                            ),
+                            SizedBox(height: 10), // 위젯과 위젯 사이의 간격 조정
+                            Row(
+                              children: [
+                                Text(
+                                  '약 ${int.parse(widget.totalTime) ~/ 60}분',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 20), // 텍스트들 사이의 간격 조정
+                                Text(
+                                  '${(int.parse(widget.totalDistance) / 1000).toStringAsFixed(2)}km',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.normal,
+                                    color: mainGray,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              '${widget.minCost} ~ ${widget.maxCost} 원',
+                              style: TextStyle(
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

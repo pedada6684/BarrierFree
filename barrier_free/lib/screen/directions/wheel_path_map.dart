@@ -52,7 +52,18 @@ class _WheelPathMapState extends State<WheelPathMap> {
   }
 
   void _addMarkers() {
+    double averageLat = (widget.startLat! + widget.endLat!) / 2;
+    double averageLon = (widget.startLon! + widget.endLon!) / 2;
+
     String script = """
+    map.setCenter(new kakao.maps.LatLng($averageLat, $averageLon));
+    
+    var sw = new kakao.maps.LatLng(${widget.endLat}, ${widget.endLon}),
+    ne = new kakao.maps.LatLng(${widget.startLat}, ${widget.startLon});
+
+    var bounds = new kakao.maps.LatLngBounds(sw, ne);
+    map.setBounds(bounds);
+    
     var markers = [];
 
     function addMarker(position) {

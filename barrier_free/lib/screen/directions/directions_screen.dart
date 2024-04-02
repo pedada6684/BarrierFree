@@ -59,6 +59,11 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
   late String transitCoordinates = '';
   late String wheelCoordinates = '';
   late String taxiCoordinates = '';
+  late String taxiInfo = '';
+  late String minCost = '';
+  late String maxCost = '';
+  late String totalDistance = '';
+  late String totalTime = '';
 
   void _fetchTaxiDirections() async {
     try {
@@ -70,15 +75,36 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         endLon: widget.endLon!,
       );
 
+      // minCost 값을 가져와서 minCost 변수에 할당
+      String minCostinfo = taxiDirections['minCost'];
+      String maxCostinfo = taxiDirections['maxCost'];
+      String totalDistanceinfo = taxiDirections['totalDistance'];
+      String totalTimeinfo = taxiDirections['totalTime'];
+
+      List<dynamic> geoCodeData = taxiDirections['geoCode'];
+      List<String> taxiDataString = [];
+
+      // taxiDirections.forEach((key, value) {
+      //   taxiDataString.add('$key: $value');
+      // });
+
       // 택시 경로에서 좌표 데이터를 가져와서 포맷합니다.
-      List<String> coordinatesList = taxiDirections.map((direction) =>
+      List<String> coordinatesList = geoCodeData.map((direction) =>
       'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})').toList();
       String newFormattedCoordinates = '[${coordinatesList.join(', ')}]';
 
       setState(() {
         taxiCoordinates = newFormattedCoordinates; // 포맷된 좌표 데이터를 상태에 저장합니다.
-        print('===============택시===================');
-        print('formattedCoordinates = ${taxiCoordinates}');
+        taxiInfo = taxiDataString.toString();
+        minCost = minCostinfo;
+        maxCost = maxCostinfo;
+        totalDistance = totalDistanceinfo;
+        totalTime = totalTimeinfo;
+        // print('===============택시===================');
+        // print('taxiDirections = ${taxiDirections}');
+        // // print('formattedCoordinates = ${taxiCoordinates}');
+        // print('taxiDataString = ${taxiDataString}');
+        // print(minCost);
       });
     } catch (e) {
       print('Error fetching taxi directions: $e');
@@ -401,6 +427,11 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                               endLon: widget.endLon!,
                               vehicleType: _selectedVehicles!,
                               formattedCoordinates: [taxiCoordinates],
+                              taxiInfo: [taxiInfo],
+                              minCost: minCost,
+                              maxCost: maxCost,
+                              totalDistance: totalDistance,
+                              totalTime: totalTime,
                             ),
                           ),
                         );

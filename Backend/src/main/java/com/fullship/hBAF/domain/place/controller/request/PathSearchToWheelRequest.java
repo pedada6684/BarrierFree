@@ -1,11 +1,12 @@
 package com.fullship.hBAF.domain.place.controller.request;
 
 import com.fullship.hBAF.global.api.response.PointGeoCode;
-import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
+import com.fullship.hBAF.domain.place.service.command.SearchPathToWheelCommand;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Builder;
@@ -48,10 +49,14 @@ public class PathSearchToWheelRequest {
   }
 
   public Map<String, Object> createRequestBody() {
+    double dstartLng = Double.parseDouble(startLng);
+    double dstartLat = Double.parseDouble(startLat);
+    DecimalFormat df = new DecimalFormat("#.####");
+
     Map<String, Object> map = new HashMap<>();
     map.put("speed", type.equals("휠체어") ? wheel : type.equals("전동휠체어") ? eWheel : crutch);
-    map.put("startX", startLng);
-    map.put("startY", startLat);
+    map.put("startX", df.format(dstartLng));
+    map.put("startY", df.format(dstartLat));
     map.put("endX", endLng);
     map.put("endY", endLat);
     map.put("startName", "출발지");

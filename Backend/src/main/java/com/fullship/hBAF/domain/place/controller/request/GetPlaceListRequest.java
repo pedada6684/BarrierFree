@@ -20,5 +20,4 @@ public class GetPlaceListRequest {
                 .lng(Double.parseDouble(df.format(dlng)))
                 .build();
     }
-
 }

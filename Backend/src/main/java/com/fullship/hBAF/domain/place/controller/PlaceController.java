@@ -9,14 +9,15 @@ import com.fullship.hBAF.domain.place.controller.request.PathSearchToWheelReques
 import com.fullship.hBAF.domain.place.controller.response.GetPlaceResponse;
 import com.fullship.hBAF.domain.place.controller.response.PlaceListResponse;
 import com.fullship.hBAF.domain.place.service.PlaceService;
+import com.fullship.hBAF.domain.place.service.command.FindPathByAStarCommand;
 import com.fullship.hBAF.domain.place.service.command.Request.AngleSlopeCommand;
 import com.fullship.hBAF.global.api.response.OdSayPath;
 import com.fullship.hBAF.global.api.response.PathGeoCode;
 import com.fullship.hBAF.global.api.response.TaxiPathForm;
 import com.fullship.hBAF.global.api.response.WheelPathForm;
 import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
-import com.fullship.hBAF.global.api.service.command.SearchPathToTrafficCommand;
-import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
+import com.fullship.hBAF.domain.place.service.command.SearchPathToTrafficCommand;
+import com.fullship.hBAF.domain.place.service.command.SearchPathToWheelCommand;
 import com.fullship.hBAF.global.response.CommonResponseEntity;
 import com.fullship.hBAF.global.response.SuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,7 +55,12 @@ public class PlaceController {
     response.add(wheelPathForm);
     int[] se;
     if((se=placeService.findScarp(wheelPathForm.getGeoCode()))!=null){
-      WheelPathForm pathByAStar = placeService.findPathByAStar(wheelPathForm.getGeoCode(), se, requestDto.getType());
+      FindPathByAStarCommand findCommand = FindPathByAStarCommand.builder()
+              .geoCodes(wheelPathForm.getGeoCode())
+              .se(se)
+              .type(requestDto.getType())
+              .build();
+      WheelPathForm pathByAStar = placeService.findPathByAStar(findCommand);
       response.add(pathByAStar);
     }
     return getResponseEntity(SuccessCode.OK, response);

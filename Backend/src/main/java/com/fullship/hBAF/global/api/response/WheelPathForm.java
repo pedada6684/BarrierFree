@@ -4,8 +4,11 @@ import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -16,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 @Data
 @Slf4j
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class WheelPathForm {
 
   private List<GeoCode> geoCode;

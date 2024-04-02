@@ -2,8 +2,8 @@ package com.fullship.hBAF.global.api.service;
 
 import com.fullship.hBAF.global.api.response.TaxiPathForm;
 import com.fullship.hBAF.global.api.response.WheelPathForm;
-import com.fullship.hBAF.global.api.service.command.SearchPathToTrafficCommand;
-import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
+import com.fullship.hBAF.domain.place.service.command.SearchPathToTrafficCommand;
+import com.fullship.hBAF.domain.place.service.command.SearchPathToWheelCommand;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import lombok.RequiredArgsConstructor;

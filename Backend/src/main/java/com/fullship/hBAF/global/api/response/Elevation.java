@@ -80,6 +80,9 @@ public class Elevation {
 
     double dist = R * c;
 
-    return String.format("%.5f", atan2(dEle, dist));
+    double atan2 = atan2(dEle, dist);
+    double angle = atan2 * 180 / Math.PI;
+
+    return String.valueOf(angle);
   }
 }

@@ -14,8 +14,12 @@ import 'services/location_service.dart';
 
 import 'package:barrier_free/providers/text_provider.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+late PersistentTabController globalPersistentTabController;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  globalPersistentTabController = PersistentTabController(initialIndex: 0);
   await dotenv.load(fileName: ".env");
   dotenv.load();
 
@@ -38,7 +42,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   GlobalKey mapScreenKey = GlobalKey();
-  late PersistentTabController _controller;
 
   // 화면 리스트
   List<Widget> _buildScreens() {
@@ -56,12 +59,12 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _controller = PersistentTabController(initialIndex: 0);
+    globalPersistentTabController = PersistentTabController(initialIndex: 0);
   }
 
   void resetContoller() {
     setState(() {
-      _controller = PersistentTabController(initialIndex: 0);
+      globalPersistentTabController = PersistentTabController(initialIndex: 0);
     });
   }
 
@@ -110,6 +113,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         pageTransitionsTheme: PageTransitionsTheme(builders: {
@@ -131,7 +135,7 @@ class _MyAppState extends State<MyApp> {
         create: (context) => TextProvider(),
         child: PersistentTabView(
           context,
-          controller: _controller,
+          controller: globalPersistentTabController,
           screens: _buildScreens(),
           items: _navBarsItems(),
           confineInSafeArea: true,
@@ -149,4 +153,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-

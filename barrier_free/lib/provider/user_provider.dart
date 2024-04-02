@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:barrier_free/main.dart';
+import 'package:barrier_free/screen/map/map_screen.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 
@@ -59,16 +61,35 @@ class UserProvider with ChangeNotifier {
   }
 
   //로그아웃
-  Future<void> signOut() async {
+  Future<void> signOut(BuildContext context) async {
+    final SecureStorageService _secureStorageService = SecureStorageService();
+
+    String? accessToken = await _secureStorageService.getToken();
+    String? cookies = await _secureStorageService.getCookies();
+
+    final response = await http.get(
+        Uri.parse('https://hbaf.site/api/v1/auth/logout?memberId=$userId'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Cookie': cookies!,
+        });
+
+    if (response.statusCode == 200) {
+      await FlutterNaverLogin.logOutAndDeleteToken();
+      _loginPlatform = LoginPlatform.none; //플랫폼 초기화\
+      final secureStorageService = SecureStorageService();
+      await secureStorageService.deleteToken();
+
+      globalPersistentTabController.jumpToTab(0);
+
+      notifyListeners();
+    } else {
+      print('로그아웃 실패');
+    }
+
     //네이버일경우
-    await FlutterNaverLogin.logOutAndDeleteToken();
 
-    _loginPlatform = LoginPlatform.none; //플랫폼 초기화\
-    notifyListeners();
-
-    final secureStorageService = SecureStorageService();
     //토큰 삭제!!
-    await secureStorageService.deleteToken();
   }
 
   void setUserId(int userId) {

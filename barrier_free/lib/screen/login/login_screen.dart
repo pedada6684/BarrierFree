@@ -89,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void signOut() async {
     await FlutterNaverLogin.logOut();
 
-    Provider.of<UserProvider>(context, listen: false).signOut();
+    Provider.of<UserProvider>(context, listen: false).signOut(context);
   }
 
   void onLoginSuccess() async {

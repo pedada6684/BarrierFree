@@ -9,8 +9,8 @@ public class searchBFCommand {
     String lat;
     String lng;
     String keyword;
-    public searchKakaoPlaceCommand convertToSearchCommand(){
-        return searchKakaoPlaceCommand.builder()
+    public SearchKakaoPlaceCommand convertToSearchCommand(){
+        return SearchKakaoPlaceCommand.builder()
                 .lat(lat)
                 .lng(lng)
                 .keyword(keyword)

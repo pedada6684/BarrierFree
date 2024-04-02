@@ -11,7 +11,11 @@ import com.fullship.hBAF.domain.member.entity.Member;
 import com.fullship.hBAF.domain.member.repository.MemberRepository;
 import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.domain.place.repository.PlaceRepository;
-import com.fullship.hBAF.domain.review.entity.Review;
+import com.fullship.hBAF.domain.place.service.PlaceService;
+import com.fullship.hBAF.domain.place.service.command.CreatePlaceCommand;
+import com.fullship.hBAF.global.api.response.KakaoPlace;
+import com.fullship.hBAF.global.api.service.KakaoMapApiService;
+import com.fullship.hBAF.global.api.service.command.SearchKakaoPlaceCommand;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +31,8 @@ public class BookmarkPlaceService {
   private final BookmarkPlaceRepository bookmarkPlaceRepository;
   private final MemberRepository memberRepository;
   private final PlaceRepository placeRepository;
+  private final PlaceService placeService;
+  private final KakaoMapApiService kakaoMapApiService;
 
   public GetBookmarkPlaceByMemberIdResponse getBookmarkPlaceByMember(Long memberId){
 
@@ -62,18 +68,19 @@ public class BookmarkPlaceService {
               .build();
 
       if(placeRepository.findPlaceByPoiId(command.getPoiId())==null) {
-        Place place = Place.createNewPlace(
-                command.getPlaceName(),
-                command.getAddress(),
-                command.getLatitude(),
-                command.getLongitude(),
-                command.getPoiId(),
-                "",
-                "",
-                "",
-                false
-        );
-        placeRepository.save(place);
+        //place 생성
+        SearchKakaoPlaceCommand searchCommand = SearchKakaoPlaceCommand.builder()
+                .lng(command.getLongitude())
+                .lat(command.getLatitude())
+                .keyword(command.getPlaceName())
+                .build();
+        KakaoPlace kakaoPlace = kakaoMapApiService.getKakaoPlace(searchCommand);
+        if (kakaoPlace == null) {
+          throw new CustomException(ErrorCode.NO_AVAILABLE_API);
+        }else{
+          CreatePlaceCommand createPlaceCommand = CreatePlaceCommand.fromKakaoPlace(kakaoPlace);
+          placeService.createPlace(createPlaceCommand);
+        }
       }
     }
     else {

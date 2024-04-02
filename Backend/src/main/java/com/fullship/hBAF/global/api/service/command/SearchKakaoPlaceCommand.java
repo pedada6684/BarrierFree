@@ -5,8 +5,9 @@ import lombok.Data;
 
 @Data
 @Builder
-public class searchKakaoPlaceCommand {
+public class SearchKakaoPlaceCommand {
     String lat;
     String lng;
     String keyword;
+    String category;
 }

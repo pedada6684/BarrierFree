@@ -26,6 +26,8 @@ public class Place {
   private String poiId;
   private String category;
   private String barrierFree;
+  private String phone;
+  private String placeUrl;
   private boolean type; // 배리어프리 장소인지 여부
   private String wtcltId; // 배리어프리 조회시 필요한 키 값
 
@@ -40,6 +42,8 @@ public class Place {
           String poiId,
           String category,
           String barrierFree,
+          String phone,
+          String placeUrl,
           String wtcltId,
           Boolean type
   ){
@@ -54,9 +58,15 @@ public class Place {
     place.images = new ArrayList<>();
     place.wtcltId = wtcltId;
     place.type = type;
+    place.phone = phone;
+    place.placeUrl = placeUrl;
     return place;
   };
 
+  public void updateDetail(String phone, String placeUrl){
+    this.phone = phone;
+    this.placeUrl = placeUrl;
+  }
   public void insertWtcltId(String wtcltId) {
     this.wtcltId = wtcltId;
   }

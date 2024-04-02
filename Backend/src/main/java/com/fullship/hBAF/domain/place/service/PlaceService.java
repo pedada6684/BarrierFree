@@ -565,6 +565,8 @@ public class PlaceService {
         command.getPoiId(),
         command.getCategory(),
         command.getBarrierFree(),
+        command.getPhone(),
+        command.getPlaceUrl(),
         command.getWtcltId(),
         command.getType()
     );

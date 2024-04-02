@@ -6,8 +6,7 @@ import com.fullship.hBAF.domain.place.service.PlaceService;
 import com.fullship.hBAF.domain.place.service.command.CreatePlaceCommand;
 import com.fullship.hBAF.global.api.response.KakaoPlace;
 import com.fullship.hBAF.global.api.service.KakaoMapApiService;
-import com.fullship.hBAF.global.api.service.command.searchBFCommand;
-import com.fullship.hBAF.global.api.service.command.searchKakaoPlaceCommand;
+import com.fullship.hBAF.global.api.service.command.SearchKakaoPlaceCommand;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +65,26 @@ public class BarrierFreeConstructor {
 //        setBarrierfreeInfo();
 //        addBFPlaceInBuilding();
 //        setBarrierfreeThumbnail();
+//        setPlaceDetail();
+    }
+
+    /**
+     * DB에 저장된 place의 핸드폰 번호와 url을 update하는 메서드
+     */
+    private void setPlaceDetail() {
+        List<Place> allPlace = placeRepository.findAll();
+        for (Place place : allPlace) {
+            SearchKakaoPlaceCommand command = SearchKakaoPlaceCommand.builder()
+                    .lng(place.getLongitude())
+                    .lat(place.getLatitude())
+                    .keyword(place.getPlaceName())
+                    .build();
+            KakaoPlace kakaoPlace = kakaoMapApiService.getKakaoPlace(command);
+            if (kakaoPlace == null) continue;
+            String phone = kakaoPlace.getPhone() != null ? kakaoPlace.getPhone() : "";
+            String placeUrl = kakaoPlace.getPlaceUrl() != null ? kakaoPlace.getPlaceUrl() : "";
+            place.updateDetail(phone, placeUrl);
+        }
     }
 
     private void setBarrierfreeThumbnail() {
@@ -152,16 +171,21 @@ public class BarrierFreeConstructor {
      */
     private void saveBarrierFreePlace(List<Map<String, String>> placeInfoList) {
         for (Map<String, String> placeInfo: placeInfoList) {
+            SearchKakaoPlaceCommand searchCommand = SearchKakaoPlaceCommand.builder()
+                    .lat(placeInfo.get("faclLng"))
+                    .lng(placeInfo.get("faclLat"))
+                    .keyword(placeInfo.get("searchKeyword"))
+                    .build();
 
-        //카카오 검색 (검증)
-        KakaoPlace kakaoPlace = getKakaoPlace(placeInfo);
-        if (kakaoPlace == null) continue;
+            //카카오 검색 (검증)
+            KakaoPlace kakaoPlace = kakaoMapApiService.getKakaoPlace(searchCommand);
+            if (kakaoPlace == null) continue;
 
-        //db저장
-        CreatePlaceCommand createCommand = CreatePlaceCommand.fromKakaoPlace(kakaoPlace);
-        createCommand.setCategory(placeInfo.get("category"));
-        createCommand.setWtcltId(placeInfo.get("wfcltId"));
-        placeService.createPlace(createCommand);
+            //db저장
+            CreatePlaceCommand createCommand = CreatePlaceCommand.fromKakaoPlace(kakaoPlace);
+            createCommand.setCategory(placeInfo.get("category"));
+            createCommand.setWtcltId(placeInfo.get("wfcltId"));
+            placeService.createPlace(createCommand);
         }
     }
 
@@ -176,7 +200,7 @@ public class BarrierFreeConstructor {
             for (Place building : buildings) {
                 if (building.getAddress().isEmpty()) continue; //주소 없는 빌딩 생략
                 //카카오맵 검색
-                searchKakaoPlaceCommand command = searchKakaoPlaceCommand.builder()
+                SearchKakaoPlaceCommand command = SearchKakaoPlaceCommand.builder()
                         .keyword(building.getAddress())
                         .lat(building.getLatitude())
                         .lng(building.getLongitude())
@@ -283,15 +307,6 @@ public class BarrierFreeConstructor {
         return headers;
     }
 
-    private KakaoPlace getKakaoPlace(Map<String, String> placeInfo) {
-        searchBFCommand searchCommand = searchBFCommand.builder()
-                .lat(placeInfo.get("faclLng"))
-                .lng(placeInfo.get("faclLat"))
-                .keyword(placeInfo.get("searchKeyword"))
-                .build();
-        return kakaoMapApiService.searchBF(searchCommand);
-    }
-
     private Workbook getExcelSheets() throws IOException {
 //        Resource resource = resourceLoader.getResource("classpath:data/wheelchair_test.xls");
 //        InputStream inputStream = resource.getInputStream();
@@ -326,15 +341,17 @@ public class BarrierFreeConstructor {
             String faclLng = String.valueOf(row.getCell(2).getNumericCellValue());
             System.out.println(searchKeyword + ", " + faclLat + ", " + faclLng);
 
-            Map<String, String> placeInfo = new HashMap<>();
-            placeInfo.put("searchKeyword", searchKeyword);
-            placeInfo.put("faclLat", faclLat);
-            placeInfo.put("faclLng", faclLng);
-            placeInfo.put("category", "휠체어 충전소");
-    //        placeInfo.put("barrierFree", "f?");
-            getKakaoPlace(placeInfo);
+            SearchKakaoPlaceCommand searchCommand = SearchKakaoPlaceCommand.builder()
+                    .lat(faclLat)
+                    .lng(faclLng)
+                    .keyword(searchKeyword)
+                    .category("휠체어 충전소")
+                    .build();
+            KakaoPlace kakaoPlace = kakaoMapApiService.getKakaoPlace(searchCommand);
+            CreatePlaceCommand createPlaceCommand = CreatePlaceCommand.fromKakaoPlace(kakaoPlace);
+            createPlaceCommand.setCategory("휠체어 충전소");
+            placeService.createPlace(createPlaceCommand);
         }
-//                places.add(new Place(placeName, latitude, longitude));
     }
 
     private static final Map<String, String> CATEGORY_MAP = new HashMap<>();

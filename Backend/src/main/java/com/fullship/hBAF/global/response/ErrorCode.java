@@ -35,11 +35,12 @@ public enum ErrorCode {
     /* entity 이미 존재 */
     ENTITIY_ALREADY_EXIST(HttpStatus.CONFLICT, "이미 존재하는 정보입니다."),
 
-    /* entity 이미 존재 */
+    /* H3 index missing */
     H3_INDEX_NOT_FOUND(HttpStatus.NOT_FOUND, "h3 index를 찾을 수 없습니다."),
 
     /* URI */
     URI_SYNTAX_ERROR(HttpStatus.BAD_GATEWAY, "외부 API 호출 중 오류가 발생했습니다."),
+
     FAIL_CALCULATE_COST(HttpStatus.BAD_REQUEST, "택시 요금 계산 중 오류가 발생했습니다.");
 
     private final HttpStatus httpStatus;

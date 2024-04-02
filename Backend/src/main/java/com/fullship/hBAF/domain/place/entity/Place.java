@@ -63,6 +63,10 @@ public class Place {
     return place;
   };
 
+  public void updateDetail(String phone, String placeUrl){
+    this.phone = phone;
+    this.placeUrl = placeUrl;
+  }
   public void insertWtcltId(String wtcltId) {
     this.wtcltId = wtcltId;
   }

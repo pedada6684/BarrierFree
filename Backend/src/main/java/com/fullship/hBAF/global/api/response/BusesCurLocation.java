@@ -8,6 +8,5 @@ import lombok.Data;
 public class BusesCurLocation {
 
   String localStationId;
-  String arsId;
   String license;
 }

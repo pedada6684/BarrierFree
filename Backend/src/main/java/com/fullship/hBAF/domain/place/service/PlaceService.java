@@ -15,7 +15,7 @@ import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.domain.place.repository.ImageRepository;
 import com.fullship.hBAF.domain.place.repository.PlaceRepository;
 import com.fullship.hBAF.domain.place.service.command.Request.AngleSlopeCommand;
-import com.fullship.hBAF.domain.place.service.command.Request.GetPlaceListRequestComment;
+import com.fullship.hBAF.domain.place.service.command.Request.GetPlaceListRequestCommand;
 import com.fullship.hBAF.domain.stationInfo.entity.StationInfo;
 import com.fullship.hBAF.domain.stationInfo.repository.StationInfoRepository;
 import com.fullship.hBAF.domain.stationStopInfo.entity.StationStopInfo;
@@ -55,6 +55,7 @@ import com.uber.h3core.util.GeoCoord;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.util.Precision;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -404,6 +405,31 @@ public class PlaceService {
     double s = b * A * (sigma - deltaSigma);
 
     return Precision.round(s, 3);
+  }
+
+  public GetPlaceResponse getPlace(String poiId){
+    Place place = placeRepository.findPlaceByPoiIdWithImage(poiId)
+            .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
+    return GetPlaceResponse.from(place);
+  }
+
+  /**
+   * 주변 장애인 시설 카테고리별 불러오기
+   * @return
+   */
+  @Cacheable(value = "BFPlaces", key = "#command", cacheManager = "BFPlaceCacheManager")
+  public List<PlaceListResponse> getPlaceList(GetPlaceListRequestCommand command) {
+    List<Place> placeEntityList = placeRepository.findByTypeWithImage(true);
+    double lat = command.getLat();
+    double lng = command.getLng();
+
+    List<PlaceListResponse> placeList = new ArrayList<>();
+    for (Place place : placeEntityList) {
+      if(calculateDistance(lat,lng,Double.parseDouble(place.getLatitude()),Double.parseDouble(place.getLongitude()))<=3000) {
+        placeList.add(PlaceListResponse.from(place));
+      }
+    }
+    return placeList;
   }
 
   public static List<PathGeoCode> setWheelGeoCode(

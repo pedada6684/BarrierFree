@@ -4,15 +4,18 @@ package com.fullship.hBAF.domain.place.controller.response;
 import com.fullship.hBAF.domain.place.entity.Image;
 import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.util.BarrierFreeInfo;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class PlaceListResponse {
+
     private Long placeId;
     private String placeName;
     private String address;

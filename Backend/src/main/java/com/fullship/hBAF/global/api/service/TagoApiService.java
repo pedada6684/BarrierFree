@@ -57,7 +57,7 @@ public class TagoApiService {
           .queryParam("_type", "xml")
           .queryParam("cityCode", 25)
           .queryParam("routeId", "DJB" + publicBusId)
-          .build().toUri();
+          .build(true).toUri();
 
       ResponseEntity<String> response = apiService.get(uri, setHttpHeaders(), String.class);
 

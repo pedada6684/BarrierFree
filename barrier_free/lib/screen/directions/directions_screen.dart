@@ -312,26 +312,43 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
           ),
           SizedBox(height: 10), // 드롭다운과 위젯 사이의 간격
           Container(
-            // alignment: Alignment.center,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal, // 가로 스크롤 설정
               child: Row(
                 children: [
                   SizedBox(width: 20),
-                  DropdownButton(
-                    value: _selectedVehicles,
-                    hint: Text('이동방식'),
-                    items: _vehicles
-                        .map((e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(e),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedVehicles = value!;
-                      });
-                    },
+                  Container(
+                    width: 110,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Color(0xffffffff),
+                      border: Border.all(
+                        color: Colors.grey, // 테두리의 색상을 지정합니다.
+                        width: 1.0, // 테두리의 너비를 지정합니다.
+                      ),
+                      borderRadius: BorderRadius.circular(8.0), // 테두리의 모서리를 둥글게 만듭니다.
+                    ),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬합니다.
+                        children: [
+                          DropdownButtonHideUnderline(
+                              child:DropdownButton(
+                                value: _selectedVehicles,
+                                hint: Text('이동방식'),
+                                items: _vehicles
+                                    .map((e) => DropdownMenuItem(
+                                  value: e,
+                                  child: Text(e),
+                                ))
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedVehicles = value!;
+                                  });
+                                },
+                              )
+                          )]
+                    ),
                   ),
                   SizedBox(width: 10), // 드롭다운 버튼과 버튼 사이 간격 조절
                   ElevatedButton(
@@ -371,16 +388,18 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xffffffff), // 배경 투명지
-                      side: BorderSide(color: mainOrange, width: 1), // 테두리 오렌지
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10), // 테두리 반경 10px
-                      ),
+                        backgroundColor: Color(0xffffffff), // 배경 투명지
+                        surfaceTintColor: Color(0xffffffff),
+                        side: BorderSide(color: mainOrange, width: 1), // 테두리 오렌지
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10), // 테두리 반경 10px
+                        ),
+                        elevation: 4
                     ),
                     child: Text(
                       '대중교통',
                       style: TextStyle(
-                        fontSize: 18.0,
+                        fontSize: 17.0,
                         fontWeight: FontWeight.bold,
                         color: mainOrange,
                       ),
@@ -430,16 +449,18 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xffffffff), // 배경 투명지
-                      side: BorderSide(color: mainOrange, width: 1), // 테두리 오렌지
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10), // 테두리 반경 10px
-                      ),
+                        backgroundColor: Color(0xffffffff), // 배경 투명지
+                        surfaceTintColor: Color(0xffffffff),
+                        side: BorderSide(color: mainOrange, width: 1), // 테두리 오렌지
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10), // 테두리 반경 10px
+                        ),
+                        elevation: 4
                     ),
                     child: Text(
                       '택시',
                       style: TextStyle(
-                        fontSize: 18.0,
+                        fontSize: 17.0,
                         fontWeight: FontWeight.bold,
                         color: mainOrange,
                       ),
@@ -485,15 +506,17 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xffffffff), // 배경 투명지
+                      surfaceTintColor: Color(0xffffffff),
                       side: BorderSide(color: mainOrange, width: 1), // 테두리 오렌지
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10), // 테두리 반경 10px
                       ),
+                      elevation: 4
                     ),
                     child: Text(
                       '도보',
                       style: TextStyle(
-                        fontSize: 18.0,
+                        fontSize: 17.0,
                         fontWeight: FontWeight.bold,
                         color: mainOrange,
                       ),

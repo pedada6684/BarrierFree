@@ -39,7 +39,7 @@ class _CustomFacilityButtonState extends State<CustomFacilityButton> {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: isSelected ? Colors.white : mainBlack,
-              fontSize: 18.0,
+              fontSize: 16.0,
             ),
           ),
         ),

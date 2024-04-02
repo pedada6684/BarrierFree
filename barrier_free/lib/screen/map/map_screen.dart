@@ -48,6 +48,7 @@ class _MapScreenState extends State<MapScreen> {
     final currentPosition = await _currentPositionFuture;
     _loadPlaces(currentPosition);
     _setCustomScript(currentPosition);
+    print(currentPosition);
   }
 
   void _setCustomScript(Position currentPosition) {
@@ -120,8 +121,12 @@ class _MapScreenState extends State<MapScreen> {
       // 마커 스크립트 생성 및 적용
       var markersScript = _generateMarkersScript(filtered, currentPosition);
 
+      var updatedScript =
+          markersScript + _generateCurrentLocationScript(currentPosition);
+
       setState(() {
-        customScript = currentLocationScript + markersScript;
+        mapKey = UniqueKey();
+        customScript = updatedScript;
       });
     } else {
       // 마커 스크립트 생성 및 적용
@@ -249,6 +254,7 @@ class _MapScreenState extends State<MapScreen> {
             return const Text('환경 변수에서 앱 키를 불러올 수 없습니다.');
           }
           return Scaffold(
+            resizeToAvoidBottomInset: false,
             appBar: const CustomAppBar(
               title: '베프.',
               titleStyle: TextStyle(
@@ -276,6 +282,14 @@ class _MapScreenState extends State<MapScreen> {
                     children: [
                       Expanded(
                         child: TextField(
+                          textInputAction: TextInputAction.search,
+                          onEditingComplete: () {
+                            _search();
+                            FocusScope.of(context).unfocus();
+                          },
+                          onSubmitted: (value) {
+                            FocusScope.of(context).unfocus();
+                          },
                           decoration: const InputDecoration(
                             contentPadding:
                                 EdgeInsets.symmetric(horizontal: 16.0),
@@ -307,10 +321,12 @@ class _MapScreenState extends State<MapScreen> {
                   child: Stack(
                     children: [
                       Container(
+                        height: MediaQuery.of(context).size.height,
                         key: mapKey,
                         child: KakaoMapView(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height,
+                          height: MediaQuery.of(context).size.height -
+                              AppBar().preferredSize.height,
                           kakaoMapKey: appKey!,
                           lat: position.latitude,
                           lng: position.longitude,

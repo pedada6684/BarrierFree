@@ -133,8 +133,9 @@ public class AuthInterceptor implements HandlerInterceptor {
     private boolean checkAnnotation(Object handler, Class<Auth> authClass) {
         //js. html 타입인 view 과련 파일들은 통과한다.(view 관련 요청 = ResourceHttpRequestHandler)
         if (handler instanceof ResourceHttpRequestHandler) {
-            return true;
+            return false;
         }
+
 
         HandlerMethod handlerMethod = (HandlerMethod) handler;
 

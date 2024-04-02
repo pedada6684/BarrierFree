@@ -20,14 +20,9 @@ import com.fullship.hBAF.domain.stationInfo.entity.StationInfo;
 import com.fullship.hBAF.domain.stationInfo.repository.StationInfoRepository;
 import com.fullship.hBAF.domain.stationStopInfo.entity.StationStopInfo;
 import com.fullship.hBAF.domain.stationStopInfo.repository.StationStopInfoRepository;
-import com.fullship.hBAF.global.api.response.GeoCode;
-import com.fullship.hBAF.global.api.response.OdSayPath;
+import com.fullship.hBAF.global.api.response.*;
 import com.fullship.hBAF.global.api.response.OdSayPath.SubPath;
 import com.fullship.hBAF.global.api.response.OdSayPath.SubPath.Bus;
-import com.fullship.hBAF.global.api.response.PathGeoCode;
-import com.fullship.hBAF.global.api.response.PointGeoCode;
-import com.fullship.hBAF.global.api.response.TaxiPathForm;
-import com.fullship.hBAF.global.api.response.WheelPathForm;
 import com.fullship.hBAF.global.api.service.GoogleApiService;
 import com.fullship.hBAF.global.api.service.OdSayApiService;
 import com.fullship.hBAF.domain.place.service.command.CreatePlaceCommand;
@@ -35,12 +30,14 @@ import com.fullship.hBAF.domain.place.service.command.UpdatePlaceImageCommand;
 import com.fullship.hBAF.global.H3.service.H3IndexService;
 import com.fullship.hBAF.global.api.service.TMapApiService;
 import com.fullship.hBAF.global.api.service.TagoApiService;
-import com.fullship.hBAF.global.api.response.BusesCurLocation;
 import com.fullship.hBAF.global.api.service.command.ElevationForPathCommand;
 import com.fullship.hBAF.global.api.service.command.OdSayGeoCommand;
 import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
 import com.fullship.hBAF.global.api.service.command.SearchPathToTrafficCommand;
 import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -440,31 +437,30 @@ public class PlaceService {
 
   /**
    * 도보 경로를 넣었을 때, 급경사의 시작과 끝을 출력해주는 함수
-   * @param arr : (위도,경도,경사)로 이루어진 경로 배열
+   * @param path : (위도,경도,경사)로 구성된 경로 List
    * boundary : 급경사를 구분하는 기준
    * @return
    */
-  public double[][] findScarp(String[][] arr) {
-    double boundary = 6.0;
+  public int[] findScarp(List<GeoCode> path) {
+    double boundary = 4.8;
 
-    double[][] result = new double[2][2];
+    int[] result = new int[2];
     int cal = 0;
 
-    for (String[] strings : arr) {
-      double slope = Double.parseDouble(strings[2]);
+    for (int i = 0; i<path.size(); i++) {
+      double slope = Math.abs(Double.parseDouble(path.get(i).getAngleSlope()));
 
-      if (slope >= slope) {
+      if (slope > boundary) {
         if (cal == 0) {
-          result[0][0] = Double.parseDouble(strings[0]);
-          result[0][1] = Double.parseDouble(strings[1]);
+          result[0] = i;
           cal = 1;
         }
-        result[1][0] = Double.parseDouble(strings[0]);
-        result[1][1] = Double.parseDouble(strings[1]);
+        result[1] = i;
       }
     }
-
-    return result;
+    if(cal >0)
+      return result;
+    return null;
   }
 
   public static class NodeAStar {
@@ -478,22 +474,37 @@ public class PlaceService {
     }
   }
 
-  public List<double[]> findPathByAStar(double[][] se) throws IOException {
-    double sX = se[0][0];
-    double sY = se[0][1];
-    double eX = se[1][0];
-    double eY = se[1][1];
+  public WheelPathForm findPathByAStar(List<GeoCode> list, int[] se, String type) {
+    int sIdx = se[0];
+    int eIdx = se[1];
+    if(sIdx>0)
+      sIdx--;
+    if(eIdx<list.size()-1)
+      eIdx++;
 
     Map<Long, NodeAStar> openMap = new HashMap<>();
     Map<Long, NodeAStar> closeMap = new HashMap<>();
 
-    H3Core h3 = H3Core.newInstance();
-    GeoCoord startGeo = new GeoCoord(sY,sX);
-    GeoCoord endGeo = new GeoCoord(eY,eX);
+    double sX = Double.parseDouble(list.get(sIdx).getLatitude());
+    double sY = Double.parseDouble(list.get(sIdx).getLongitude());
+    double eX = Double.parseDouble(list.get(eIdx).getLatitude());
+    double eY = Double.parseDouble(list.get(eIdx).getLongitude());
+
+      H3Core h3 = null;
+      try {
+          h3 = H3Core.newInstance();
+      } catch (IOException e) {
+          throw new RuntimeException(e);
+      }
+      GeoCoord startGeo = new GeoCoord(sX,sY);
+    GeoCoord endGeo = new GeoCoord(eX,eY);
     long start = h3.geoToH3(startGeo.lat, startGeo.lng,12);
     long end = h3.geoToH3(endGeo.lat, endGeo.lng,12);
-    if(!h3IndexService.isContainInRedisH3(start))
+    //급경사의 시작점 또는 도착점이 대전이 아닌 경우 경로 null 반환
+    if(!h3IndexService.isContainInRedisH3(start) || !h3IndexService.isContainInRedisH3(end)) {
+      log.info("#####대전이 아님");
       return null;
+    }
 
     NodeAStar startNode = new NodeAStar(start);
     openMap.put(start, startNode);
@@ -507,15 +518,58 @@ public class PlaceService {
       }
 
       if (current.h3Index == end) {
-        List<double[]> path = new ArrayList<>();
+
+        List<GeoCode> middlePath = new ArrayList<>();
         while (current != null) {
           GeoCoord geoCoord = h3.h3ToGeo(current.h3Index);
-          path.add( new double[] {geoCoord.lat, geoCoord.lng, h3IndexService.getAltitude(current.h3Index)});
+          middlePath.add(GeoCode.builder()
+                  .latitude(String.valueOf(geoCoord.lat))
+                  .longitude(String.valueOf(geoCoord.lng))
+                  .angleSlope(String.valueOf(h3IndexService.getAltitude(current.h3Index)))
+                  .build());
           current = current.preNode;
         }
-        Collections.reverse(path);
 
-        return path;
+        Collections.reverse(middlePath);
+        //경유지 추가
+        StringBuilder sb = new StringBuilder();
+        int n = middlePath.size();
+        if(n<=5){
+          for(int i = 0; i<n; i++){
+            sb.append(middlePath.get(i).getLongitude()).append(",").append(middlePath.get(i).getLatitude());
+            if(i!=n-1)
+              sb.append("_");
+          }
+        }
+        else{
+          int term = n/5;
+          for(int i = 0; i<4; i++)
+            sb.append(middlePath.get(i*term).getLongitude()).append(",").append(middlePath.get(i*term).getLatitude()).append("_");
+          sb.append(middlePath.get(n-1).getLongitude()).append(",").append(middlePath.get(n-1).getLatitude());
+        }
+        log.info("@@@@@@@@"+sb.toString());
+        Map<String, Object> map = new HashMap<>();
+        map.put("speed", type.equals("휠체어") ? 4 : type.equals("전동휠체어") ? 10 : 3);
+        map.put("startX", list.get(0).getLongitude());
+        map.put("startY", list.get(0).getLatitude());
+        map.put("endX", list.get(list.size()-1).getLongitude());
+        map.put("endY", list.get(list.size()-1).getLatitude());
+        map.put("passList",sb.toString());
+        map.put("startName", "출발지");
+        map.put("endName", "도착지");
+        map.put("searchOption", "30");
+
+          SearchPathToWheelCommand command = null;
+          try {
+              command = SearchPathToWheelCommand.builder()
+                      .uri(new URI("https://apis.openapi.sk.com/tmap/routes/pedestrian"))
+                      .requestBody(map)
+                      .build();
+          }  catch (URISyntaxException e) {
+            throw new CustomException(ErrorCode.URI_SYNTAX_ERROR);
+          }
+
+          return useWheelPath(command);
       }
 
       openMap.remove(current.h3Index);
@@ -529,21 +583,44 @@ public class PlaceService {
           continue;
 
         //Math.abs() : 현재 인덱스와 이동할 인덱스의 고도 차이, 가중치 계산 필요
-        double tentativeG = current.g + Math.abs(h3IndexService.getAltitude(current.h3Index)-h3IndexService.getAltitude(h3Index));
+        double diff = Math.abs(h3IndexService.getAltitude(current.h3Index)-h3IndexService.getAltitude(h3Index));
+        double tentativeG = current.g;
+        if(diff<100)
+          tentativeG+=diff*10;
+        else
+          tentativeG=987654321;
+//        if(0<=diff && diff<30)
+//          tentativeG += diff*9;
+//        else if(30<=diff && diff<50)
+//          tentativeG += diff*18;
+//        else if(50<=diff && diff<100)
+//          tentativeG += diff*36;
+//        else if(100<=diff)
+//          tentativeG += diff*100;
+//        if(0<=diff && diff<3)
+//          tentativeG += diff*9;
+//        else if(3<=diff && diff<6)
+//          tentativeG += diff*18;
+//        else if(6<=diff && diff<9)
+//          tentativeG += diff*36;
+//        else if(9<=diff)
+//          tentativeG += 99999.0;
         //openMap에 없거나, 이미 openMap에 존재하는 인덱스보다 가중치가 작은 경우
         if (!openMap.containsKey(h3Index) || tentativeG < openMap.get(h3Index).g) {
           NodeAStar node = new NodeAStar(h3Index);
           node.preNode = current;
           node.g = tentativeG;
-          node.h = Math.pow(Math.abs(h3.h3ToGeo(h3Index).lat - eY), 2) + Math.pow(
-              Math.abs(h3.h3ToGeo(h3Index).lng - eX), 2);
+          node.h = calculateDistance(h3.h3ToGeo(h3Index).lat,h3.h3ToGeo(h3Index).lng,eX,eY);
+          log.info(node.g+"******"+node.h);
           node.f = node.g + node.h;
+          if(node.f>99999.0)
+            continue;
           openMap.put(h3Index, node);
         }
 
       }
     }
-
+    log.info("######경로가 없음");
     return null;
   }
 

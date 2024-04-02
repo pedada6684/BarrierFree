@@ -14,8 +14,6 @@ import com.fullship.hBAF.global.api.response.OdSayPath;
 import com.fullship.hBAF.global.api.response.PathGeoCode;
 import com.fullship.hBAF.global.api.response.TaxiPathForm;
 import com.fullship.hBAF.global.api.response.WheelPathForm;
-import com.fullship.hBAF.domain.place.service.command.Request.GetPlaceListRequestCommand;
-import com.fullship.hBAF.global.api.service.TMapApiService;
 import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
 import com.fullship.hBAF.global.api.service.command.SearchPathToTrafficCommand;
 import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
@@ -33,7 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -50,7 +48,16 @@ public class PlaceController {
   @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = WheelPathForm.class)))
   public ResponseEntity<CommonResponseEntity> searchPathByWheel(@RequestBody PathSearchToWheelRequest requestDto) {
     SearchPathToWheelCommand command = requestDto.createForWheel();
-    return getResponseEntity(SuccessCode.OK, placeService.useWheelPath(command));
+    WheelPathForm wheelPathForm = placeService.useWheelPath(command);
+
+    List<WheelPathForm> response = new ArrayList<>();
+    response.add(wheelPathForm);
+    int[] se;
+    if((se=placeService.findScarp(wheelPathForm.getGeoCode()))!=null){
+      WheelPathForm pathByAStar = placeService.findPathByAStar(wheelPathForm.getGeoCode(), se, requestDto.getType());
+      response.add(pathByAStar);
+    }
+    return getResponseEntity(SuccessCode.OK, response);
   }
 
   @PostMapping("/path/transit")

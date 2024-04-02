@@ -17,11 +17,11 @@ import java.time.Duration;
 @EnableCaching
 public class RedisCacheConfig {
     @Bean
-    public CacheManager BFPlaceCacheManager(RedisConnectionFactory factory) {
+    public CacheManager BAFCacheManager(RedisConnectionFactory factory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
-                .entryTtl(Duration.ofMinutes(30L));
+                .entryTtl(Duration.ofMinutes(10L));
         return RedisCacheManager.RedisCacheManagerBuilder
                 .fromConnectionFactory(factory).cacheDefaults(config).build();
     }

@@ -247,6 +247,7 @@ public class PlaceService {
   /**
    * 택시 경로 탐색
    */
+  @Cacheable(value = "TaxiPath", key = "#command", cacheManager = "BAFCacheManager")
   public TaxiPathForm useTaxiPath(SearchPathToTrafficCommand command) {
     TaxiPathForm taxiPathForm = tMapApiService.searchPathToCar(command);
     try {
@@ -259,33 +260,6 @@ public class PlaceService {
     } catch (IOException e) {
       throw new CustomException(ErrorCode.FAIL_CALCULATE_COST);
     }
-  }
-
-  /**
-   * 배리어프리 시설 세부 정보
-   */
-  public GetPlaceResponse getPlace(String poiId) {
-    Place place = placeRepository.findPlaceByPoiIdWithImage(poiId)
-        .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
-    return GetPlaceResponse.from(place);
-  }
-
-  /**
-   * 장애인 시설 카테고리별 불러오기
-   */
-  public List<PlaceListResponse> getPlaceList(GetPlaceListRequestComment comment) {
-    List<Place> placeEntityList = placeRepository.findByTypeWithImage(true);
-    double lat = Double.parseDouble(comment.getLat());
-    double lng = Double.parseDouble(comment.getLng());
-
-    List<PlaceListResponse> placeList = new ArrayList<>();
-    for (Place place : placeEntityList) {
-      if (calculateDistance(lat, lng, Double.parseDouble(place.getLatitude()),
-          Double.parseDouble(place.getLongitude())) <= 3000) {
-        placeList.add(PlaceListResponse.from(place));
-      }
-    }
-    return placeList;
   }
 
   /**
@@ -417,7 +391,7 @@ public class PlaceService {
    * 주변 장애인 시설 카테고리별 불러오기
    * @return
    */
-  @Cacheable(value = "BFPlaces", key = "#command", cacheManager = "BFPlaceCacheManager")
+  @Cacheable(value = "BFPlaces", key = "#command", cacheManager = "BAFCacheManager")
   public List<PlaceListResponse> getPlaceList(GetPlaceListRequestCommand command) {
     List<Place> placeEntityList = placeRepository.findByTypeWithImage(true);
     double lat = command.getLat();

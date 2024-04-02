@@ -251,16 +251,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: Row(
                 children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.swap_vert,
-                      color: Colors.white,
-                      size: 40.0,
-                    ),
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                  ),
+                  SizedBox(width: 20),
                   Expanded(
                     child: Column(
                       children: [
@@ -279,17 +270,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.0),
                               borderSide: BorderSide.none,
-                            ),
-                            suffixIcon: IconButton(
-                              onPressed: () {
-                                // _panelController.isPanelClosed
-                                //     ? _panelController.open()
-                                //     : _panelController.close();
-                                },
-                              icon: Icon(
-                                Icons.search,
-                              ),
-                            ),
+                            )
                           ),
                           onChanged: (value) {
                             _search();
@@ -315,10 +296,6 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                               borderRadius: BorderRadius.circular(8.0),
                               borderSide: BorderSide.none,
                             ),
-                            suffixIcon: IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.search,),
-                            ),
                           ),
                           onChanged: (value) {
                             _destinationsearch();
@@ -328,7 +305,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(width: 50),
+                  SizedBox(width: 20),
                 ],
               ),
             ),

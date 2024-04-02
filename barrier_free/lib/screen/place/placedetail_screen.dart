@@ -54,9 +54,34 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     reviewListFuture =
         ReviewService().fetchReviewByPlaceId(widget.placeDetail['id']);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeLocationInfo();
+      // _initializeLocationInfo();
+      if (widget.isStart) {
+        startLat = double.tryParse(widget.placeDetail['y'].toString()) ?? 0.0;
+        startLon = double.tryParse(widget.placeDetail['x'].toString()) ?? 0.0;
+        endLat =
+            Provider.of<TextProvider>(context, listen: false).endLat ?? 0.0;
+        endLon =
+            Provider.of<TextProvider>(context, listen: false).endLon ?? 0.0;
+
+        // Provider를 사용하여 위도와 경도 설정
+        Provider.of<TextProvider>(context, listen: false).setStartLat(startLat);
+        Provider.of<TextProvider>(context, listen: false).setStartLon(startLon);
+      } else {
+        // 위젯이 생성될 때 도착지의 위도와 경도는 초기화하지 않습니다.
+        endLat = double.tryParse(widget.placeDetail['y'].toString()) ?? 0.0;
+        endLon = double.tryParse(widget.placeDetail['x'].toString()) ?? 0.0;
+        startLat =
+            Provider.of<TextProvider>(context, listen: false).startLat ?? 0.0;
+        startLon =
+            Provider.of<TextProvider>(context, listen: false).startLon ?? 0.0;
+
+        Provider.of<TextProvider>(context, listen: false).setEndLat(endLat);
+        Provider.of<TextProvider>(context, listen: false).setEndLon(endLon);
+      }
+
       _initializeUserId();
 
+      //배리어프리 정보
       _fetchBarrierFreeDetails().then((details) {
         setState(() {
           barrierFreeDetails =
@@ -66,19 +91,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     });
   }
 
-  void _initializeLocationInfo() {
-    startLat = double.tryParse(widget.placeDetail['y'].toString()) ?? 0.0;
-    startLon = double.tryParse(widget.placeDetail['x'].toString()) ?? 0.0;
-    // Provider를 사용하여 초기 위치 설정
-    final textProvider = Provider.of<TextProvider>(context, listen: false);
-    if (widget.isStart) {
-      textProvider.setStartLat(startLat);
-      textProvider.setStartLon(startLon);
-    } else {
-      textProvider.setEndLat(startLat);
-      textProvider.setEndLon(startLon);
-    }
-  }
 
   Future<void> _initializeUserId() async {
     String? token = await SecureStorageService().getToken();

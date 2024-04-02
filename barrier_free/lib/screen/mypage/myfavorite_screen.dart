@@ -1,8 +1,10 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
+import 'package:barrier_free/provider/location_provider.dart';
 import 'package:barrier_free/provider/user_provider.dart';
 import 'package:barrier_free/screen/place/placedetail_screen.dart';
 import 'package:barrier_free/services/bookmarkPlace_service.dart';
+import 'package:barrier_free/services/search_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,7 +28,6 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
   }
 
   Future<void> _loadMyBookMarkList() async {
-    print('loadMyBookMarkList요청확인');
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final userId = userProvider.userId;
@@ -37,9 +38,32 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
         setState(() {
           myBmList = Future.value(bookmarks);
         });
+        print(bookmarks);
       }
     } catch (e) {
       print('북마크 리스트 불러오는 동안 오류 발생!!!');
+    }
+  }
+
+  void _onBookmarkTap(dynamic bookmark) async {
+    //poi로 카카오 호출
+    final keyword = bookmark['placeName'];
+
+    try {
+      final searchResults = await fetchSearchResults(keyword);
+      if (searchResults.isNotEmpty) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => PlaceDetailScreen(
+                    placeDetail: searchResults.first,
+                    placeCategory: bookmark['category'],
+                    isStart: false)));
+      } else {
+        throw Exception('searchResults null');
+      }
+    } catch (e) {
+      print('즐겨찾기 검색 실패 $e');
     }
   }
 
@@ -82,18 +106,7 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
                               trailing: const Icon(Icons.arrow_forward_ios,
                                   color: mainGray),
                               onTap: () {
-                                // 여기서 PlaceDetailScreen으로 넘어갈 때, 해당 장소의 상세 데이터를 함께 전달합니다.
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PlaceDetailScreen(
-                                      placeDetail: bookmark,
-                                      // 예제에서는 {}로 되어 있지만, 실제 데이터로 변경
-                                      placeCategory: bookmark[
-                                          'category'], isStart: false, // 'category' 필드 사용 예시
-                                    ),
-                                  ),
-                                );
+                                _onBookmarkTap(bookmark);
                               },
                             ),
                           ),

@@ -133,7 +133,7 @@ class _MapResultScreenState extends State<MapResultScreen> {
                   child: Text(
                     '검색 결과',
                     style: TextStyle(
-                      fontSize: 18.0,
+                      fontSize: 32.0,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

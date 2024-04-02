@@ -1,3 +1,4 @@
+import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/screen/place/placedetail_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -5,7 +6,6 @@ class MapSearchResultList extends StatelessWidget {
   final List<dynamic> searchResults;
   final List<dynamic> startsearchResults;
   final List<dynamic> destinationsearchResults;
-
 
   const MapSearchResultList({
     super.key,
@@ -22,16 +22,15 @@ class MapSearchResultList extends StatelessWidget {
             result.containsKey('distance') && result['distance'] != null)
         .toList();
 
-
     return ListView(
       children: [
         const Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
           child: Text(
             '검색 결과',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 18.0,
+              fontSize: 22.0,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -44,36 +43,61 @@ class MapSearchResultList extends StatelessWidget {
           String categoryReal = categoryDetail.length > 1
               ? categoryDetail[1].trim()
               : categoryName;
-          return ListTile(
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  result['place_name'],
-                  style: const TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                  ),
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              child: ListTile(
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      result['place_name'],
+                      style: const TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text('${distanceInKm.toStringAsFixed(1)}km'),
+                  ],
                 ),
-                Text('${distanceInKm.toStringAsFixed(1)}km'),
-              ],
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(categoryReal),
-                Text(result['road_address_name'] ?? '주소 정보 없음'),
-                Text('${result['phone']}'),
-              ],
-            ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PlaceDetailScreen(placeDetail: result, placeCategory: categoryReal, isStart: true,),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    SizedBox(
+                      height: 8.0,
+                    ),
+                    Text(
+                      categoryReal,
+                      style: TextStyle(color: mainGray),
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          result['road_address_name'] ?? '주소 정보 없음',
+                          style: TextStyle(color: mainGray),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      '${result['phone']}',
+                      style: TextStyle(color: mainGray),
+                    ),
+                  ],
                 ),
-              );
-            },
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlaceDetailScreen(
+                        placeDetail: result,
+                        placeCategory: categoryReal,
+                        isStart: true,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
           );
         }).toList(),
         const SizedBox(height: 8.0),
@@ -107,7 +131,11 @@ class MapSearchResultList extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PlaceDetailScreen(placeDetail: result, placeCategory: categoryReal, isStart: true,),
+                  builder: (context) => PlaceDetailScreen(
+                    placeDetail: result,
+                    placeCategory: categoryReal,
+                    isStart: true,
+                  ),
                 ),
               );
             },
@@ -146,7 +174,11 @@ class MapSearchResultList extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PlaceDetailScreen(placeDetail: result, placeCategory: categoryReal, isStart: false,),
+                  builder: (context) => PlaceDetailScreen(
+                    placeDetail: result,
+                    placeCategory: categoryReal,
+                    isStart: false,
+                  ),
                 ),
               );
             },

@@ -1,19 +1,18 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/provider/user_provider.dart';
+import 'package:barrier_free/providers/text_provider.dart';
+import 'package:barrier_free/screen/directions/directions_screen.dart';
 import 'package:barrier_free/screen/review/review_screen.dart';
 import 'package:barrier_free/services/bookmarkPlace_service.dart';
 import 'package:barrier_free/services/place_service.dart';
 import 'package:barrier_free/services/review_service.dart';
 import 'package:barrier_free/services/secure_storage_service.dart';
 import 'package:barrier_free/services/test_service.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakaomap_webview/kakaomap_webview.dart';
-import 'package:barrier_free/screen/directions/directions_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:barrier_free/providers/text_provider.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> placeDetail;
@@ -49,37 +48,36 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   void initState() {
     super.initState();
     // 장소 상세 정보에서 위도와 경도를 가져옵니다.
-    if (widget.isStart) {
-      startLat = double.tryParse(widget.placeDetail['y'].toString()) ?? 0.0;
-      startLon = double.tryParse(widget.placeDetail['x'].toString()) ?? 0.0;
-      endLat = Provider.of<TextProvider>(context, listen: false).endLat ?? 0.0;
-      endLon = Provider.of<TextProvider>(context, listen: false).endLon ?? 0.0;
+    print('============${widget.placeDetail}==============');
+    barrierFreeDetailsFuture = _fetchBarrierFreeDetails();
 
-      // Provider를 사용하여 위도와 경도 설정
-      Provider.of<TextProvider>(context, listen: false).setStartLat(startLat);
-      Provider.of<TextProvider>(context, listen: false).setStartLon(startLon);
-    } else {
-      // 위젯이 생성될 때 도착지의 위도와 경도는 초기화하지 않습니다.
-      endLat = double.tryParse(widget.placeDetail['y'].toString()) ?? 0.0;
-      endLon = double.tryParse(widget.placeDetail['x'].toString()) ?? 0.0;
-      startLat =
-          Provider.of<TextProvider>(context, listen: false).startLat ?? 0.0;
-      startLon =
-          Provider.of<TextProvider>(context, listen: false).startLon ?? 0.0;
-
-      Provider.of<TextProvider>(context, listen: false).setEndLat(endLat);
-      Provider.of<TextProvider>(context, listen: false).setEndLon(endLon);
-    }
-
-    _initializeUserId();
     reviewListFuture =
         ReviewService().fetchReviewByPlaceId(widget.placeDetail['id']);
-    barrierFreeDetailsFuture = _fetchBarrierFreeDetails();
-    _fetchBarrierFreeDetails().then((details) {
-      setState(() {
-        barrierFreeDetails = List<String>.from(details['barrierFree']).toList();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeLocationInfo();
+      _initializeUserId();
+
+      _fetchBarrierFreeDetails().then((details) {
+        setState(() {
+          barrierFreeDetails =
+              List<String>.from(details['barrierFree']).toList();
+        });
       });
     });
+  }
+
+  void _initializeLocationInfo() {
+    startLat = double.tryParse(widget.placeDetail['y'].toString()) ?? 0.0;
+    startLon = double.tryParse(widget.placeDetail['x'].toString()) ?? 0.0;
+    // Provider를 사용하여 초기 위치 설정
+    final textProvider = Provider.of<TextProvider>(context, listen: false);
+    if (widget.isStart) {
+      textProvider.setStartLat(startLat);
+      textProvider.setStartLon(startLon);
+    } else {
+      textProvider.setEndLat(startLat);
+      textProvider.setEndLon(startLon);
+    }
   }
 
   Future<void> _initializeUserId() async {
@@ -89,15 +87,19 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       setState(() {
         userId = decodeUserId;
       });
-      // print(decodeUserId);
     }
   }
 
   Future<Map<String, dynamic>> _fetchBarrierFreeDetails() async {
     // Map<String, dynamic> details = {};
+    print(await PlaceService().fetchBfByPoiId(widget.placeDetail['id']));
     try {
       final details =
           await PlaceService().fetchBfByPoiId(widget.placeDetail['id']);
+      setState(() {
+        barrierFreeDetails =
+            List<String>.from(details['barrierFree'] ?? []).toList();
+      });
       return details;
     } catch (e) {
       print('배리어프리 정보 가져오기 실패: $e');

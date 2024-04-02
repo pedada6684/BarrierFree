@@ -14,5 +14,7 @@ public class BookmarkPlaceRequestCommand {
     String address;
     String latitude;
     String longitude;
+    String phone;
+    String placeUrl;
 
 }

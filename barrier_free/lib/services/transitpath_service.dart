@@ -35,7 +35,8 @@ class TransitPathService {
       print(parsedJson);
       return parsedJson['data'];
     } else {
-      throw Exception('대중교통 경로 불러오기 실패: ${response.statusCode} ${response.reasonPhrase}');
+      throw Exception(
+          '대중교통 경로 불러오기 실패: ${response.statusCode} ${response.reasonPhrase}');
     }
   }
 }

@@ -6,6 +6,7 @@ import 'package:barrier_free/services/location_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:kakaomap_webview/kakaomap_webview.dart';
+
 // import 'package:barrier_free/services/transitpath_service.dart';
 import 'package:barrier_free/services/taxipath_service.dart';
 
@@ -18,7 +19,7 @@ class TaxiPathMap extends StatefulWidget {
   final double? endLat;
   final double? endLon;
 
-  final String? vehicleType;
+  final String? type;
 
   final List<String> formattedCoordinates;
   final List<String> taxiInfo;
@@ -36,12 +37,11 @@ class TaxiPathMap extends StatefulWidget {
     this.startLon,
     this.endLat,
     this.endLon,
-    this.vehicleType,
+    this.type,
     required this.minCost,
     required this.maxCost,
     required this.totalDistance,
     required this.totalTime,
-
     required this.formattedCoordinates,
     required this.taxiInfo,
   });
@@ -53,6 +53,7 @@ class TaxiPathMap extends StatefulWidget {
 class _TaxiPathMapState extends State<TaxiPathMap> {
   // late List<Position> _markerPositions;
   String customScript = '';
+
   // late String formattedCoordinates;
 
   @override
@@ -110,6 +111,9 @@ class _TaxiPathMapState extends State<TaxiPathMap> {
     final appKey = dotenv.env['APP_KEY'];
     final currentPosition = LocationService().currentPosition;
 
+    int totalTimeMinutes = int.tryParse(widget.totalTime) ?? 0;
+    double totalDistanceKm = (int.tryParse(widget.totalDistance) ?? 0) / 100.0;
+
     print(widget.minCost);
 
     if (currentPosition == null) {
@@ -133,7 +137,8 @@ class _TaxiPathMapState extends State<TaxiPathMap> {
                   kakaoMapKey: appKey!,
                   lat: currentPosition!.latitude,
                   lng: currentPosition!.longitude,
-                  markerImageURL: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                  markerImageURL:
+                      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
                   showZoomControl: false,
                   showMapTypeControl: false,
                   draggableMarker: true,
@@ -175,7 +180,7 @@ class _TaxiPathMapState extends State<TaxiPathMap> {
                             Row(
                               children: [
                                 Text(
-                                  '약 ${int.parse(widget.totalTime) ~/ 60}분',
+                                  '약 ${totalTimeMinutes ~/ 60}분',
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
@@ -183,7 +188,7 @@ class _TaxiPathMapState extends State<TaxiPathMap> {
                                 ),
                                 SizedBox(width: 20), // 텍스트들 사이의 간격 조정
                                 Text(
-                                  '${(int.parse(widget.totalDistance) / 1000).toStringAsFixed(2)}km',
+                                  '${totalDistanceKm.toStringAsFixed(2)}km',
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.normal,

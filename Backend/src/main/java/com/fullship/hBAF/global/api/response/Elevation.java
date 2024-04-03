@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -20,6 +21,7 @@ import org.json.simple.parser.ParseException;
 import org.springframework.http.ResponseEntity;
 
 @Data
+@Slf4j
 @Builder
 public class Elevation {
 
@@ -45,9 +47,13 @@ public class Elevation {
       throw new CustomException(ErrorCode.JSON_PARSE_IMPOSSIBLE);
     }
 
+    log.info("eleWheelGeoCode = {}", geoCode);
+
     for (int i = 0; i < geoCode.size() - 1; i++) {
       geoCode.get(i).setAngleSlope(calculateSlope(geoCode.get(i), geoCode.get(i + 1)));
     }
+
+    log.info("angWheelGeoCode = {}", geoCode);
 
     geoCode.get(geoCode.size() - 1).setAngleSlope("0");
 

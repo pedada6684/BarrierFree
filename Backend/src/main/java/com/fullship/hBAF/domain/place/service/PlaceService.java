@@ -162,16 +162,20 @@ public class PlaceService {
           } else {
             WheelPathForm wheelForm = tMapApiService.searchPathToWheel(
                 createForWheel(startGeo, endGeo, command.getType()));
-            odSayPath.setTotalTime(odSayPath.getTotalTime() - odSayPath.getSubPaths().get(j).getSectionTime());
+            odSayPath.setTotalTime(
+                odSayPath.getTotalTime() - odSayPath.getSubPaths().get(j).getSectionTime());
             odSayPath.getSubPaths().set(j, changeSubPathToWheel(wheelForm));
-            odSayPath.setTotalTime(odSayPath.getTotalTime() + odSayPath.getSubPaths().get(j).getSectionTime());
+            odSayPath.setTotalTime(
+                odSayPath.getTotalTime() + odSayPath.getSubPaths().get(j).getSectionTime());
             odSayPath.setGeoCode(setWheelGeoCode(odSayPath.getGeoCode(), wheelForm, j));
           }
         }
         /* BUS 모드 */
         else if (subPath.getTrafficType() == 2) {
+          List<Bus> realBus = new ArrayList<>();
           /* 탑승 가능한 Bus 목록 */
-          for (Bus bus : subPath.getBusList()) {
+          for (int bb = 0; bb < subPath.getBusList().size(); bb++) {
+            Bus bus = subPath.getBusList().get(bb);
             /* 버스 고르기 해야 함 */
             // 1. 상 하행 구분
             log.info("stopId = {}", subPath.getStartStationId());
@@ -179,12 +183,18 @@ public class PlaceService {
 
             BusStop busStop = busStopRepository.findBusStopByStopIdAndBusId(
                 subPath.getStartStationId(), bus.getBusId());
+            if (busStop.getLocalStationId().equals("0")) {
+              continue;
+            } else {
+              realBus.add(bus);
+            }
             String direction = busStop.getStopDirection();
             // 2. 검색 대상 노선 찾기
             String busPublicId = bus.getPublicBusId();
             // 3. 해당 노선에 버스 목록 찾기 (상 하행 필터링)
             List<BusesCurLocation> buses =
-                tagoApiService.findBusesByPublicId(busPublicId, direction);
+                tagoApiService.findBusesByPublicId(
+                    busPublicId, direction, bus.getBusId(), busStop.getId());
             List<BusesCurLocation> lowFilter = new ArrayList<>();
             // 4. 저상 필터링
             for (BusesCurLocation lowBus : buses) {
@@ -195,14 +205,20 @@ public class PlaceService {
               }
             }
             // 5. 몇 정류장 전에 있는지 확인
+            long minCountStop = 1000;
             for (BusesCurLocation busesCurLocation : lowFilter) {
               BusStop curBusStop =
-                  busStopRepository.findBusStopByLocalStationIdAndBusId(busesCurLocation.getLocalStationId(),
+                  busStopRepository.findBusStopByLocalStationIdAndBusId(
+                      busesCurLocation.getLocalStationId(),
                       bus.getBusId());
-              long countStop = Math.abs(busStop.getId() - curBusStop.getId());
-              odSayPath.getSubPaths().get(j).setBeforeCount(countStop);
+              System.out.println("+======busStop======" + busStop);
+              System.out.println("+======curBusStop======" + curBusStop);
+              minCountStop = Math.min(minCountStop, Math.abs(busStop.getId() - curBusStop.getId()));
             }
+            odSayPath.getSubPaths().get(j).getBusList().get(bb)
+                .setBusBeforeCount(String.valueOf(minCountStop != 1000 ? minCountStop : 0));
           }
+          odSayPath.getSubPaths().get(j).setBusList(realBus);
         }
         /* SUBWAY 모드 */
         else if (subPath.getTrafficType() == 1) {
@@ -274,7 +290,7 @@ public class PlaceService {
     long lastH3Index = h3.geoToH3(coord.lat, coord.lng, 8);
 
     int clockIdx = arr.size() - 1;
-    if (!h3IndexService.isContainInRedisH3(lastH3Index)){
+    if (!h3IndexService.isContainInRedisH3(lastH3Index)) {
       clockIdx = findClock(arr);
     }
 
@@ -321,9 +337,9 @@ public class PlaceService {
       GeoCoord coord = new GeoCoord(Double.parseDouble(arr.get(mid).getLatitude()),
           Double.parseDouble(arr.get(mid).getLongitude()));
       long findH3Index = h3.geoToH3(coord.lat, coord.lng, 12);
-      if(h3IndexService.isContainInRedisH3(findH3Index)) {
+      if (h3IndexService.isContainInRedisH3(findH3Index)) {
         l = mid + 1;
-      }else{
+      } else {
         r = mid;
       }
     }
@@ -383,14 +399,15 @@ public class PlaceService {
     return Precision.round(s, 3);
   }
 
-  public GetPlaceResponse getPlace(String poiId){
+  public GetPlaceResponse getPlace(String poiId) {
     Place place = placeRepository.findPlaceByPoiIdWithImage(poiId)
-            .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
     return GetPlaceResponse.from(place);
   }
 
   /**
    * 주변 장애인 시설 카테고리별 불러오기
+   *
    * @return
    */
   @Cacheable(value = "BFPlaces", key = "#command", cacheManager = "BAFCacheManager")
@@ -401,7 +418,8 @@ public class PlaceService {
 
     List<PlaceListResponse> placeList = new ArrayList<>();
     for (Place place : placeEntityList) {
-      if(calculateDistance(lat,lng,Double.parseDouble(place.getLatitude()),Double.parseDouble(place.getLongitude()))<=3000) {
+      if (calculateDistance(lat, lng, Double.parseDouble(place.getLatitude()),
+          Double.parseDouble(place.getLongitude())) <= 3000) {
         placeList.add(PlaceListResponse.from(place));
       }
     }
@@ -441,8 +459,8 @@ public class PlaceService {
 
   /**
    * 도보 경로를 넣었을 때, 급경사의 시작과 끝을 출력해주는 함수
-   * @param path : (위도,경도,경사)로 구성된 경로 List
-   * boundary : 급경사를 구분하는 기준
+   *
+   * @param path : (위도,경도,경사)로 구성된 경로 List boundary : 급경사를 구분하는 기준
    * @return
    */
   public int[] findScarp(List<GeoCode> path) {
@@ -451,7 +469,7 @@ public class PlaceService {
     int[] result = new int[2];
     int cal = 0;
 
-    for (int i = 0; i<path.size(); i++) {
+    for (int i = 0; i < path.size(); i++) {
       double slope = Math.abs(Double.parseDouble(path.get(i).getAngleSlope()));
 
       if (slope > boundary) {
@@ -462,8 +480,9 @@ public class PlaceService {
         result[1] = i;
       }
     }
-    if(cal >0)
+    if (cal > 0) {
       return result;
+    }
     return null;
   }
 
@@ -484,10 +503,12 @@ public class PlaceService {
     String type = command.getType();
     int sIdx = se[0];
     int eIdx = se[1];
-    if(sIdx>0)
+    if (sIdx > 0) {
       sIdx--;
-    if(eIdx<list.size()-1)
+    }
+    if (eIdx < list.size() - 1) {
       eIdx++;
+    }
 
     Map<Long, NodeAStar> openMap = new HashMap<>();
     Map<Long, NodeAStar> closeMap = new HashMap<>();
@@ -497,18 +518,18 @@ public class PlaceService {
     double eX = Double.parseDouble(list.get(eIdx).getLatitude());
     double eY = Double.parseDouble(list.get(eIdx).getLongitude());
 
-      H3Core h3 = null;
-      try {
-          h3 = H3Core.newInstance();
-      } catch (IOException e) {
-          throw new RuntimeException(e);
-      }
-      GeoCoord startGeo = new GeoCoord(sX,sY);
-    GeoCoord endGeo = new GeoCoord(eX,eY);
-    long start = h3.geoToH3(startGeo.lat, startGeo.lng,12);
-    long end = h3.geoToH3(endGeo.lat, endGeo.lng,12);
+    H3Core h3 = null;
+    try {
+      h3 = H3Core.newInstance();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    GeoCoord startGeo = new GeoCoord(sX, sY);
+    GeoCoord endGeo = new GeoCoord(eX, eY);
+    long start = h3.geoToH3(startGeo.lat, startGeo.lng, 12);
+    long end = h3.geoToH3(endGeo.lat, endGeo.lng, 12);
     //급경사의 시작점 또는 도착점이 대전이 아닌 경우 경로 null 반환
-    if(!h3IndexService.isContainInRedisH3(start) || !h3IndexService.isContainInRedisH3(end)) {
+    if (!h3IndexService.isContainInRedisH3(start) || !h3IndexService.isContainInRedisH3(end)) {
       log.info("#####대전이 아님");
       return null;
     }
@@ -530,10 +551,10 @@ public class PlaceService {
         while (current != null) {
           GeoCoord geoCoord = h3.h3ToGeo(current.h3Index);
           middlePath.add(GeoCode.builder()
-                  .latitude(String.valueOf(geoCoord.lat))
-                  .longitude(String.valueOf(geoCoord.lng))
-                  .angleSlope(String.valueOf(h3IndexService.getAltitude(current.h3Index)))
-                  .build());
+              .latitude(String.valueOf(geoCoord.lat))
+              .longitude(String.valueOf(geoCoord.lng))
+              .angleSlope(String.valueOf(h3IndexService.getAltitude(current.h3Index)))
+              .build());
           current = current.preNode;
         }
 
@@ -541,26 +562,30 @@ public class PlaceService {
         //경유지 추가
         StringBuilder sb = new StringBuilder();
         int n = middlePath.size();
-        if(n<=5){
-          for(int i = 0; i<n; i++){
-            sb.append(middlePath.get(i).getLongitude()).append(",").append(middlePath.get(i).getLatitude());
-            if(i!=n-1)
+        if (n <= 5) {
+          for (int i = 0; i < n; i++) {
+            sb.append(middlePath.get(i).getLongitude()).append(",")
+                .append(middlePath.get(i).getLatitude());
+            if (i != n - 1) {
               sb.append("_");
+            }
           }
-        }
-        else{
-          int term = n/5;
-          for(int i = 0; i<4; i++)
-            sb.append(middlePath.get(i*term).getLongitude()).append(",").append(middlePath.get(i*term).getLatitude()).append("_");
-          sb.append(middlePath.get(n-1).getLongitude()).append(",").append(middlePath.get(n-1).getLatitude());
+        } else {
+          int term = n / 5;
+          for (int i = 0; i < 4; i++) {
+            sb.append(middlePath.get(i * term).getLongitude()).append(",")
+                .append(middlePath.get(i * term).getLatitude()).append("_");
+          }
+          sb.append(middlePath.get(n - 1).getLongitude()).append(",")
+              .append(middlePath.get(n - 1).getLatitude());
         }
         Map<String, Object> map = new HashMap<>();
         map.put("speed", type.equals("휠체어") ? 4 : type.equals("전동휠체어") ? 10 : 3);
         map.put("startX", list.get(0).getLongitude());
         map.put("startY", list.get(0).getLatitude());
-        map.put("endX", list.get(list.size()-1).getLongitude());
-        map.put("endY", list.get(list.size()-1).getLatitude());
-        map.put("passList",sb.toString());
+        map.put("endX", list.get(list.size() - 1).getLongitude());
+        map.put("endY", list.get(list.size() - 1).getLatitude());
+        map.put("passList", sb.toString());
         map.put("startName", "출발지");
         map.put("endName", "도착지");
         map.put("searchOption", "30");
@@ -581,20 +606,24 @@ public class PlaceService {
       openMap.remove(current.h3Index);
       closeMap.put(current.h3Index, current);
 
-      for(long h3Index : h3.kRing(current.h3Index,1)){
-        if(!h3IndexService.isContainInRedisH3(h3Index))
+      for (long h3Index : h3.kRing(current.h3Index, 1)) {
+        if (!h3IndexService.isContainInRedisH3(h3Index)) {
           continue;
+        }
 
-        if (closeMap.containsKey(h3Index))
+        if (closeMap.containsKey(h3Index)) {
           continue;
+        }
 
         //Math.abs() : 현재 인덱스와 이동할 인덱스의 고도 차이, 가중치 계산 필요
-        double diff = Math.abs(h3IndexService.getAltitude(current.h3Index)-h3IndexService.getAltitude(h3Index));
+        double diff = Math.abs(
+            h3IndexService.getAltitude(current.h3Index) - h3IndexService.getAltitude(h3Index));
         double tentativeG = current.g;
-        if(diff<100)
-          tentativeG+=diff*10;
-        else
-          tentativeG=987654321;
+        if (diff < 100) {
+          tentativeG += diff * 10;
+        } else {
+          tentativeG = 987654321;
+        }
 //        if(0<=diff && diff<30)
 //          tentativeG += diff*9;
 //        else if(30<=diff && diff<50)
@@ -616,11 +645,12 @@ public class PlaceService {
           NodeAStar node = new NodeAStar(h3Index);
           node.preNode = current;
           node.g = tentativeG;
-          node.h = calculateDistance(h3.h3ToGeo(h3Index).lat,h3.h3ToGeo(h3Index).lng,eX,eY);
-          log.info(node.g+"******"+node.h);
+          node.h = calculateDistance(h3.h3ToGeo(h3Index).lat, h3.h3ToGeo(h3Index).lng, eX, eY);
+          log.info(node.g + "******" + node.h);
           node.f = node.g + node.h;
-          if(node.f>99999.0)
+          if (node.f > 99999.0) {
             continue;
+          }
           openMap.put(h3Index, node);
         }
 

@@ -6,6 +6,7 @@ import com.fullship.hBAF.global.response.exception.CustomException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import lombok.AllArgsConstructor;
@@ -108,8 +109,6 @@ public class OdSayPath {
     private List<String> passLocalId;
     @Schema(description = "경유 버스 정류장 OdSayId")
     private List<String> passStationId;
-    @Schema(description = "남은 정류장 수")
-    private long beforeCount;
 
     @Data
     @Builder
@@ -126,6 +125,8 @@ public class OdSayPath {
       private String busId;
       @Schema(description = "버스 공공 식별번호")
       private String publicBusId;
+      @Schema(description = "도착 예정 버스")
+      private String busBeforeCount;
     }
 
   }
@@ -162,7 +163,7 @@ public class OdSayPath {
       JSONObject object = (JSONObject) parser.parse(result.getBody());
       JSONObject resulT = (JSONObject) object.get("result");
       JSONArray path = (JSONArray) resulT.get("path");
-      for (Object o : path) {
+      path: for (Object o : path) {
         List<SubPath> subPathList = new ArrayList<>();
         object = (JSONObject) o;
         JSONObject info = (JSONObject) object.get("info");
@@ -226,16 +227,20 @@ public class OdSayPath {
               passStopList = (JSONObject) subPath.get("passStopList");
               stations = (JSONArray) passStopList.get("stations");
               for (int m = 1; m < stations.size() - 1; m++) {
-                JSONObject station = (JSONObject) stations.get(m);
-                passStation.add(station.get("stationName").toString());
-                passStationGeo.add(
-                    PointGeoCode.builder()
-                        .longitude(station.get("x").toString())
-                        .latitude(station.get("y").toString())
-                        .build());
-                passArsId.add(initId(station.get("arsID"), 1));
-                passLocalId.add(initId(station.get("localStationID"), 2));
-                passStationId.add(initId(station.get("stationID"), 3));
+                try{
+                  JSONObject station = (JSONObject) stations.get(m);
+                  passStation.add(station.get("stationName").toString());
+                  passStationGeo.add(
+                      PointGeoCode.builder()
+                          .longitude(station.get("x").toString())
+                          .latitude(station.get("y").toString())
+                          .build());
+                  passArsId.add(initId(station.get("arsID"), 1));
+                  passLocalId.add(initId(station.get("localStationID"), 2));
+                  passStationId.add(initId(station.get("stationID"), 3));
+                } catch(NoSuchElementException e){
+                  continue path;
+                }
               }
               subPathList.add(
                   SubPath.builder()

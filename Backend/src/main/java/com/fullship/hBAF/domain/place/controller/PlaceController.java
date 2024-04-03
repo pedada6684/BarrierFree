@@ -30,9 +30,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import java.io.IOException;
 import java.text.ParseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -78,11 +84,31 @@ public class PlaceController {
   @PostMapping("/path/transit")
   @Operation(summary = "대중교통 경로 조회", description = "대중교통을 이용하는 경로 조회")
   @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = OdSayPath.class)))
-  public ResponseEntity<CommonResponseEntity> searchPathByTransit(@RequestBody PathSearchToTrafficRequest requestDto) {
+  public ResponseEntity<CommonResponseEntity> searchPathByTransit(@RequestBody PathSearchToTrafficRequest requestDto) throws IOException, IOException {
     System.out.println("********************************************대중교통 경로 조회***************searchPathByTransit********************************************************");
     log.info("PathSearchToTrafficRequest: {}", requestDto);
     OdSayPathCommand command = requestDto.createForSearch();
-    return getResponseEntity(SuccessCode.OK, placeService.useTransitPath(command));
+    List<OdSayPath> odSayPaths = placeService.useTransitPath(command);
+//    System.out.println(odSayPaths);
+//    String odSayPaths = dummyGenerator.testData();
+
+
+//    String jsonData = new String(Files.readAllBytes(Paths.get("src/main/resources/test.json")));
+////    String jsonData = JsonFileReader.readJsonFile("src/main/resources/data.json");;
+//    try {
+//      JSONParser parser = new JSONParser();
+//      JSONObject jsonObject = (JSONObject) parser.parse(jsonData);
+//
+//      // "data" 키의 값을 JSON 문자열로 파싱
+//      JSONObject innerJson = (JSONObject) parser.parse((String) jsonObject.get("data"));
+//
+//      // 필요한 작업 수행 (예: innerJson을 프론트엔드에 전달)
+//      System.out.println(innerJson.toJSONString());
+//
+//    } catch (org.json.simple.parser.ParseException e) {
+//        throw new RuntimeException(e);
+//    }
+      return getResponseEntity(SuccessCode.OK, odSayPaths);
   }
 
   @PostMapping("/path/slope")
@@ -129,7 +155,7 @@ public class PlaceController {
   @Operation(summary = "통신 테스트", description = "통신 테스트")
   public ResponseEntity<CommonResponseEntity> test() throws ParseException {
     System.out.println("통신 테스트");
-    return getResponseEntity(SuccessCode.OK, "[0403-0933]테스트입니다.");
+    return getResponseEntity(SuccessCode.OK, "[0403-0143]테스트입니다.");
   }
 
   @GetMapping("/setH3")

@@ -84,7 +84,7 @@ public class PlaceService {
   @Cacheable(value = "WheelPath", key = "#command", cacheManager = "BAFCacheManager")
   public WheelPathForm useWheelPath(SearchPathToWheelCommand command) {
     System.out.println("**********************************************PlaceService*********useWheelPath**********************************************************");
-    log.info("SearchPathToWheelCommand: {}",command);
+//    log.info("SearchPathToWheelCommand: {}",command);
     WheelPathForm wheelPathForm = tMapApiService.searchPathToWheel(command);
     ElevationForPathCommand elevation = ElevationForPathCommand.createElevateCommand(
         wheelPathForm.getGeoCode());
@@ -98,7 +98,7 @@ public class PlaceService {
   @Cacheable(value = "TransitPath", key = "#command", cacheManager = "BAFCacheManager")
   public List<OdSayPath> useTransitPath(OdSayPathCommand command) {
     System.out.println("**********************************************PlaceService*********useTransitPath**********************************************************");
-    log.info("OdSayPathCommand: {}",command);
+//    log.info("OdSayPathCommand: {}",command);
     List<OdSayPath> list = odSayApiService.searchPathToTransit(command);
 
     /* 총합 시간 순 정렬 (오름차순) */
@@ -264,7 +264,7 @@ public class PlaceService {
   @Cacheable(value = "TaxiPath", key = "#command", cacheManager = "BAFCacheManager")
   public TaxiPathForm useTaxiPath(SearchPathToTrafficCommand command) {
     System.out.println("**********************************************PlaceService*********useTaxiPath**********************************************************");
-    log.info("SearchPathToTrafficCommand: {}",command);
+//    log.info("SearchPathToTrafficCommand: {}",command);
     TaxiPathForm taxiPathForm = tMapApiService.searchPathToCar(command);
     try {
       Double cost = calculateCost(taxiPathForm.getGeoCode());
@@ -349,7 +349,6 @@ public class PlaceService {
 
   //Vincenty's formulae
   public double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    System.out.println("**********************************************PlaceService*********calculateDistance**********************************************************");
     final double a = 6378137; // WGS-84 semi-major axis (m)
     final double f = 1 / 298.257223563; // WGS-84 flattening
     final double b = (1 - f) * a; // WGS-84 semi-minor axis (m)
@@ -416,7 +415,7 @@ public class PlaceService {
   @Cacheable(value = "BFPlaces", key = "#command", cacheManager = "BAFCacheManager")
   public List<PlaceListResponse> getPlaceList(GetPlaceListRequestCommand command) {
     System.out.println("**********************************************PlaceService*********getPlaceList**********************************************************");
-    log.info("GetPlaceListRequestCommand: {}",command);
+//    log.info("GetPlaceListRequestCommand: {}",command);
     List<Place> placeEntityList = placeRepository.findByTypeWithImage(true);
     double lat = command.getLat();
     double lng = command.getLng();
@@ -446,9 +445,9 @@ public class PlaceService {
 
   public List<PathGeoCode> calculateAngle(AngleSlopeCommand command) {
     System.out.println("**********************************************PlaceService*********calculateAngle**********************************************************");
-    log.info("AngleSlopeCommand: {}",command);
+//    log.info("AngleSlopeCommand: {}",command);
     List<PathGeoCode> pathGeoCodes = command.getGeoCodes();
-    log.info("pathGeoCode = {}", pathGeoCodes);
+//    log.info("pathGeoCode = {}", pathGeoCodes);
     for (PathGeoCode pathGeoCode : pathGeoCodes) {
       if (pathGeoCode == null) {
         continue;
@@ -676,7 +675,7 @@ public class PlaceService {
   @Transactional(readOnly = false)
   public Long createPlace(CreatePlaceCommand command) {
     System.out.println("**********************************************PlaceService*********createPlace**********************************************************");
-    log.info("CreatePlaceCommand: {}",command);
+//    log.info("CreatePlaceCommand: {}",command);
     //poiId를 통해 존재확인
     if (placeRepository.existsByPoiId(command.getPoiId())) {
       return null;
@@ -709,7 +708,7 @@ public class PlaceService {
   @Transactional(readOnly = false)
   public Long updatePlaceImageUrl(UpdatePlaceImageCommand command) {
     System.out.println("**********************************************PlaceService*********updatePlaceImageUrl**********************************************************");
-    log.info("UpdatePlaceImageCommand: {}",command);
+//    log.info("UpdatePlaceImageCommand: {}",command);
     Place place = placeRepository.findById(command.getPlaceId())
         .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
     Optional<Image> imageOptional = imageRepository.findByPlaceAndImageType(place, 0);

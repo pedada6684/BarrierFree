@@ -23,7 +23,7 @@ class _CustomFacilityButtonState extends State<CustomFacilityButton> {
         widget.onFeatureSelected(label);
       },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10.0),
+        padding: EdgeInsets.symmetric(horizontal: 12.0),
         margin: EdgeInsets.symmetric(horizontal: 4.0),
         decoration: BoxDecoration(
           color: isSelected ? mainOrange : Colors.white,
@@ -34,9 +34,10 @@ class _CustomFacilityButtonState extends State<CustomFacilityButton> {
           borderRadius: BorderRadius.circular(20.0),
           boxShadow: [
             BoxShadow(
-              color: mainGray,
-              offset: Offset(0,2.2)
-            )
+                color: Colors.grey.withOpacity(0.5),
+                // spreadRadius: 2,
+                blurRadius: 4,
+                offset: const Offset(3, 3))
           ]
         ),
         child: Center(
@@ -60,7 +61,7 @@ class _CustomFacilityButtonState extends State<CustomFacilityButton> {
       child: Container(
         padding: EdgeInsets.all(8.0),
         color: Colors.transparent,
-        height: 52.0,
+        height: 46.0,
         child: Row(
           children: <Widget>[
             //휠체어 충전소, 화장실, 음식점, 병원, 문화, 편의, 숙박

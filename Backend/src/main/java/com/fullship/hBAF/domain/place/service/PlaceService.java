@@ -538,6 +538,8 @@ public class PlaceService {
     long end = h3.geoToH3(endGeo.lat, endGeo.lng, 12);
     //급경사의 시작점 또는 도착점이 대전이 아닌 경우 경로 null 반환
     if (!h3IndexService.isContainInRedisH3(start) || !h3IndexService.isContainInRedisH3(end)) {
+      log.info("start: "+ h3IndexService.isContainInRedisH3(start));
+      log.info("end: "+ h3IndexService.isContainInRedisH3(end));
       log.info("#####대전이 아님");
       return null;
     }

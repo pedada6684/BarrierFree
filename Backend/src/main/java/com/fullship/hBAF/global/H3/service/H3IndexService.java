@@ -46,4 +46,8 @@ public class H3IndexService {
     public boolean isContainInRedisH3(Long index){
         return hashOperations.hasKey(H3IndexKey, index);
     }
+
+    public Long getH3IdexSize(){
+        return hashOperations.size(H3IndexKey);
+    }
 }

@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class WheelPathService {
   static const String _baseUrl = 'https://hbaf.site/api/place/path/wheel';
 
-  Future<List<dynamic>> fetchWheelDirectionsResults({
+  Future<Map<String, dynamic>> fetchWheelDirectionsResults({
     required String type,
     required double startLat,
     required double startLon,
@@ -20,6 +20,8 @@ class WheelPathService {
       'endLng': endLon.toString(),
     });
 
+    // print('리퀘스트바디 : $requestBody');
+
     final response = await http.post(
       Uri.parse(_baseUrl),
       headers: <String, String>{
@@ -29,13 +31,21 @@ class WheelPathService {
     );
 
     if (response.statusCode == 200) {
-      final String decodedBody = utf8.decode(response.bodyBytes);
-      final Map<String, dynamic> parsedJson = json.decode(decodedBody);
-      print("=====================");
-      print(parsedJson);
-      return parsedJson['data']['geoCode'];
+      final data = jsonDecode(response.body)['data'];
+      if (data.isNotEmpty) {
+        print('data[0]: ${data[0]}');
+        print('data[1]: ${data[1]}');
+
+        return {
+          'basicPath': data[0], // 일반 경로 항상 존재
+          'recommendedPath': data.length > 1 ? data[1] : null, // 추천 경로는 선택적
+        };
+      } else {
+        throw Exception('No data available.');
+      }
     } else {
-      throw Exception('휠체어 경로 불러오기 실패: ${response.statusCode} ${response.reasonPhrase}');
+      throw Exception(
+          'Failed to load wheel directions: ${response.statusCode}');
     }
   }
 }

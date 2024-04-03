@@ -71,32 +71,32 @@ class _MyAppState extends State<MyApp> {
     return [
       PersistentBottomNavBarItem(
         icon: Icon(Icons.pin_drop, color: Colors.white),
-        inactiveIcon: Icon(Icons.pin_drop, color: mainBlack),
+        inactiveIcon: Icon(Icons.pin_drop, color: Colors.white54),
         title: ("지도"),
         activeColorPrimary: Colors.white,
-        inactiveColorPrimary: mainBlack,
+        inactiveColorPrimary: Colors.white54,
       ),
       PersistentBottomNavBarItem(
         icon: Icon(Icons.wheelchair_pickup_outlined, color: Colors.white),
-        inactiveIcon: Icon(Icons.wheelchair_pickup_outlined, color: mainBlack),
+        inactiveIcon: Icon(Icons.wheelchair_pickup_outlined, color: Colors.white54),
         title: ("길찾기"),
         activeColorPrimary: Colors.white,
-        inactiveColorPrimary: mainBlack,
+        inactiveColorPrimary: Colors.white54,
       ),
       PersistentBottomNavBarItem(
         icon: Icon(Icons.local_taxi, color: Colors.white),
-        inactiveIcon: Icon(Icons.local_taxi, color: mainBlack),
+        inactiveIcon: Icon(Icons.local_taxi, color: Colors.white54),
         title: ("장애인콜택시"),
         activeColorPrimary: Colors.white,
-        inactiveColorPrimary: mainBlack,
+        inactiveColorPrimary: Colors.white54,
         onPressed: (context) => _makePhoneCall('15881668'), // 수정된 부분
       ),
       PersistentBottomNavBarItem(
         icon: Icon(Icons.account_circle, color: Colors.white),
-        inactiveIcon: Icon(Icons.account_circle_outlined, color: mainBlack),
+        inactiveIcon: Icon(Icons.account_circle_outlined, color: Colors.white54),
         title: ("마이"),
         activeColorPrimary: Colors.white,
-        inactiveColorPrimary: mainBlack,
+        inactiveColorPrimary: Colors.white54,
       ),
     ];
   }

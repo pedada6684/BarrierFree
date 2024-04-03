@@ -127,5 +127,34 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  Future<String> getMemberProfileImg(int memberId) async {
+
+    final url = Uri.parse('https://hbaf.site/api/member?memberId=$memberId');
+    final SecureStorageService _secureStorageService = SecureStorageService();
+    String? accessToken = await _secureStorageService.getToken();
+    String? cookies = await _secureStorageService.getCookies();
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+          'Cookie': cookies!,
+        },
+      );
+      print('유저 조회 :${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = json.decode(response.body);
+        return data['profileUrl'];
+      } else {
+        return "유저 요청이 실패했습니다. 상태 코드: ${response.statusCode}";
+      }
+    } catch (error) {
+      return "유저 요청이 실패했습니다.";
+    }
+  }
+
   bool isLoggedIn() => _loginPlatform != LoginPlatform.none;
 }

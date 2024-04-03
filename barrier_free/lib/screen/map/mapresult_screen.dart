@@ -220,7 +220,9 @@ class _MapResultScreenState extends State<MapResultScreen> {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
           foregroundColor: mainBlack,
+          elevation: 2
         ),
         child: const Padding(
           padding: EdgeInsets.all(4.0),

@@ -56,10 +56,12 @@ class _MyPageScreenState extends State<MyPageScreen> {
     //로그인 여부 체크하기
     var isLoggedIn = userProvider.isLoggedIn();
 
+    var userId = userProvider.userId;
+
     if (isLoggedIn) {
       var nickname =
           userProvider.nickname ?? userProvider.name; //닉네임 없을 때 이름으로 보여주기
-      var profileImageUrl = userProvider.profileImage;
+      var profileImageUrl = userProvider.getMemberProfileImg(userId!);
 
       return Padding(
         padding: EdgeInsets.all(8.0),
@@ -84,7 +86,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   backgroundColor: Colors.white,
                   backgroundImage:
                       profileImageUrl != null && profileImageUrl is String
-                          ? NetworkImage(profileImageUrl)
+                          ? NetworkImage('profileImageUrl')
                           : const AssetImage('assets/image/default_profile.png')
                               as ImageProvider,
                 ),
@@ -175,6 +177,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
           fixedSize: const Size(300.0, 25.0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0),

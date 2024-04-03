@@ -239,7 +239,7 @@ public class H3 {
         }
         //평탄화 작업
         log.info("flattening start");
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 6; i++) {
             flattening(new LinkedList<>(queClone));
         }
         log.info("flattening end");

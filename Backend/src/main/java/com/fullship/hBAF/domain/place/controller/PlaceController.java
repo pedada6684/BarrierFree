@@ -20,11 +20,15 @@ import com.fullship.hBAF.domain.place.service.command.SearchPathToTrafficCommand
 import com.fullship.hBAF.domain.place.service.command.SearchPathToWheelCommand;
 import com.fullship.hBAF.global.response.CommonResponseEntity;
 import com.fullship.hBAF.global.response.SuccessCode;
+import com.fullship.hBAF.util.H3;
+import com.uber.h3core.exceptions.LineUndefinedException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.io.IOException;
 import java.text.ParseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +47,7 @@ import java.util.List;
 public class PlaceController {
 
   private final PlaceService placeService;
+  private final H3 h3;
 
   @PostMapping("/path/wheel")
   @Operation(summary = "휠체어 도보 경로 조회", description = "계단이 없는 보행자 도보를 이용한 휠체어 이동 경로 조회")
@@ -123,5 +128,12 @@ public class PlaceController {
   public ResponseEntity<CommonResponseEntity> test() throws ParseException {
     System.out.println("통신 테스트");
     return getResponseEntity(SuccessCode.OK, "[0403-0933]테스트입니다.");
+  }
+
+  @GetMapping("/setH3")
+  @Operation(summary = "H3 index 초기화 메서드", description = "H3 index 초기화 메서드")
+  public ResponseEntity<CommonResponseEntity> setH3() throws LineUndefinedException, IOException {
+    h3.setH3Index();
+    return getResponseEntity(SuccessCode.OK, "H3 초기화 완료");
   }
 }

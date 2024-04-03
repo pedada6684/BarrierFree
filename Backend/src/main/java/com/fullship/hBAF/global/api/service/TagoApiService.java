@@ -1,6 +1,8 @@
 package com.fullship.hBAF.global.api.service;
 
 import com.fullship.hBAF.domain.busInfo.repository.BusInfoRepository;
+import com.fullship.hBAF.domain.busStop.entity.BusStop;
+import com.fullship.hBAF.domain.busStop.repository.BusStopRepository;
 import com.fullship.hBAF.global.api.response.BusesCurLocation;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
@@ -34,6 +36,7 @@ public class TagoApiService {
 
   private final ApiService<String> apiService;
   private final BusInfoRepository busInfoRepository;
+  private final BusStopRepository busStopRepository;
 
   @Value("${api.data.route.key}")
   private String routeKey;
@@ -47,7 +50,7 @@ public class TagoApiService {
     return headers;
   }
 
-  public List<BusesCurLocation> findBusesByPublicId(String publicBusId, String direction){
+  public List<BusesCurLocation> findBusesByPublicId(String publicBusId, String direction, String busId, Long busStopId){
     try{
       URI uri = UriComponentsBuilder
           .fromHttpUrl("https://apis.data.go.kr/1613000/BusLcInfoInqireService/getRouteAcctoBusLcList")
@@ -78,6 +81,11 @@ public class TagoApiService {
             .localStationId(busNodeId.item(i).getTextContent())
             .license(license.item(i).getTextContent())
             .build();
+        BusStop busStop = busStopRepository.findBusStopByLocalStationIdAndBusId(
+            command.getLocalStationId(), busId);
+
+        if(!busStop.getStopDirection().equals(direction) || busStopId < busStop.getId())
+          continue;
 
         if (busInfoRepository.findBusInfoByBusRegNo(license.item(i).getTextContent()) == null) {
           continue;

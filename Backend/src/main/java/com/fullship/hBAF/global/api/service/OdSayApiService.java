@@ -45,7 +45,7 @@ public class OdSayApiService {
     }
 
     ResponseEntity<String> responseEntity = apiService.get(uri, setHttpHeaders(), String.class);
-
+    log.info("odsayPath = {}", responseEntity.getBody());
     List<OdSayPath> odSayPaths = OdSayPath.jsonToO(responseEntity);
 
     if (responseEntity.getStatusCode() == HttpStatus.OK) {

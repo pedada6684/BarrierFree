@@ -1,7 +1,7 @@
 package com.fullship.hBAF.domain.place.controller.request;
 
 import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
-import com.fullship.hBAF.global.api.service.command.SearchPathToTrafficCommand;
+import com.fullship.hBAF.domain.place.service.command.SearchPathToTrafficCommand;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import java.net.URI;

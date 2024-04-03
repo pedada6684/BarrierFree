@@ -1,4 +1,4 @@
-package com.fullship.hBAF.global.api.service.command;
+package com.fullship.hBAF.domain.place.service.command;
 
 import java.io.Serializable;
 import java.net.URI;

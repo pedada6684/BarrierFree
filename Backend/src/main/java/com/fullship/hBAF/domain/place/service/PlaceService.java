@@ -14,6 +14,7 @@ import com.fullship.hBAF.domain.place.entity.Image;
 import com.fullship.hBAF.domain.place.entity.Place;
 import com.fullship.hBAF.domain.place.repository.ImageRepository;
 import com.fullship.hBAF.domain.place.repository.PlaceRepository;
+import com.fullship.hBAF.domain.place.service.command.FindPathByAStarCommand;
 import com.fullship.hBAF.domain.place.service.command.Request.AngleSlopeCommand;
 import com.fullship.hBAF.domain.place.service.command.Request.GetPlaceListRequestCommand;
 import com.fullship.hBAF.domain.stationInfo.entity.StationInfo;
@@ -33,8 +34,8 @@ import com.fullship.hBAF.global.api.service.TagoApiService;
 import com.fullship.hBAF.global.api.service.command.ElevationForPathCommand;
 import com.fullship.hBAF.global.api.service.command.OdSayGeoCommand;
 import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
-import com.fullship.hBAF.global.api.service.command.SearchPathToTrafficCommand;
-import com.fullship.hBAF.global.api.service.command.SearchPathToWheelCommand;
+import com.fullship.hBAF.domain.place.service.command.SearchPathToTrafficCommand;
+import com.fullship.hBAF.domain.place.service.command.SearchPathToWheelCommand;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -80,6 +81,7 @@ public class PlaceService {
   /**
    * 도보 경로 탐색
    */
+  @Cacheable(value = "WheelPath", key = "#command", cacheManager = "BAFCacheManager")
   public WheelPathForm useWheelPath(SearchPathToWheelCommand command) {
     WheelPathForm wheelPathForm = tMapApiService.searchPathToWheel(command);
     ElevationForPathCommand elevation = ElevationForPathCommand.createElevateCommand(
@@ -475,8 +477,11 @@ public class PlaceService {
       this.h3Index = h3Index;
     }
   }
-
-  public WheelPathForm findPathByAStar(List<GeoCode> list, int[] se, String type) {
+  @Cacheable(value = "CalcAstar", key = "#command", cacheManager = "BAFCacheManager")
+  public WheelPathForm findPathByAStar(FindPathByAStarCommand command) {
+    int[] se = command.getSe();
+    List<GeoCode> list = command.getGeoCodes();
+    String type = command.getType();
     int sIdx = se[0];
     int eIdx = se[1];
     if(sIdx>0)
@@ -560,9 +565,9 @@ public class PlaceService {
         map.put("endName", "도착지");
         map.put("searchOption", "30");
 
-          SearchPathToWheelCommand command = null;
+          SearchPathToWheelCommand searchCommand = null;
           try {
-              command = SearchPathToWheelCommand.builder()
+              searchCommand = SearchPathToWheelCommand.builder()
                       .uri(new URI("https://apis.openapi.sk.com/tmap/routes/pedestrian"))
                       .requestBody(map)
                       .build();
@@ -570,7 +575,7 @@ public class PlaceService {
             throw new CustomException(ErrorCode.URI_SYNTAX_ERROR);
           }
 
-          return useWheelPath(command);
+          return useWheelPath(searchCommand);
       }
 
       openMap.remove(current.h3Index);

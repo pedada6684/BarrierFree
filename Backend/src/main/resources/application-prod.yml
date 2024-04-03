@@ -5,7 +5,7 @@ spring:
     hibernate:
       ddl-auto: none
   redis:
-    host: redis-db
+    host: redis
     port: 6379
 
 

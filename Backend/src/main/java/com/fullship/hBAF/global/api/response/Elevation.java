@@ -47,7 +47,7 @@ public class Elevation {
       throw new CustomException(ErrorCode.JSON_PARSE_IMPOSSIBLE);
     }
 
-    log.info("eleWheelGeoCode = {}", geoCode);
+//    log.info("eleWheelGeoCode = {}", geoCode);
 
     for (int i = 0; i < geoCode.size() - 1; i++) {
       geoCode.get(i).setAngleSlope(calculateSlope(geoCode.get(i), geoCode.get(i + 1)));

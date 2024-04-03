@@ -27,11 +27,17 @@ class _CustomFacilityButtonState extends State<CustomFacilityButton> {
         margin: EdgeInsets.symmetric(horizontal: 4.0),
         decoration: BoxDecoration(
           color: isSelected ? mainOrange : Colors.white,
-          border: Border.all(
-            color: mainOrange,
-            width: 1.5,
-          ),
-          borderRadius: BorderRadius.circular(8.0),
+          // border: Border.all(
+          //   color: mainOrange,
+          //   width: 1.5,
+          // ),
+          borderRadius: BorderRadius.circular(20.0),
+          boxShadow: [
+            BoxShadow(
+              color: mainGray,
+              offset: Offset(0,2.2)
+            )
+          ]
         ),
         child: Center(
           child: Text(
@@ -49,23 +55,25 @@ class _CustomFacilityButtonState extends State<CustomFacilityButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(8.0),
-      color: Colors.transparent,
-      height: 52.0,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: <Widget>[
-          //휠체어 충전소, 화장실, 음식점, 병원, 문화, 편의, 숙박
-          _buildFacilityButton(context, '즐겨찾기'),
-          _buildFacilityButton(context, '휠체어 충전소'),
-          _buildFacilityButton(context, '화장실'),
-          _buildFacilityButton(context, '음식점'),
-          _buildFacilityButton(context, '병원'),
-          _buildFacilityButton(context, '문화'),
-          _buildFacilityButton(context, '편의'),
-          _buildFacilityButton(context, '숙박'),
-        ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        padding: EdgeInsets.all(8.0),
+        color: Colors.transparent,
+        height: 52.0,
+        child: Row(
+          children: <Widget>[
+            //휠체어 충전소, 화장실, 음식점, 병원, 문화, 편의, 숙박
+            _buildFacilityButton(context, '즐겨찾기'),
+            _buildFacilityButton(context, '휠체어 충전소'),
+            _buildFacilityButton(context, '화장실'),
+            _buildFacilityButton(context, '음식점'),
+            _buildFacilityButton(context, '병원'),
+            _buildFacilityButton(context, '문화'),
+            _buildFacilityButton(context, '편의'),
+            _buildFacilityButton(context, '숙박'),
+          ],
+        ),
       ),
     );
   }

@@ -45,13 +45,11 @@ public class KakaoPlace {
         String id = (String) document.get("id");
         String x = (String) document.get("x");
         String y = (String) document.get("y");
-        String phone = (String) document.get("phone");
-        String placeUrl = (String) document.get("place_url");
-
-
+        String phone = (String) document.getOrDefault("phone", "");
+        String placeUrl = (String) document.getOrDefault("place_url", "");
         String categoryName = (String) document.get("category_name");
         String category = categoryName.split(">")[0].trim();
-        String convertedCategory = CATEGORY_MAP.get(category);
+        String convertedCategory = CATEGORY_MAP.getOrDefault(category, "기타");
 
         KakaoPlace kaKaoPlace = KakaoPlace.builder()
                 .id(id)

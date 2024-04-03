@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:barrier_free/const/color.dart';
 import 'package:flutter/material.dart';
 import 'package:barrier_free/component/appBar.dart';
@@ -68,6 +70,7 @@ class _MyReviewScreenState extends State<MyReviewScreen> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10.0)),
                         backgroundColor: Colors.white,
+                        surfaceTintColor: Colors.white,
                         foregroundColor: mainOrange),
                   );
                 }).toList();
@@ -85,6 +88,7 @@ class _MyReviewScreenState extends State<MyReviewScreen> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10.0)),
                         backgroundColor: Colors.white,
+                        surfaceTintColor: Colors.white,
                         foregroundColor: mainOrange),
                   );
                 }).toList();

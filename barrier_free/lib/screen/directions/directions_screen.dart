@@ -42,6 +42,7 @@ class DirectionsScreen extends StatefulWidget {
 
 class _DirectionsScreenState extends State<DirectionsScreen> {
   late List<dynamic> wheelDirections = [];
+  late List<dynamic> recommendedGeoCodeData = [];
 
   late List<dynamic> startsearchResults = [];
   late List<dynamic> destinationsearchResults = [];
@@ -68,6 +69,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
   late String maxCost = '';
   late String totalDistance = '';
   late String totalTime = '';
+  late String rcTotalDistance = '';
+  late String rcTotalTime = '';
 
   late List<dynamic> busDirections = [];
 
@@ -139,6 +142,9 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
       final recommendedPath =
           directionsResult['recommendedPath'] as Map<String, dynamic>?;
 
+      print('basicPath : $basicPath');
+      print('recommendedPath : $recommendedPath');
+
       // null 체크 후 처리
       if (basicPath != null) {
         List<dynamic> geoCodeData = basicPath['geoCode'];
@@ -147,6 +153,9 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                 'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})')
             .toList();
         wheelCoordinates = '[${coordinatesList.join(', ')}]';
+
+        print('wheelCoordinates : $wheelCoordinates');
+        print('geoCodeData : $geoCodeData');
       }
 
       // 추천 경로 데이터가 있는 경우 처리
@@ -164,6 +173,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         totalDistance = basicPath?['totalDistance'].toString() ?? '';
         totalTime = basicPath?['totalTime'].toString() ?? '';
         wheelDirections = basicPath?['geoCode'] ?? [];
+        rcTotalDistance = recommendedPath?['totalDistance'].toString() ?? '';
+        rcTotalTime = recommendedPath?['totalTime'].toString() ?? '';
       });
     } catch (e) {
       print('Error fetching wheel directions: $e');
@@ -543,8 +554,9 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                 wheelDirections: wheelDirections,
                                 totalDistance: totalDistance,
                                 totalTime: totalTime,
-                                recommendedpathCoordinates:
-                                    recommendedPathCoordinates,
+                                recommendedGeoCodeData: recommendedGeoCodeData,
+                                rcTotalDistance: rcTotalDistance,
+                                rcTotalTime: rcTotalTime,
                               ),
                             ),
                           );

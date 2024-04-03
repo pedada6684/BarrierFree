@@ -549,7 +549,6 @@ public class PlaceService {
             sb.append(middlePath.get(i*term).getLongitude()).append(",").append(middlePath.get(i*term).getLatitude()).append("_");
           sb.append(middlePath.get(n-1).getLongitude()).append(",").append(middlePath.get(n-1).getLatitude());
         }
-        log.info("@@@@@@@@"+sb.toString());
         Map<String, Object> map = new HashMap<>();
         map.put("speed", type.equals("휠체어") ? 4 : type.equals("전동휠체어") ? 10 : 3);
         map.put("startX", list.get(0).getLongitude());

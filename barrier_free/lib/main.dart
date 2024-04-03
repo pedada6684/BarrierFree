@@ -77,8 +77,8 @@ class _MyAppState extends State<MyApp> {
         inactiveColorPrimary: Colors.white54,
       ),
       PersistentBottomNavBarItem(
-        icon: Icon(Icons.wheelchair_pickup_outlined, color: Colors.white),
-        inactiveIcon: Icon(Icons.wheelchair_pickup_outlined, color: Colors.white54),
+        icon: Icon(Icons.accessible_forward_outlined, color: Colors.white),
+        inactiveIcon: Icon(Icons.accessible, color: Colors.white54),
         title: ("길찾기"),
         activeColorPrimary: Colors.white,
         inactiveColorPrimary: Colors.white54,

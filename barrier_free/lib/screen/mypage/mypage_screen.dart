@@ -61,7 +61,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
     if (isLoggedIn) {
       var nickname =
           userProvider.nickname ?? userProvider.name; //닉네임 없을 때 이름으로 보여주기
-      var profileImageUrl = userProvider.getMemberProfileImg(userId!);
+      var profileImageUrl = userProvider.getMemberProfileImg(userId!).toString();
 
       return Padding(
         padding: EdgeInsets.all(8.0),
@@ -86,7 +86,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   backgroundColor: Colors.white,
                   backgroundImage:
                       profileImageUrl != null && profileImageUrl is String
-                          ? NetworkImage('profileImageUrl')
+                          ? NetworkImage(profileImageUrl)
                           : const AssetImage('assets/image/default_profile.png')
                               as ImageProvider,
                 ),

@@ -270,7 +270,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                             hintText: '출발지를 입력하세요.',
                             hintStyle: TextStyle(
                               color: mainGray,
-                              fontSize: 18.0,
+                              fontSize: 16.0,
                             ),
                             filled: true,
                             fillColor: Colors.white,
@@ -295,7 +295,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                             hintText: '도착지를 입력하세요.',
                             hintStyle: TextStyle(
                               color: mainGray,
-                              fontSize: 18.0,
+                              fontSize: 16.0,
                             ),
                             filled: true,
                             fillColor: Colors.white,

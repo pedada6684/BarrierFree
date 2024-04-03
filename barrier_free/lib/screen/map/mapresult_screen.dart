@@ -99,6 +99,8 @@ class _MapResultScreenState extends State<MapResultScreen> {
     super.initState();
     _initializeMarkers();
     WidgetsBinding.instance.addPostFrameCallback((_) {});
+
+    print(widget.searchResults);
   }
 
   void _initializeMarkers() {

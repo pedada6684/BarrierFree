@@ -122,7 +122,6 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
   }
 
   void _fetchWheelDirections() async {
-
     try {
       final directionsResult =
           await WheelPathService().fetchWheelDirectionsResults(
@@ -297,17 +296,19 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                       child: Column(
                         children: [
                           TextField(
+                            style: TextStyle(color: Colors.white),
                             controller: _originController,
                             decoration: InputDecoration(
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 15.0),
                                 hintText: '출발지를 입력하세요.',
                                 hintStyle: TextStyle(
-                                  color: mainGray,
+                                  color: Colors.white,
                                   fontSize: 16.0,
+                                  fontWeight: FontWeight.w300,
                                 ),
                                 filled: true,
-                                fillColor: Colors.white,
+                                fillColor: subOrange,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8.0),
                                   borderSide: BorderSide.none,
@@ -321,17 +322,19 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                             height: 8.0,
                           ),
                           TextField(
+                            style: TextStyle(color: Colors.white),
                             controller: _destinationController,
                             decoration: InputDecoration(
                               contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 8.0),
+                                  EdgeInsets.symmetric(horizontal: 15.0),
                               hintText: '도착지를 입력하세요.',
                               hintStyle: TextStyle(
-                                color: mainGray,
+                                color: Colors.white,
                                 fontSize: 16.0,
+                                fontWeight: FontWeight.w300,
                               ),
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: subOrange,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                                 borderSide: BorderSide.none,
@@ -398,22 +401,22 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                         if (_originController.text.isNotEmpty &&
                             _destinationController.text.isNotEmpty &&
                             _selectedVehicles != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TransitPathMap(
-                                initialSearchAddress: _originController.text,
-                                initialDestinationSearchAddress:
-                                    _destinationController.text,
-                                startLat: widget.startLat!,
-                                startLon: widget.startLon!,
-                                endLat: widget.endLat!,
-                                endLon: widget.endLon!,
-                                formattedCoordinates: [transitCoordinates],
-                                type: _selectedVehicles!, // 선택된 이동 방식 전달
-                              ),
-                            ),
-                          );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (context) => TransitPathMap(
+                          //       initialSearchAddress: _originController.text,
+                          //       initialDestinationSearchAddress:
+                          //           _destinationController.text,
+                          //       startLat: widget.startLat!,
+                          //       startLon: widget.startLon!,
+                          //       endLat: widget.endLat!,
+                          //       endLon: widget.endLon!,
+                          //       formattedCoordinates: [transitCoordinates],
+                          //       type: _selectedVehicles!, // 선택된 이동 방식 전달
+                          //     ),
+                          //   ),
+                          // );
                         } else {
                           // 출발지와 도착지 값 중 하나라도 비어있을 경우 경고창 표시
                           showDialog(
@@ -586,6 +589,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                 ),
               ),
             ),
+            _TransitList(),
             SizedBox(height: 10), // 드롭다운과 패널 슬라이딩 사이의 간격TransitPath
             // _buildToggleButton(),
             _showSearchResults
@@ -606,7 +610,6 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
               width: double.infinity, // 수평선이 가로로 전체로 펼쳐지도록 설정
               color: Colors.grey, // 수평선의 색상 설정
             ),
-            _TransitList(),
           ],
         ),
       ),
@@ -622,308 +625,464 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         child: Column(
           children: List.generate(
             busDirections.length,
-                (i) {
+            (i) {
               return Padding(
                 padding: EdgeInsets.fromLTRB(30, 30, 30, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${busDirections[i]["pathType"] == 1
-                          ? '지하철'
-                          : busDirections[i]["pathType"] == 2
-                          ? '버스'
-                          : '지하철+도보'}', // 여기에 표시할 텍스트 입력
-                      style: TextStyle(
-                        color: busDirections[i]["pathType"] == 1
-                            ? Colors.blue
-                            : busDirections[i]["pathType"] == 2
-                            ? Colors.green
-                            : mainOrange, // 텍스트 색상 설정
-                        fontSize: 20, // 텍스트 크기 설정
-                        fontWeight: FontWeight.bold, // 텍스트 굵기 설정
+                child:  GestureDetector( // GestureDetector를 사용하여 onTap 이벤트를 추가합니다.
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TransitPathMap(
+                          initialSearchAddress: _originController.text,
+                          initialDestinationSearchAddress: _destinationController.text,
+                          startLat: widget.startLat!,
+                          startLon: widget.startLon!,
+                          endLat: widget.endLat!,
+                          endLon: widget.endLon!,
+                          formattedCoordinates: [transitCoordinates],
+                          type: _selectedVehicles!, // 선택된 이동 방식 전달
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Text(
-                          '${busDirections.isNotEmpty
-                              ? busDirections[i]['totalTime']
-                              : '?'}분 소요',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
+                    );
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${busDirections[i]["pathType"] == 1 ? '지하철' : busDirections[i]["pathType"] == 2 ? '버스' : '지하철+도보'}', // 여기에 표시할 텍스트 입력
+                        style: TextStyle(
+                          color: busDirections[i]["pathType"] == 1
+                              ? Colors.blue
+                              : busDirections[i]["pathType"] == 2
+                                  ? Colors.green
+                                  : mainOrange, // 텍스트 색상 설정
+                          fontSize: 20, // 텍스트 크기 설정
+                          fontWeight: FontWeight.bold, // 텍스트 굵기 설정
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    Stack(
-                      children: [
-                        Container(
-                          height: 20, // 바의 높이
-                          width: MediaQuery.of(context).size.width - 60,
-                          decoration: BoxDecoration(
-                            color: const Color(0xffD3D3D3),
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                        ),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: List.generate(
-                              busDirections[i]['subPaths'].length,
-                                  (j) {
-                                return Container(
-                                  height: 20,
-                                  width: ((MediaQuery.of(context).size.width - 60)) *
-                                      busDirections[i]['subPaths'][j]['sectionTime'] /
-                                      busDirections[i]['totalTime'],
-                                  decoration: BoxDecoration(
-                                    color: busDirections[i]["subPaths"][j]["trafficType"] == 1 ? Colors.blue : busDirections[i]["subPaths"][j]["trafficType"] == 2 ? Colors.green : const Color(0xffD3D3D3),
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                  child: Center(
-                                    child: busDirections[i]["subPaths"][j]["trafficType"] == 1
-                                        ? Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.directions_subway, color: Colors.white, size: 18),
-                                        Flexible(
-                                          child: Text(
-                                            ' ${busDirections[i]["subPaths"][j]["sectionTime"]}분',
-                                            style: TextStyle(color: Colors.white, fontSize: 14),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                        : busDirections[i]["subPaths"][j]["trafficType"] == 2
-                                        ? Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.directions_bus, color: Colors.white, size: 18),
-                                        Flexible(
-                                          child: Text(
-                                            ' ${busDirections[i]["subPaths"][j]["sectionTime"]}분',
-                                            style: TextStyle(color: Colors.white, fontSize: 14),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                        : Center(
-                                      child: Flexible(
-                                        child: Text(
-                                          ' ${busDirections[i]["subPaths"][j]["sectionTime"]}분',
-                                          style: TextStyle(color: Colors.white, fontSize: 14),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ), // 다른 경우에는 아무것도 표시하지 않음
-                                  ),
-                                );
-                              },
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Text(
+                            '${busDirections.isNotEmpty ? busDirections[i]['totalTime'] : '?'}분 소요',
+                            style: TextStyle(
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    Column(
-                      children: List.generate(
-                        busDirections[i]['subPaths'].length,
-                            (j) {
-                          return Container(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    // trafficType에 따라 아이콘 및 텍스트를 다르게 생성
-                                    busDirections[i]['subPaths'][j]["trafficType"] == 1
-                                        ? Container(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.directions_subway, // 지하철 아이콘
-                                                color: Colors.blue, // 아이콘 색상
-                                                size: 22, // 아이콘 크기
-                                              ),
-                                              SizedBox(width: 5), // 아이콘과 텍스트 사이 간격
-                                              Text(
-                                                '지하철', // 텍스트 내용
-                                                style: TextStyle(fontSize: 16, color: Colors.blue, fontWeight: FontWeight.bold), // 텍스트 스타일
-                                              ),
-                                              SizedBox(width: 10), // 아이콘과 텍스트 사이 간격
-                                              Text(
-                                                '${busDirections[i]['subPaths'][j]["startStationName"]}역 승차', // 텍스트 내용
-                                                style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold), // 텍스트 스타일
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              SizedBox(width: 10),
-                                              Container(
-                                                height: 50, // 선의 높이
-                                                width: 2, // 선의 너비
-                                                color: Colors.blue, // 선의 색상
-                                              ),
-                                              SizedBox(width: 80),
-                                              Text(
-                                                '${busDirections[i]['subPaths'][j]["stationCount"]} 정거장 이동', // 텍스트 내용
-                                                style: TextStyle(fontSize: 16, color: Colors.black), // 텍스트 스타일
-                                              ),
-                                              // Text(
-                                              //   '${busDirections[i]['subPaths'][j]["waitTime"]} 분 남음', // 텍스트 내용
-                                              //   style: TextStyle(fontSize: 16, color: Colors.black), // 텍스트 스타일
-                                              // ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.directions_subway, // 지하철 아이콘
-                                                color: Colors.blue, // 아이콘 색상
-                                                size: 22, // 아이콘 크기
-                                              ),
-                                              SizedBox(width: 8), // 아이콘과 텍스트 사이 간격
-                                              Text(
-                                                '지하철', // 텍스트 내용
-                                                style: TextStyle(fontSize: 16, color: Colors.blue, fontWeight: FontWeight.bold), // 텍스트 스타일
-                                              ),
-                                              SizedBox(width: 10), // 아이콘과 텍스트 사이 간격
-                                              Text(
-                                                '${busDirections[i]['subPaths'][j]["endStationName"]}역 하차', // 텍스트 내용
-                                                style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold), // 텍스트 스타일
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                        : busDirections[i]['subPaths'][j]["trafficType"] == 2
-                                        ? Container(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.directions_bus, // 버스 아이콘
-                                                color: Colors.green, // 아이콘 색상
-                                                size: 22, // 아이콘 크기
-                                              ),
-                                              SizedBox(width: 5), // 아이콘과 텍스트 사이 간격
-                                              Text(
-                                                '저상', // 텍스트 내용
-                                                style: TextStyle(fontSize: 16, color: Colors.green, fontWeight: FontWeight.bold), // 텍스트 스타일
-                                              ),
-                                              SizedBox(width: 22), // 아이콘과 텍스트 사이 간격
-                                              Text(
-                                                '${busDirections[i]['subPaths'][j]["startStationName"]} 정류장 승차', // 텍스트 내용
-                                                style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold), // 텍스트 스타일
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              SizedBox(width: 10),
-                                              Container(
-                                                height: 50, // 선의 높이
-                                                width: 2, // 선의 너비
-                                                color: Colors.green, // 선의 색상
-                                              ),
-                                              SizedBox(width: 10),
-                                              Row(
-                                                children: [
-                                                  SizedBox(width: 70),
-                                                  Container(
-                                                    padding: EdgeInsets.symmetric(vertical: 1, horizontal: 7), // 텍스트 주위의 간격 조정
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.green, // 배경색 설정
-                                                      borderRadius: BorderRadius.circular(50), // 보더 라디우스 설정
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      Stack(
+                        children: [
+                          Container(
+                            height: 20, // 바의 높이
+                            width: MediaQuery.of(context).size.width - 60,
+                            decoration: BoxDecoration(
+                              color: const Color(0xffD3D3D3),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: List.generate(
+                                busDirections[i]['subPaths'].length,
+                                (j) {
+                                  return Container(
+                                    height: 20,
+                                    width: ((MediaQuery.of(context).size.width -
+                                            60)) *
+                                        busDirections[i]['subPaths'][j]
+                                            ['sectionTime'] /
+                                        busDirections[i]['totalTime'],
+                                    decoration: BoxDecoration(
+                                      color: busDirections[i]["subPaths"][j]
+                                                  ["trafficType"] ==
+                                              1
+                                          ? Colors.blue
+                                          : busDirections[i]["subPaths"][j]
+                                                      ["trafficType"] ==
+                                                  2
+                                              ? Colors.green
+                                              : const Color(0xffD3D3D3),
+                                      borderRadius: BorderRadius.circular(50),
+                                    ),
+                                    child: Center(
+                                      child: busDirections[i]["subPaths"][j]
+                                                  ["trafficType"] ==
+                                              1
+                                          ? Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(Icons.directions_subway,
+                                                    color: Colors.white,
+                                                    size: 18),
+                                                Flexible(
+                                                  child: Text(
+                                                    ' ${busDirections[i]["subPaths"][j]["sectionTime"]}분',
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 14),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          : busDirections[i]["subPaths"][j]
+                                                      ["trafficType"] ==
+                                                  2
+                                              ? Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(Icons.directions_bus,
+                                                        color: Colors.white,
+                                                        size: 18),
+                                                    Flexible(
+                                                      child: Text(
+                                                        ' ${busDirections[i]["subPaths"][j]["sectionTime"]}분',
+                                                        style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 14),
+                                                        overflow:
+                                                            TextOverflow.ellipsis,
+                                                      ),
                                                     ),
+                                                  ],
+                                                )
+                                              : Center(
+                                                  child: Flexible(
                                                     child: Text(
-                                                      '${busDirections[i]['subPaths'][j]["busList"][0]["busNo"]}', // 텍스트 내용
-                                                      style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold), // 텍스트 스타일
+                                                      ' ${busDirections[i]["subPaths"][j]["sectionTime"]}분',
+                                                      style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 14),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
                                                   ),
-                                                  SizedBox(width: 5),
-                                                  Text(
-                                                    '${busDirections[i]['subPaths'][j]["busList"][0]["busBeforeCount"]} 정거장 전', // 텍스트 내용
-                                                    style: TextStyle(fontSize: 16, color: Colors.black), // 텍스트 스타일
+                                                ), // 다른 경우에는 아무것도 표시하지 않음
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      Column(
+                        children: List.generate(
+                          busDirections[i]['subPaths'].length,
+                          (j) {
+                            return Container(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      // trafficType에 따라 아이콘 및 텍스트를 다르게 생성
+                                      busDirections[i]['subPaths'][j]
+                                                  ["trafficType"] ==
+                                              1
+                                          ? Container(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons.directions_subway,
+                                                        // 지하철 아이콘
+                                                        color:
+                                                            Colors.blue, // 아이콘 색상
+                                                        size: 22, // 아이콘 크기
+                                                      ),
+                                                      SizedBox(width: 5),
+                                                      // 아이콘과 텍스트 사이 간격
+                                                      Text(
+                                                        '지하철', // 텍스트 내용
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors.blue,
+                                                            fontWeight: FontWeight
+                                                                .bold), // 텍스트 스타일
+                                                      ),
+                                                      SizedBox(width: 10),
+                                                      // 아이콘과 텍스트 사이 간격
+                                                      Text(
+                                                        '${busDirections[i]['subPaths'][j]["startStationName"]}역 승차',
+                                                        // 텍스트 내용
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight
+                                                                .bold), // 텍스트 스타일
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      SizedBox(width: 10),
+                                                      Container(
+                                                        height: 50, // 선의 높이
+                                                        width: 2, // 선의 너비
+                                                        color:
+                                                            Colors.blue, // 선의 색상
+                                                      ),
+                                                      SizedBox(width: 80),
+                                                      Text(
+                                                        '${busDirections[i]['subPaths'][j]["beforeCount"]} 정거장 전',
+                                                        // 텍스트 내용
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors
+                                                                .black), // 텍스트 스타일
+                                                      ),
+                                                      // Text(
+                                                      //   '${busDirections[i]['subPaths'][j]["waitTime"]} 분 남음', // 텍스트 내용
+                                                      //   style: TextStyle(fontSize: 16, color: Colors.black), // 텍스트 스타일
+                                                      // ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons.directions_subway,
+                                                        // 지하철 아이콘
+                                                        color:
+                                                            Colors.blue, // 아이콘 색상
+                                                        size: 22, // 아이콘 크기
+                                                      ),
+                                                      SizedBox(width: 8),
+                                                      // 아이콘과 텍스트 사이 간격
+                                                      Text(
+                                                        '지하철', // 텍스트 내용
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors.blue,
+                                                            fontWeight: FontWeight
+                                                                .bold), // 텍스트 스타일
+                                                      ),
+                                                      SizedBox(width: 10),
+                                                      // 아이콘과 텍스트 사이 간격
+                                                      Text(
+                                                        '${busDirections[i]['subPaths'][j]["endStationName"]}역 하차',
+                                                        // 텍스트 내용
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                            fontWeight: FontWeight
+                                                                .bold), // 텍스트 스타일
+                                                      ),
+                                                    ],
                                                   ),
                                                 ],
                                               ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.directions_bus, // 버스 아이콘
-                                                color: Colors.green, // 아이콘 색상
-                                                size: 22, // 아이콘 크기
-                                              ),
-                                              SizedBox(width: 5), // 아이콘과 텍스트 사이 간격
-                                              Text(
-                                                '저상', // 텍스트 내용
-                                                style: TextStyle(fontSize: 16, color: Colors.green, fontWeight: FontWeight.bold), // 텍스트 스타일
-                                              ),
-                                              SizedBox(width: 22), // 아이콘과 텍스트 사이 간격
-                                              Text(
-                                                '${busDirections[i]['subPaths'][j]["endStationName"]} 정류장 하차', // 텍스트 내용
-                                                style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold), // 텍스트 스타일
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                        : Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 0),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.accessible, // 걷는 아이콘
-                                            color: Colors.grey, // 아이콘 색상
-                                            size: 22, // 아이콘 크기
-                                          ),
-                                          SizedBox(width: 5), // 아이콘과 텍스트 사이 간격
-                                          Text(
-                                            '${_selectedVehicles}', // 텍스트 내용
-                                            style: TextStyle(fontSize: 16, color: mainGray, fontWeight: FontWeight.bold), // 텍스트 스타일
-                                          ),
-                                          SizedBox(width: 10), // 아이콘과 텍스트 사이 간격
-                                          Text(
-                                            '${busDirections[i]['subPaths'][j]["sectionDistance"]}m 이동,', // 텍스트 내용
-                                            style: TextStyle(fontSize: 16, color: Colors.black), // 텍스트 스타일
-                                          ),
-                                          SizedBox(width: 10), // 아이콘과 텍스트 사이 간격
-                                          Text(
-                                            '${busDirections[i]['subPaths'][j]["sectionTime"]}분 소요', // 텍스트 내용
-                                            style: TextStyle(fontSize: 16, color: Colors.black), // 텍스트 스타일
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                                            )
+                                          : busDirections[i]['subPaths'][j]
+                                                      ["trafficType"] ==
+                                                  2
+                                              ? Container(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Icon(
+                                                            Icons
+                                                                .directions_bus, // 버스 아이콘
+                                                            color: Colors
+                                                                .green, // 아이콘 색상
+                                                            size: 22, // 아이콘 크기
+                                                          ),
+                                                          SizedBox(width: 5),
+                                                          // 아이콘과 텍스트 사이 간격
+                                                          Text(
+                                                            '저상', // 텍스트 내용
+                                                            style: TextStyle(
+                                                                fontSize: 16,
+                                                                color:
+                                                                    Colors.green,
+                                                                fontWeight: FontWeight
+                                                                    .bold), // 텍스트 스타일
+                                                          ),
+                                                          SizedBox(width: 22),
+                                                          // 아이콘과 텍스트 사이 간격
+                                                          Text(
+                                                            '${busDirections[i]['subPaths'][j]["startStationName"]} 정류장 승차',
+                                                            // 텍스트 내용
+                                                            style: TextStyle(
+                                                                fontSize: 16,
+                                                                color:
+                                                                    Colors.black,
+                                                                fontWeight: FontWeight
+                                                                    .bold), // 텍스트 스타일
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        children: [
+                                                          SizedBox(width: 10),
+                                                          Container(
+                                                            height: 50, // 선의 높이
+                                                            width: 2, // 선의 너비
+                                                            color: Colors
+                                                                .green, // 선의 색상
+                                                          ),
+                                                          SizedBox(width: 10),
+                                                          Row(
+                                                            children: [
+                                                              SizedBox(width: 70),
+                                                              Container(
+                                                                padding: EdgeInsets
+                                                                    .symmetric(
+                                                                        vertical:
+                                                                            1,
+                                                                        horizontal:
+                                                                            7),
+                                                                // 텍스트 주위의 간격 조정
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: Colors
+                                                                      .green,
+                                                                  // 배경색 설정
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              50), // 보더 라디우스 설정
+                                                                ),
+                                                                child: Text(
+                                                                  '${busDirections[i]['subPaths'][j]["busList"][0]["busNo"]}',
+                                                                  // 텍스트 내용
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          16,
+                                                                      color: Colors
+                                                                          .white,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold), // 텍스트 스타일
+                                                                ),
+                                                              ),
+                                                              SizedBox(width: 5),
+                                                              Text(
+                                                                '${busDirections[i]['subPaths'][j]["busList"][0]["busBeforeCount"]} 정거장 전',
+                                                                // 텍스트 내용
+                                                                style: TextStyle(
+                                                                    fontSize: 16,
+                                                                    color: Colors
+                                                                        .black), // 텍스트 스타일
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        children: [
+                                                          Icon(
+                                                            Icons
+                                                                .directions_bus, // 버스 아이콘
+                                                            color: Colors
+                                                                .green, // 아이콘 색상
+                                                            size: 22, // 아이콘 크기
+                                                          ),
+                                                          SizedBox(width: 5),
+                                                          // 아이콘과 텍스트 사이 간격
+                                                          Text(
+                                                            '저상', // 텍스트 내용
+                                                            style: TextStyle(
+                                                                fontSize: 16,
+                                                                color:
+                                                                    Colors.green,
+                                                                fontWeight: FontWeight
+                                                                    .bold), // 텍스트 스타일
+                                                          ),
+                                                          SizedBox(width: 22),
+                                                          // 아이콘과 텍스트 사이 간격
+                                                          Text(
+                                                            '${busDirections[i]['subPaths'][j]["endStationName"]} 정류장 하차',
+                                                            // 텍스트 내용
+                                                            style: TextStyle(
+                                                                fontSize: 16,
+                                                                color:
+                                                                    Colors.black,
+                                                                fontWeight: FontWeight
+                                                                    .bold), // 텍스트 스타일
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                )
+                                              : Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 10,
+                                                      horizontal: 0),
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons
+                                                            .accessible, // 걷는 아이콘
+                                                        color:
+                                                            Colors.grey, // 아이콘 색상
+                                                        size: 22, // 아이콘 크기
+                                                      ),
+                                                      SizedBox(
+                                                          width:
+                                                              5), // 아이콘과 텍스트 사이 간격
+                                                      Text(
+                                                        '${_selectedVehicles}', // 텍스트 내용
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: mainGray,
+                                                            fontWeight: FontWeight
+                                                                .bold), // 텍스트 스타일
+                                                      ),
+                                                      SizedBox(
+                                                          width:
+                                                              10), // 아이콘과 텍스트 사이 간격
+                                                      Text(
+                                                        '${busDirections[i]['subPaths'][j]["sectionDistance"]}m 이동,',
+                                                        // 텍스트 내용
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors
+                                                                .black), // 텍스트 스타일
+                                                      ),
+                                                      SizedBox(
+                                                          width:
+                                                              10), // 아이콘과 텍스트 사이 간격
+                                                      Text(
+                                                        '${busDirections[i]['subPaths'][j]["sectionTime"]}분 소요',
+                                                        // 텍스트 내용
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors
+                                                                .black), // 텍스트 스타일
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 20),
-                    Divider(),
-                  ],
+                      SizedBox(height: 20),
+                      Divider(),
+                    ],
+                  ),
                 ),
               );
             },

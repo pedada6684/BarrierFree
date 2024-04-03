@@ -1,5 +1,6 @@
 import 'package:barrier_free/component/appBar.dart';
 import 'package:barrier_free/component/facility_button.dart';
+import 'package:barrier_free/component/mapsearch_result_list.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/screen/map/mapresult_screen.dart';
 import 'package:barrier_free/services/location_service.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:kakaomap_webview/kakaomap_webview.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -32,6 +34,8 @@ class _MapScreenState extends State<MapScreen> {
 
   String customScript = '';
 
+  // PanelController _panelController = PanelController();
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +44,7 @@ class _MapScreenState extends State<MapScreen> {
     allPlaces = [];
     filteredPlaces = [];
     _initMapData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {});
   }
 
   //현재 위치 기반으로 마커와 이동 버튼 만들기
@@ -144,51 +149,57 @@ class _MapScreenState extends State<MapScreen> {
     }
 
     var boundsScript = """
-      var bounds = new kakao.maps.LatLngBounds();
-      var currentPos = new kakao.maps.LatLng(${currentPosition.latitude}, ${currentPosition.longitude});
-      bounds.extend(currentPos);
-      """;
+    var bounds = new kakao.maps.LatLngBounds();
+    var currentPos = new kakao.maps.LatLng(${currentPosition.latitude}, ${currentPosition.longitude});
+    bounds.extend(currentPos);
+    """;
     var markersScript = """
-      var currentInfowindow = null; // 현재 열려 있는 인포윈도우를 추적
-      """;
+    var currentInfowindow = null; // 현재 열려 있는 인포윈도우를 추적
+    var customOverlay = null; // 클릭한 마커에 연결된 커스텀 오버레이를 추적
+    """;
 
     for (var i = 0; i < filtered.length; i++) {
       var place = filtered[i];
       markersScript += """
-        var markerPosition${i} = new kakao.maps.LatLng(${place['lat']}, ${place['lng']});
-        var marker${i} = new kakao.maps.Marker({
-          position: markerPosition${i},
-          map: map
-        });
-        bounds.extend(markerPosition${i});
-        
-        kakao.maps.event.addListener(marker${i}, 'click', (function(marker, placeName) {
-         return function() {
-            map.setCenter(marker.getPosition());
-           map.panTo(marker.getPosition()); // 마커가 있는 위치로 부드럽게 이동
-           map.setLevel(5, {animate: {duration: 400}});
-            // 이전 인포윈도우 닫기
-            if (currentInfowindow) {
-              currentInfowindow.close();
-            }
-            // 새 인포윈도우 생성
-            var infowindow = new kakao.maps.InfoWindow({
-              content: '<div style="padding:5px; width:auto; height:auto; word-wrap:break-word;text-align:center;">' + placeName + '</div>'
-            });
-            // 인포윈도우 열기
-            infowindow.open(map, marker);
-            // 현재 인포윈도우 설정
-            currentInfowindow = infowindow;
-            // 3초 후에 인포윈도우 닫기
-            setTimeout(function() {
-              if (infowindow === currentInfowindow) {
-                infowindow.close();
-                currentInfowindow = null;
-              }
-            }, 3000);
-          };
-        })(marker${i}, '${place['placeName']}'));
-        """;
+      var markerPosition${i} = new kakao.maps.LatLng(${place['lat']}, ${place['lng']});
+      var marker${i} = new kakao.maps.Marker({
+        position: markerPosition${i},
+        map: map
+      });
+      bounds.extend(markerPosition${i});
+      
+      var content${i} = '<div style="background-color: white; padding: 7px 10px; border-radius: 50px; box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);" class="label"><span class="left"></span><span style="background-color: white;" class="center">${place['placeName']}</span><span class="right"></span></div>';
+      
+      var customOverlay${i} = new kakao.maps.CustomOverlay({
+        position: markerPosition${i},
+        content: content${i},  
+        yAnchor: 2.5,
+      });
+
+      kakao.maps.event.addListener(marker${i}, 'click', (function(marker, customOverlay) {
+       return function() {
+         map.setCenter(marker.getPosition());
+         map.panTo(marker.getPosition()); // 마커가 있는 위치로 부드럽게 이동
+         map.setLevel(5, {animate: {duration: 700}});
+          // 이전 인포윈도우 닫기
+          if (currentInfowindow) {
+            currentInfowindow.close();
+          }
+          // 이전 커스텀 오버레이 닫기
+          if (customOverlay) {
+            customOverlay.setMap(null);
+          }
+          // 클릭한 마커에 연결된 커스텀 오버레이 열기
+          customOverlay.setMap(map);
+          // 커스텀 오버레이 추적 업데이트
+          customOverlay = customOverlay;
+          // 3초 후에 커스텀 오버레이 닫기
+          setTimeout(function() {
+            customOverlay.setMap(null);
+          }, 5000);
+        };
+      })(marker${i}, customOverlay${i}));
+      """;
     }
     markersScript += "map.setBounds(bounds);";
 
@@ -196,6 +207,8 @@ class _MapScreenState extends State<MapScreen> {
         markersScript +
         _generateCurrentLocationScript(currentPosition);
   }
+
+
 
   String _generateCurrentLocationScript(Position currentPosition) {
     return """
@@ -265,12 +278,13 @@ class _MapScreenState extends State<MapScreen> {
             body: Column(
               children: [
                 Container(
+                  height: 45.0,
                   width: MediaQuery.of(context).size.width * 0.8,
                   decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius:
                           const BorderRadius.all(Radius.circular(30.0)),
-                      border: Border.all(color: mainOrange, width: 2.5),
+                      border: Border.all(color: mainOrange, width: 2),
                       boxShadow: [
                         BoxShadow(
                             color: Colors.grey.withOpacity(0.5),
@@ -295,7 +309,7 @@ class _MapScreenState extends State<MapScreen> {
                                 EdgeInsets.symmetric(horizontal: 16.0),
                             hintText: '검색어를 입력해주세요.',
                             hintStyle: TextStyle(
-                                color: mainGray, fontWeight: FontWeight.w600),
+                                color: mainGray, fontWeight: FontWeight.w300),
                             border:
                                 OutlineInputBorder(borderSide: BorderSide.none),
                           ),
@@ -337,8 +351,20 @@ class _MapScreenState extends State<MapScreen> {
                           customScript: customScript,
                         ),
                       ),
+                      // _buildToggleButton(),
+                      // SlidingUpPanel(
+                      //   controller: _panelController,
+                      //   panel: _buildPanel(),
+                      //   collapsed: _buildCollapsedPanel(),
+                      //   borderRadius: const BorderRadius.only(
+                      //     topRight: Radius.circular(30.0),
+                      //     topLeft: Radius.circular(30.0),
+                      //   ),
+                      //   minHeight: 72.0,
+                      //   maxHeight: MediaQuery.of(context).size.height * 0.5,
+                      // ),
                       Positioned(
-                        top: 8.0, // 위치 조정 가능
+                        // top: 8.0, // 위치 조정 가능
                         left: 0,
                         right: 0,
                         child: CustomFacilityButton(
@@ -355,6 +381,86 @@ class _MapScreenState extends State<MapScreen> {
       },
     );
   }
+  // Widget _buildPanel() {
+  //   return MapSearchResultList(
+  //     searchResults: searchResults, // 빈 리스트로 전달해도 됨
+  //     startsearchResults: [], // 빈 리스트로 전달해도 됨
+  //     destinationsearchResults: [],
+  //   );
+  // }
+  //
+  // Widget _buildCollapsedPanel() {
+  //   return Column(
+  //     children: [
+  //       Container(
+  //         width: MediaQuery.of(context).size.width,
+  //         height: 72.0,
+  //         decoration: const BoxDecoration(
+  //           color: Colors.white,
+  //           borderRadius: BorderRadius.only(
+  //             topRight: Radius.circular(25.0),
+  //             topLeft: Radius.circular(25.0),
+  //           ),
+  //         ),
+  //         child: const Column(
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               Padding(
+  //                 padding: EdgeInsets.all(16.0),
+  //                 child: Text(
+  //                   '검색 결과',
+  //                   style: TextStyle(
+  //                     fontSize: 18.0,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //               ),
+  //             ]),
+  //       ),
+  //     ],
+  //   );
+  // }
+  //
+  // Widget _buildToggleButton() {
+  //   return Positioned(
+  //     bottom: 80.0,
+  //     left: MediaQuery.of(context).size.width * 0.32,
+  //     right: MediaQuery.of(context).size.width * 0.32,
+  //     child: ElevatedButton(
+  //       style: ElevatedButton.styleFrom(
+  //           backgroundColor: Colors.white,
+  //           surfaceTintColor: Colors.white,
+  //           foregroundColor: mainBlack,
+  //           elevation: 2
+  //       ),
+  //       child: const Padding(
+  //         padding: EdgeInsets.all(4.0),
+  //         child: Row(
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: [
+  //             Icon(
+  //               Icons.list,
+  //               color: mainOrange,
+  //             ),
+  //             SizedBox(
+  //               width: 8.0,
+  //             ),
+  //             Text(
+  //               '목록보기',
+  //               style: TextStyle(fontSize: 16.0),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //       onPressed: () {
+  //         _panelController.isPanelClosed
+  //             ? _panelController.open()
+  //             : _panelController.close();
+  //       },
+  //     ),
+  //   );
+  // }
 
   @override
   void dispose() {

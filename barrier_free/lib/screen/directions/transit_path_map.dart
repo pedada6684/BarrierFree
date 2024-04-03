@@ -46,6 +46,8 @@ class _TransitPathMapState extends State<TransitPathMap> {
   void initState() {
     super.initState();
     _addMarkers(); // 출발지와 도착지 마커 추가
+    print('==================트랜짓 서비스==========');
+    print(widget.formattedCoordinates);
     WidgetsBinding.instance.addPostFrameCallback((_) {});
   }
 
@@ -74,16 +76,13 @@ class _TransitPathMapState extends State<TransitPathMap> {
       addMarker(new kakao.maps.LatLng(${widget.startLat}, ${widget.startLon}));
       
       // 선을 구성하는 좌표 배열입니다. 이 좌표들을 이어서 선을 표시합니다
-      var linePath = [
-          new kakao.maps.LatLng(${widget.endLat}, ${widget.endLon}),
-          new kakao.maps.LatLng(${widget.startLat}, ${widget.startLon}),
-      ];
+      var pathCoordinates = ${widget.formattedCoordinates};
 
       // 지도에 표시할 선을 생성합니다
       var polyline = new kakao.maps.Polyline({
-          path: linePath, // 선을 구성하는 좌표배열 입니다
+          path: pathCoordinates, // 선을 구성하는 좌표배열 입니다
           strokeWeight: 5, // 선의 두께 입니다
-          strokeColor: '#FFAE00', // 선의 색깔입니다
+          strokeColor: '#FF0000', // 선의 색깔입니다
           strokeOpacity: 0.7, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
           strokeStyle: 'solid' // 선의 스타일입니다
       });

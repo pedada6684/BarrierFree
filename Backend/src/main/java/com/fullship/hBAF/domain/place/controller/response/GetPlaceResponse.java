@@ -20,6 +20,8 @@ public class GetPlaceResponse {
     String lng;
     String poiId;
     String category;
+    String phone;
+    String placeUrl;
     List<String> barrierFree;
     List<String> img;
 
@@ -32,6 +34,8 @@ public class GetPlaceResponse {
                 .lng(place.getLongitude())
                 .poiId(place.getPoiId())
                 .category(place.getCategory())
+                .phone(place.getPhone())
+                .placeUrl(place.getPlaceUrl())
                 .barrierFree(BarrierFreeInfo.makeBafArrInfo(place.getBarrierFree()))
                 .img(createToCommand(place.getImages()))
                 .build();

@@ -45,7 +45,7 @@ public class GoogleApiService {
         .queryParam("samples", command.getSize() * 1.5 < maxSample ? (int)(command.getSize() * 1.5) : maxSample)
         .queryParam("key", URLEncoder.encode(apiKey, StandardCharsets.UTF_8))
         .build(true).toUri();
-
+    int size = command.getSize() * 1.5 < maxSample ? (int)(command.getSize() * 1.5) : maxSample;
     ResponseEntity<String> response = apiService.get(uri, setHttpHeaders(), String.class);
     Elevation elevation = Elevation.jsonToO(response);
 

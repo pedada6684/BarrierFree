@@ -51,7 +51,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             return allowAccess(response, accessToken);
         } catch (ExpiredJwtException e) {//AT만료
             jwtTokenProvider.validateRefreshToken(refreshToken);
-            String strMemberId = getMemberIdFromToken(refreshToken);
+            String strMemberId = jwtTokenProvider.extractSubject(refreshToken);
             String redisRefreshToken = refreshTokenService.findTokenByMemberId(Long.parseLong(strMemberId));
             if (redisRefreshToken == null) {
                 throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
@@ -70,7 +70,7 @@ public class AuthInterceptor implements HandlerInterceptor {
      */
     private boolean allowAccess(HttpServletResponse response, String accessToken) {
         //유저 존재여부 확인
-        String strMemberId = getMemberIdFromToken(accessToken);
+        String strMemberId = jwtTokenProvider.extractSubject(accessToken);
         long memberId = Long.parseLong(strMemberId);
         FindMemberByIdCommand command = FindMemberByIdCommand.builder()
                 .id(Long.parseLong(strMemberId))
@@ -96,8 +96,7 @@ public class AuthInterceptor implements HandlerInterceptor {
      * @return token string
      */
     private String resolveTokenInRequest(HttpServletRequest request){
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        String token = jwtTokenProvider.resolveToken(bearerToken);
+        String token = jwtTokenProvider.resolveToken(request);
         if (token == null){
             throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
         }
@@ -122,13 +121,6 @@ public class AuthInterceptor implements HandlerInterceptor {
         throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
     }
 
-    /**
-     * token으로 부터 userId를 가져오는 메서드
-     * @param accessToken     * @return userEmail
-     */
-    private String getMemberIdFromToken(String accessToken) {
-        return jwtTokenProvider.extractSubject(accessToken);
-    }
 
     private boolean checkAnnotation(Object handler, Class<Auth> authClass) {
         //js. html 타입인 view 과련 파일들은 통과한다.(view 관련 요청 = ResourceHttpRequestHandler)

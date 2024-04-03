@@ -5,6 +5,8 @@ import com.fullship.hBAF.global.response.exception.CustomException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +20,7 @@ import java.util.Date;
 public class JwtTokenProvider {
     private final Key key;
     private static final String BEARER_TYPE = "Bearer";
-
+    private static final String AUTHORIZATION_HEADER = "Authorization";
 
     /**
      * jwt parsing key 설정
@@ -120,7 +122,15 @@ public class JwtTokenProvider {
         }
     }
 
-    public String resolveToken(String bearerToken){
+    public String resolveToken(HttpServletRequest request){
+        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_TYPE)){
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+    public String resolveToken(HttpServletResponse response){
+        String bearerToken = response.getHeader(AUTHORIZATION_HEADER);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_TYPE)){
             return bearerToken.substring(7);
         }

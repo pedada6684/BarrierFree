@@ -212,9 +212,9 @@ public class PlaceService {
             long minCountStop = 1000;
             for (BusesCurLocation busesCurLocation : lowFilter) {
               BusStop curBusStop =
-                  busStopRepository.findBusStopByLocalStationIdAndBusId(
+                  busStopRepository.findBusStopByLocalStationIdAndBusIdAndStopDirection(
                       busesCurLocation.getLocalStationId(),
-                      bus.getBusId());
+                      bus.getBusId(), direction);
               System.out.println("+======busStop======" + busStop);
               System.out.println("+======curBusStop======" + curBusStop);
               minCountStop = Math.min(minCountStop, Math.abs(busStop.getId() - curBusStop.getId()));
@@ -239,27 +239,19 @@ public class PlaceService {
               .getDisplayName(TextStyle.NARROW, new Locale("ko", "KR"));
           boolean isWeekDay = !week.equals("토") && !week.equals("일");
 
-          LocalTime futureTime = LocalTime.of(curDateTime.getHour(), curDateTime.getMinute());
-          futureTime.plusMinutes(sumTime / 60);
+          String curTime = LocalTime.of(curDateTime.getHour(), curDateTime.getMinute()).toString();
+          curTime = curTime.substring(0, 2) + curTime.substring(3);
           /* 평-휴일, 상-하행 필터를 거치고 남는 metro */
           List<Integer> metroIdList = isUp ?
               metroInfoRepository.findAllByIsWeekDayAndUp(isWeekDay) :
               metroInfoRepository.findAllByIsWeekDayAndDown(isWeekDay);
-          String fTime = futureTime.toString();
-          fTime = fTime.substring(0, 2) + fTime.substring(3);
-          List<StationStopInfo> metroArrInfoList =
-              stationStopInfoRepository.findByTimeAndMetroInfo(fTime, metroIdList);
 
-          /* 역 도착시간과 열차 도착시간 비교 (대기시간) */
-          String arrTime = metroArrInfoList.get(0).getArrTime();
-          LocalTime time = LocalTime.of(
-              Integer.parseInt(arrTime.substring(0, 2)),
-              Integer.parseInt(arrTime.substring(2)));
-          Duration duration = Duration.between(time, futureTime);
-          long waitTime = duration.toMinutes() * 60;
-          odSayPath.getSubPaths().get(j).setWaitTime(waitTime);
+          Integer metro = stationStopInfoRepository.findTime(sStation.getId(), curTime, metroIdList)
+              .get(0);
+          Integer curSubwayPos = stationStopInfoRepository.findCurPos(metro, curTime).get(0);
+          odSayPath.getSubPaths().get(j).setBeforeCount(Math.abs(sStation.getId() - curSubwayPos));
+
         }
-        sumTime += (int) subPath.getSectionTime();
       }
     }
 
@@ -511,6 +503,7 @@ public class PlaceService {
       this.h3Index = h3Index;
     }
   }
+
   @Cacheable(value = "CalcAstar", key = "#command", cacheManager = "BAFCacheManager")
   public WheelPathForm findPathByAStar(FindPathByAStarCommand command) {
     int[] se = command.getSe();
@@ -605,17 +598,17 @@ public class PlaceService {
         map.put("endName", "도착지");
         map.put("searchOption", "30");
 
-          SearchPathToWheelCommand searchCommand = null;
-          try {
-              searchCommand = SearchPathToWheelCommand.builder()
-                      .uri(new URI("https://apis.openapi.sk.com/tmap/routes/pedestrian"))
-                      .requestBody(map)
-                      .build();
-          }  catch (URISyntaxException e) {
-            throw new CustomException(ErrorCode.URI_SYNTAX_ERROR);
-          }
+        SearchPathToWheelCommand searchCommand = null;
+        try {
+          searchCommand = SearchPathToWheelCommand.builder()
+              .uri(new URI("https://apis.openapi.sk.com/tmap/routes/pedestrian"))
+              .requestBody(map)
+              .build();
+        } catch (URISyntaxException e) {
+          throw new CustomException(ErrorCode.URI_SYNTAX_ERROR);
+        }
 
-          return useWheelPath(searchCommand);
+        return useWheelPath(searchCommand);
       }
 
       openMap.remove(current.h3Index);

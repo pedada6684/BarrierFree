@@ -70,8 +70,6 @@ public class OdSayPath {
     private long sectionTime;
     @Schema(description = "상, 하행 정보 (상행: 1, 하행: 2)")
     private long wayCode;
-    @Schema(description = "대기 시간")
-    private long waitTime;
     /* 정류장 정보 */
     @Schema(description = "정류장 개수")
     private long stationCount;
@@ -83,6 +81,8 @@ public class OdSayPath {
     private String endStationName;
     @Schema(description = "도착 좌표")
     private PointGeoCode endGeo;
+    @Schema(description = "도착 정보")
+    private long beforeCount;
     /* 경유 정류장 정보 */
     @Schema(description = "경유 정류장")
     private List<String> passStation;

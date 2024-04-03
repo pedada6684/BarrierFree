@@ -10,4 +10,6 @@ public interface BusStopRepository extends JpaRepository<BusStop, Long> {
   BusStop findBusStopByStopIdAndBusId(String startStationId, String busId);
 
   BusStop findBusStopByLocalStationIdAndBusId(String localStationId, String busId);
+
+  BusStop findBusStopByLocalStationIdAndBusIdAndStopDirection(String localStationId, String busId, String direction);
 }

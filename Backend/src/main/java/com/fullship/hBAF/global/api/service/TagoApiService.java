@@ -81,10 +81,10 @@ public class TagoApiService {
             .localStationId(busNodeId.item(i).getTextContent())
             .license(license.item(i).getTextContent())
             .build();
-        BusStop busStop = busStopRepository.findBusStopByLocalStationIdAndBusId(
-            command.getLocalStationId(), busId);
+        BusStop busStop = busStopRepository.findBusStopByLocalStationIdAndBusIdAndStopDirection(
+            command.getLocalStationId(), busId, direction);
 
-        if(!busStop.getStopDirection().equals(direction) || busStopId < busStop.getId())
+        if(busStop == null || !busStop.getStopDirection().equals(direction) || busStopId < busStop.getId())
           continue;
 
         if (busInfoRepository.findBusInfoByBusRegNo(license.item(i).getTextContent()) == null) {

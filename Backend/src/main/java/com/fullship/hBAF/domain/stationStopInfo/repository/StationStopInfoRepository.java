@@ -11,7 +11,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface StationStopInfoRepository extends JpaRepository<StationStopInfo,Long> {
 
-  @Query("SELECT s FROM StationStopInfo s WHERE s.arrTime > :futureTime And s.metroInfoId in :metroList")
-  List<StationStopInfo> findByTimeAndMetroInfo(@Param("futureTime") String futureTime, @Param("metroList") List<Integer> metroIdList);
+  @Query("SELECT s.metroInfoId FROM StationStopInfo s WHERE s.subwayInfoId = :startSubway AND s.arrTime > :curTime AND s.metroInfoId in :metroList order by s.metroInfoId ")
+  List<Integer> findTime(@Param("startSubway") int startSubway, @Param("curTime") String curTime, @Param("metroList") List<Integer> metroList);
 
+  @Query("SELECT s.subwayInfoId from StationStopInfo s where s.metroInfoId = :metro and s.arrTime < :curTime order by s.subwayInfoId DESC")
+  List<Integer> findCurPos(Integer metro, String curTime);
 }

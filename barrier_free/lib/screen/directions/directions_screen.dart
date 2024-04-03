@@ -58,6 +58,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
   String? _selectedVehicles;
   Position? _currentPosition;
 
+  late List<dynamic> recommendedPathCoordinates = [];
   late String transitCoordinates = '';
   late String wheelCoordinates = '';
   late String taxiCoordinates = '';
@@ -153,13 +154,16 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
       }
 
       // 추천 경로 데이터가 있는 경우 처리
-      List<String>? recommendedCoordinatesList;
       if (recommendedPath != null && recommendedPath['geoCode'] != null) {
         List<dynamic> recommendedGeoCodeData = recommendedPath['geoCode'];
+        List<String> recommendedCoordinatesList;
         recommendedCoordinatesList = recommendedGeoCodeData
             .map<String>((direction) =>
                 'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})')
             .toList();
+        setState(() {
+          recommendedPathCoordinates = recommendedCoordinatesList;
+        });
       }
       String wheelTotalDistance =
           directionsResult['basicPath']['totalDistance'].toString();
@@ -174,13 +178,13 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         print(directionsResult);
         totalDistance = wheelTotalDistance;
         wheelDirections = directionsResult['basicPath']['geoCode'];
-        totalTime = wheelTotalDistance;
+        totalTime = wheelTotalTime;
       });
-
-      print('가자가자 $wheelCoordinates');
-      print('가자가자 $wheelCoordinates');
-      print('전체 거리 $totalDistance');
-      print('전체 거리 $totalDistance');
+      //
+      // print('가자가자 $wheelCoordinates');
+      // print('가자가자 $wheelCoordinates');
+      // print('전체 거리 $totalDistance');
+      // print('전체 거리 $totalDistance');
     } catch (e) {
       print('=========================================');
       print('Error fetching wheel directions: $e');
@@ -546,6 +550,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                               wheelDirections: wheelDirections,
                               totalDistance: totalDistance,
                               totalTime: totalTime,
+                              recommendedpathCoordinates:
+                                  recommendedPathCoordinates,
                             ),
                           ),
                         );

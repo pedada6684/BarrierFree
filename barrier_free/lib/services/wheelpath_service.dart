@@ -33,6 +33,8 @@ class WheelPathService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body)['data'];
       if (data.isNotEmpty) {
+        print('data[0]: ${data[0]}');
+        print('data[1]: ${data[1]}');
 
         return {
           'basicPath': data[0], // 일반 경로 항상 존재

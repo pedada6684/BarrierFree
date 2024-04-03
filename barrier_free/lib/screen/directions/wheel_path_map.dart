@@ -16,7 +16,7 @@ class WheelPathMap extends StatefulWidget {
 
   final String? vehicleType;
   final List<dynamic> wheelDirections;
-
+  final List<dynamic> recommendedpathCoordinates;
   final List<String> formattedCoordinates;
 
   final String totalTime;
@@ -35,6 +35,7 @@ class WheelPathMap extends StatefulWidget {
     required this.wheelDirections,
     required this.totalTime,
     required this.totalDistance,
+    required this.recommendedpathCoordinates,
   });
 
   @override
@@ -46,6 +47,7 @@ class _WheelPathMapState extends State<WheelPathMap> {
   String customScript = '';
   String selectedPath = 'basic';
   bool _isLoading = true;
+  bool _isRecommendedPathSelected = false;
 
   // late String formattedCoordinates;
 
@@ -58,7 +60,36 @@ class _WheelPathMapState extends State<WheelPathMap> {
   }
 
   Future<void> _loadData() async {
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        ));
 
     if (mounted) {
       setState(() {
@@ -66,37 +97,6 @@ class _WheelPathMapState extends State<WheelPathMap> {
         _addMarkers();
       });
     }
-  }
-
-  //추천 일반경로 바꿔서 볼 수 있음
-  void _togglePath() {
-    if (selectedPath == 'basic' &&
-        widget.wheelDirections.contains('recommendedPath')) {
-      // 추천 경로가 없을 경우
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('알림'),
-            content: Text('추천 경로가 없습니다.'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('확인'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-      return;
-    }
-
-    setState(() {
-      selectedPath = selectedPath == 'basic' ? 'recommended' : 'basic';
-      _addMarkers(); // 경로 변경 후 마커와 경로 다시 그리기
-    });
   }
 
   void _addMarkers() {
@@ -186,6 +186,60 @@ class _WheelPathMapState extends State<WheelPathMap> {
       customScript = script; // 최종적으로 생성된 스크립트를 상태에 저장
     });
   }
+
+  void _setPath(String pathType) {
+    setState(() {
+      _isRecommendedPathSelected = (pathType == 'recommended');
+      customScript = _isRecommendedPathSelected
+          ? _generatePathScript(widget.recommendedpathCoordinates)
+          : _generatePathScript(widget.wheelDirections);
+    });
+  }
+
+  String _generatePathScript(List<dynamic> pathData) {
+    // Transform your path data into a string that can be used in the Kakao map polyline script
+    String pathScript = pathData.map((direction) {
+      double latitude = double.tryParse('${direction['latitude']}') ?? 0.0;
+      double longitude = double.tryParse('${direction['longitude']}') ?? 0.0;
+      // Add any additional properties needed for the polyline here
+      return 'new kakao.maps.LatLng($latitude, $longitude)';
+    }).join(',');
+
+    // Generate the Kakao map script using the pathScript
+    return """
+      var linePath = [$pathScript];
+      var polyline = new kakao.maps.Polyline({
+          path: linePath,
+          strokeWeight: 5,
+          strokeColor: '#FF0000',
+          strokeOpacity: 1.0,
+          strokeStyle: 'solid'
+      });
+      polyline.setMap(map);
+    """;
+  }
+
+  Widget _buildPathToggleButton(String title, String pathType) {
+    return GestureDetector(
+      onTap: () => _setPath(pathType),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        decoration: BoxDecoration(
+          color: _isRecommendedPathSelected && pathType == 'recommended'
+              ? Colors.blue : Colors.grey[200],
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -294,6 +348,13 @@ class _WheelPathMapState extends State<WheelPathMap> {
                               ],
                             ),
                             SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildPathToggleButton('일반 경로', 'basic'),
+                                _buildPathToggleButton('추천 경로', 'recommended'),
+                              ],
+                            ),
                           ],
                         ),
                       ),

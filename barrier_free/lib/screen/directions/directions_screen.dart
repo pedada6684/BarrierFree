@@ -122,31 +122,65 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
 
   void _fetchWheelDirections() async {
     try {
-      final directions = await WheelPathService().fetchWheelDirectionsResults(
-        type: '휠체어',
+      final directionsResult =
+          await WheelPathService().fetchWheelDirectionsResults(
+        type: _selectedVehicles!,
         startLat: widget.startLat!,
         startLon: widget.startLon!,
         endLat: widget.endLat!,
         endLon: widget.endLon!,
       );
 
-      print('API response: $directions');
+      print('API response: $directionsResult');
+      print('API response: $directionsResult');
+      print('API response: $directionsResult');
+      print('API response: $directionsResult');
+      print('API response: $directionsResult');
+
+      final Map<String, dynamic> basicPath = directionsResult['basicPath'];
+      final Map<String, dynamic>? recommendedPath =
+          directionsResult['recommendedPath'];
 
       // 택시 경로에서 좌표 데이터를 가져와서 포맷합니다.
-      List<String> coordinatesList = directions
-          .map<String>((direction) =>
-              'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})')
-          .toList();
-      // String newFormattedCoordinates = '[${coordinatesList.join(', ')}]';
+      List<String> coordinatesList = [];
+
+      if (basicPath != null) {
+        List<dynamic> geoCodeData = basicPath['geoCode'];
+        coordinatesList = geoCodeData
+            .map<String>((direction) =>
+                'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})')
+            .toList();
+      }
+
+      // 추천 경로 데이터가 있는 경우 처리
+      List<String>? recommendedCoordinatesList;
+      if (recommendedPath != null && recommendedPath['geoCode'] != null) {
+        List<dynamic> recommendedGeoCodeData = recommendedPath['geoCode'];
+        recommendedCoordinatesList = recommendedGeoCodeData
+            .map<String>((direction) =>
+                'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})')
+            .toList();
+      }
+      String wheelTotalDistance =
+          directionsResult['basicPath']['totalDistance'].toString();
+      String wheelTotalTime =
+          directionsResult['basicPath']['totalTime'].toString();
 
       setState(() {
         wheelCoordinates =
             '[${coordinatesList.join(', ')}]'; // 포맷된 좌표 데이터를 상태에 저장합니다.
         print('===============휠체어===================');
         print('formattedCoordinates = $wheelCoordinates');
-
-        wheelDirections = directions;
+        print(directionsResult);
+        totalDistance = wheelTotalDistance;
+        wheelDirections = directionsResult['basicPath']['geoCode'];
+        totalTime = wheelTotalDistance;
       });
+
+      print('가자가자 $wheelCoordinates');
+      print('가자가자 $wheelCoordinates');
+      print('전체 거리 $totalDistance');
+      print('전체 거리 $totalDistance');
     } catch (e) {
       print('=========================================');
       print('Error fetching wheel directions: $e');
@@ -510,6 +544,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                               vehicleType: _selectedVehicles!,
                               formattedCoordinates: [wheelCoordinates],
                               wheelDirections: wheelDirections,
+                              totalDistance: totalDistance,
+                              totalTime: totalTime,
                             ),
                           ),
                         );

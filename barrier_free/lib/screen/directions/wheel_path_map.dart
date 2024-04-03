@@ -1,14 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:barrier_free/component/appBar.dart';
-import 'package:barrier_free/component/map_markers.dart';
 import 'package:barrier_free/const/color.dart';
 import 'package:barrier_free/services/location_service.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:kakaomap_webview/kakaomap_webview.dart';
-
-// import 'package:barrier_free/services/transitpath_service.dart';
-import 'package:barrier_free/services/taxipath_service.dart';
 
 class WheelPathMap extends StatefulWidget {
   final String? initialSearchAddress;
@@ -24,6 +19,9 @@ class WheelPathMap extends StatefulWidget {
 
   final List<String> formattedCoordinates;
 
+  final String totalTime;
+  final String totalDistance;
+
   const WheelPathMap({
     super.key,
     this.initialSearchAddress,
@@ -35,6 +33,8 @@ class WheelPathMap extends StatefulWidget {
     this.vehicleType,
     required this.formattedCoordinates,
     required this.wheelDirections,
+    required this.totalTime,
+    required this.totalDistance,
   });
 
   @override
@@ -44,20 +44,67 @@ class WheelPathMap extends StatefulWidget {
 class _WheelPathMapState extends State<WheelPathMap> {
   // late List<Position> _markerPositions;
   String customScript = '';
+  String selectedPath = 'basic';
+  bool _isLoading = true;
 
   // late String formattedCoordinates;
 
   @override
   void initState() {
     super.initState();
+    _loadData();
     _addMarkers(); // 출발지와 도착지 마커 추가
     WidgetsBinding.instance.addPostFrameCallback((_) {});
+  }
+
+  Future<void> _loadData() async {
+    await Future.delayed(Duration(seconds: 2));
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        _addMarkers();
+      });
+    }
+  }
+
+  //추천 일반경로 바꿔서 볼 수 있음
+  void _togglePath() {
+    if (selectedPath == 'basic' &&
+        widget.wheelDirections.contains('recommendedPath')) {
+      // 추천 경로가 없을 경우
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('알림'),
+            content: Text('추천 경로가 없습니다.'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('확인'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    setState(() {
+      selectedPath = selectedPath == 'basic' ? 'recommended' : 'basic';
+      _addMarkers(); // 경로 변경 후 마커와 경로 다시 그리기
+    });
   }
 
   void _addMarkers() {
     double averageLat = (widget.startLat! + widget.endLat!) / 2;
     double averageLon = (widget.startLon! + widget.endLon!) / 2;
 
+    // List<dynamic> pathData =
+    //     selectedPath == 'basic' ? widget.wheelDirections : [];
 
     String getColorForSlope(double slope) {
       if (slope >= 7 || slope <= -7) {
@@ -66,22 +113,28 @@ class _WheelPathMapState extends State<WheelPathMap> {
         return '#FF0000'; // 붉은색
       } else if ((slope >= 3 && slope <= 5) || (slope <= -3 && slope >= -5)) {
         return '#FFA500'; // 주황색
-      } else if ((slope > 0.5 && slope < 3) || (slope < -0.5 && slope > -3)) {
+      } else if ((slope > 1.5 && slope < 3) || (slope < -1.5 && slope > -3)) {
         return '#FFFF00'; // 노란색
       } else {
         return '#90EE90'; // 연두색
       }
     }
 
+    print('휠체어 디렉션 : ${widget.wheelDirections}');
+
     String pathScript = widget.wheelDirections.map((direction) {
-      double latitude = double.parse(direction['latitude'].toString()); // Ensure latitude is a double
-      double longitude =double.parse(direction['longitude'].toString()); // Ensure longitude is a double
-      String color = getColorForSlope(double.tryParse(direction['angleSlope']?.toString() ?? '0.0') ?? 0.0);
+      double latitude = double.parse(
+          direction['latitude'].toString()); // Ensure latitude is a double
+      double longitude = double.parse(
+          direction['longitude'].toString()); // Ensure longitude is a double
+      String color = getColorForSlope(
+          double.tryParse(direction['angleSlope']?.toString() ?? '0.0') ?? 0.0);
 
       // Directly interpolate numbers without quotes, and use quotes only for strings
       return "{lat: $latitude, lng: $longitude, color: '$color'}";
     }).join(", ");
 
+    print(pathScript);
 
     String script = """
     map.setCenter(new kakao.maps.LatLng($averageLat, $averageLon));
@@ -146,6 +199,14 @@ class _WheelPathMapState extends State<WheelPathMap> {
       );
     }
 
+    if (_isLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: CustomAppBar(title: '도보'),
       body: Column(
@@ -166,6 +227,78 @@ class _WheelPathMapState extends State<WheelPathMap> {
                   showMapTypeControl: false,
                   draggableMarker: true,
                   customScript: customScript,
+                ),
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  right: 10,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: mainOrange, width: 2),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: mainGray.withOpacity(0.5),
+                          spreadRadius: 5,
+                          blurRadius: 7,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    height: 150, // 적절한 높이 조정
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(30.0, 12.0, 30.0, 12.0),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '예상',
+                                  style: TextStyle(
+                                    fontSize: 23,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                                Text(
+                                  widget.vehicleType!,
+                                  style: TextStyle(
+                                      fontSize: 16.0, color: mainGray),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10), // 위젯과 위젯 사이의 간격 조정
+                            Row(
+                              children: [
+                                Text(
+                                  '약 ${int.parse(widget.totalTime) ~/ 60}분',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 20), // 텍스트들 사이의 간격 조정
+                                Text(
+                                  '${(int.parse(widget.totalDistance) / 1000).toStringAsFixed(2)}km',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.normal,
+                                    color: mainGray,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

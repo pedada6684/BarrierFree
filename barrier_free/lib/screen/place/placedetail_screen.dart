@@ -245,6 +245,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xffffffff), // 배경 투명지
+                      surfaceTintColor: Color(0xffffffff),
                       side: BorderSide(color: mainOrange, width: 1), // 테두리 오렌지
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10), // 테두리 반경 10px
@@ -253,7 +254,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     child: Text(
                       '출발',
                       style: TextStyle(
-                        fontSize: 18.0,
+                        fontSize: 16.0,
                         fontWeight: FontWeight.bold,
                         color: mainOrange,
                       ),
@@ -293,7 +294,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     child: Text(
                       '도착',
                       style: TextStyle(
-                        fontSize: 18.0,
+                        fontSize: 16.0,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -423,7 +424,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
                       } else if (snapshot.hasError) {
-                        return Text('장애물 없는 시설 정보를 가져오는 데 실패했습니다.');
+                        return Text('정보가 없습니다.');
                       } else if (snapshot.hasData && snapshot.data != null) {
                         var barrierFreeDetailList =
                             snapshot.data!['barrierFree'];
@@ -643,7 +644,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     Text(
                       '리뷰 작성하기',
                       style: TextStyle(
-                        fontSize: 18.0,
+                        fontSize: 16.0,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),

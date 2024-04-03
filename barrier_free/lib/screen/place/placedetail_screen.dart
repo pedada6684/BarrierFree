@@ -91,7 +91,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     });
   }
 
-
   Future<void> _initializeUserId() async {
     String? token = await SecureStorageService().getToken();
     if (token != null) {

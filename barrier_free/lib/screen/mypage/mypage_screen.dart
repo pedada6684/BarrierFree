@@ -19,10 +19,27 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
+  String? imageUrl;
   final Map<String, Widget Function(BuildContext)> menuItems = {
     '즐겨찾기': (context) => const MyFavoriteScreen(),
     '게시글': (context) => const MyReviewScreen(),
   };
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loadProfileImage();
+  }
+
+  void loadProfileImage() async {
+    var userProvider = Provider.of<UserProvider>(context, listen: false);
+    var userId = userProvider.userId;
+    if (userId != null) {
+      imageUrl = await userProvider.getMemberProfileImg(userId);
+      setState(() {}); // imageUrl 업데이트 후 위젯을 다시 빌드
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +78,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
     if (isLoggedIn) {
       var nickname =
           userProvider.nickname ?? userProvider.name; //닉네임 없을 때 이름으로 보여주기
-      var profileImageUrl = userProvider.getMemberProfileImg(userId!).toString();
+      // var profileImageUrl = userProvider.getMemberProfileImg(userId!).toString();
 
       return Padding(
         padding: EdgeInsets.all(8.0),
@@ -84,11 +101,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 CircleAvatar(
                   radius: 50,
                   backgroundColor: Colors.white,
-                  backgroundImage:
-                      profileImageUrl != null && profileImageUrl is String
-                          ? NetworkImage(profileImageUrl)
-                          : const AssetImage('assets/image/default_profile.png')
-                              as ImageProvider,
+                  backgroundImage: imageUrl != null
+                      ? NetworkImage(imageUrl!)
+                      : AssetImage('assets/image/default_profile.png')
+                          as ImageProvider,
                 ),
                 Positioned(
                   bottom: -10,

@@ -14,7 +14,7 @@ class WheelPathMap extends StatefulWidget {
   final double? endLat;
   final double? endLon;
 
-  final String? vehicleType;
+  final String? type;
   final List<dynamic> wheelDirections;
   final List<dynamic> recommendedpathCoordinates;
   final List<String> formattedCoordinates;
@@ -30,7 +30,7 @@ class WheelPathMap extends StatefulWidget {
     this.startLon,
     this.endLat,
     this.endLon,
-    this.vehicleType,
+    this.type,
     required this.formattedCoordinates,
     required this.wheelDirections,
     required this.totalTime,
@@ -57,39 +57,11 @@ class _WheelPathMapState extends State<WheelPathMap> {
     _loadData();
     _addMarkers(); // 출발지와 도착지 마커 추가
     WidgetsBinding.instance.addPostFrameCallback((_) {});
+    print(widget.type);
   }
 
   Future<void> _loadData() async {
-    await Future.delayed(Duration(seconds: 3
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        ));
+    await Future.delayed(Duration(seconds: 3));
 
     if (mounted) {
       setState(() {
@@ -226,7 +198,8 @@ class _WheelPathMapState extends State<WheelPathMap> {
         padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         decoration: BoxDecoration(
           color: _isRecommendedPathSelected && pathType == 'recommended'
-              ? Colors.blue : Colors.grey[200],
+              ? Colors.blue
+              : Colors.grey[200],
           borderRadius: BorderRadius.circular(20.0),
         ),
         child: Text(
@@ -240,11 +213,12 @@ class _WheelPathMapState extends State<WheelPathMap> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     final appKey = dotenv.env['APP_KEY'];
     final currentPosition = LocationService().currentPosition;
+    int totalTimeMinutes = int.tryParse(widget.totalTime) ?? 0;
+    double totalDistanceKm = (int.tryParse(widget.totalDistance) ?? 0) / 1000.0;
 
     if (currentPosition == null) {
       return const Scaffold(
@@ -320,7 +294,7 @@ class _WheelPathMapState extends State<WheelPathMap> {
                                   ),
                                 ),
                                 Text(
-                                  widget.vehicleType!,
+                                  widget.type!,
                                   style: TextStyle(
                                       fontSize: 16.0, color: mainGray),
                                 ),
@@ -330,7 +304,7 @@ class _WheelPathMapState extends State<WheelPathMap> {
                             Row(
                               children: [
                                 Text(
-                                  '약 ${int.parse(widget.totalTime) ~/ 60}분',
+                                  '약 ${totalTimeMinutes ~/ 60}분',
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
@@ -338,7 +312,7 @@ class _WheelPathMapState extends State<WheelPathMap> {
                                 ),
                                 SizedBox(width: 20), // 텍스트들 사이의 간격 조정
                                 Text(
-                                  '${(int.parse(widget.totalDistance) / 1000).toStringAsFixed(2)}km',
+                                  '${totalDistanceKm.toStringAsFixed(2)}km',
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.normal,

@@ -17,7 +17,7 @@ class TransitPathMap extends StatefulWidget {
   final double? endLat;
   final double? endLon;
 
-  final String? vehicleType;
+  final String? type;
 
   final List<String> formattedCoordinates;
 
@@ -29,7 +29,7 @@ class TransitPathMap extends StatefulWidget {
     this.startLon,
     this.endLat,
     this.endLon,
-    this.vehicleType,
+    this.type,
 
     required this.formattedCoordinates,
   });

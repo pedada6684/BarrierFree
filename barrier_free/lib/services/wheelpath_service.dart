@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/physics.dart';
 import 'package:http/http.dart' as http;
 
 class WheelPathService {
@@ -12,6 +13,7 @@ class WheelPathService {
     required double endLon,
   }) async {
     // 요청 본문 생성
+
     final requestBody = jsonEncode({
       'type': type,
       'startLat': startLat.toString(),
@@ -19,8 +21,6 @@ class WheelPathService {
       'endLat': endLat.toString(),
       'endLng': endLon.toString(),
     });
-
-    // print('리퀘스트바디 : $requestBody');
 
     final response = await http.post(
       Uri.parse(_baseUrl),

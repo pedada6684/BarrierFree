@@ -11,6 +11,7 @@ import com.fullship.hBAF.domain.place.controller.response.PlaceListResponse;
 import com.fullship.hBAF.domain.place.service.PlaceService;
 import com.fullship.hBAF.domain.place.service.command.FindPathByAStarCommand;
 import com.fullship.hBAF.domain.place.service.command.Request.AngleSlopeCommand;
+import com.fullship.hBAF.global.H3.service.H3IndexService;
 import com.fullship.hBAF.global.api.response.OdSayPath;
 import com.fullship.hBAF.global.api.response.PathGeoCode;
 import com.fullship.hBAF.global.api.response.TaxiPathForm;
@@ -48,6 +49,7 @@ public class PlaceController {
 
   private final PlaceService placeService;
   private final H3 h3;
+  private final H3IndexService h3IndexService;
 
   @PostMapping("/path/wheel")
   @Operation(summary = "휠체어 도보 경로 조회", description = "계단이 없는 보행자 도보를 이용한 휠체어 이동 경로 조회")
@@ -134,6 +136,7 @@ public class PlaceController {
   @Operation(summary = "H3 index 초기화 메서드", description = "H3 index 초기화 메서드")
   public ResponseEntity<CommonResponseEntity> setH3() throws LineUndefinedException, IOException {
     h3.setH3Index();
-    return getResponseEntity(SuccessCode.OK, "H3 초기화 완료");
+    Long h3IdexSize = h3IndexService.getH3IdexSize();
+    return getResponseEntity(SuccessCode.OK, "H3 초기화 완료" + h3IdexSize);
   }
 }

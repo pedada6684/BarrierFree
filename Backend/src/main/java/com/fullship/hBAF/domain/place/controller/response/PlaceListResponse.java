@@ -23,6 +23,8 @@ public class PlaceListResponse {
     private String lng;
     private String poi;
     private String category;
+    private String phone;
+    private String placeUrl;
     private List<String> barrierFree;
     private List<String> img;
 
@@ -35,6 +37,8 @@ public class PlaceListResponse {
                 .lng(place.getLongitude())
                 .poi(place.getPoiId())
                 .category(place.getCategory())
+                .phone(place.getPhone())
+                .placeUrl(place.getPlaceUrl())
                 .barrierFree(BarrierFreeInfo.makeBafArrInfo(place.getBarrierFree()))
                 .img(createToCommand(place.getImages()))
                 .build();

@@ -152,6 +152,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
           fixedSize: const Size(300.0, 25.0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0),

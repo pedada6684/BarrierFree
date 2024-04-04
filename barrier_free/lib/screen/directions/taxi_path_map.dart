@@ -112,7 +112,7 @@ class _TaxiPathMapState extends State<TaxiPathMap> {
     final currentPosition = LocationService().currentPosition;
 
     int totalTimeMinutes = int.tryParse(widget.totalTime) ?? 0;
-    double totalDistanceKm = (int.tryParse(widget.totalDistance) ?? 0) / 100.0;
+    double totalDistanceKm = (int.tryParse(widget.totalDistance) ?? 0) / 1000.0;
 
     print(widget.minCost);
 

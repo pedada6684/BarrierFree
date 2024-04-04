@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   web:
-    image: jeeni/docker-test:hbaf5
+    image: jeeni/docker-test:latest
     ports:
       - "8080:8080"
     container_name: backend

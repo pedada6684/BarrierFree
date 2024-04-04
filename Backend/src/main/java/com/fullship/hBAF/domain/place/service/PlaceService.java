@@ -238,11 +238,14 @@ public class PlaceService {
               metroInfoRepository.findAllByIsWeekDayAndUp(isWeekDay) :
               metroInfoRepository.findAllByIsWeekDayAndDown(isWeekDay);
 
-          Integer metro = stationStopInfoRepository.findTime(sStation.getId(), curTime, metroIdList)
-              .get(0);
-          Integer curSubwayPos = stationStopInfoRepository.findCurPos(metro, curTime).get(0);
-          odSayPath.getSubPaths().get(j).setBeforeCount(Math.abs(sStation.getId() - curSubwayPos));
-
+          try {
+            Integer metro = stationStopInfoRepository.findTime(sStation.getId(), curTime, metroIdList)
+                .get(0);
+            Integer curSubwayPos = stationStopInfoRepository.findCurPos(metro, curTime).get(0);
+            odSayPath.getSubPaths().get(j).setBeforeCount(Math.abs(sStation.getId() - curSubwayPos));
+          } catch (IndexOutOfBoundsException e) {
+            System.out.println("###지하철 없음"); //TODO: 추후 커스텀 예외로 변경(임시방편)
+          }
         }
       }
     }

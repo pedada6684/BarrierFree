@@ -1,7 +1,5 @@
 package com.fullship.hBAF.domain.place.controller;
 
-import static com.fullship.hBAF.global.response.CommonResponseEntity.getResponseEntity;
-
 import com.fullship.hBAF.domain.place.controller.request.CalculateAngleRequest;
 import com.fullship.hBAF.domain.place.controller.request.GetPlaceListRequest;
 import com.fullship.hBAF.domain.place.controller.request.PathSearchToTrafficRequest;
@@ -11,14 +9,14 @@ import com.fullship.hBAF.domain.place.controller.response.PlaceListResponse;
 import com.fullship.hBAF.domain.place.service.PlaceService;
 import com.fullship.hBAF.domain.place.service.command.FindPathByAStarCommand;
 import com.fullship.hBAF.domain.place.service.command.Request.AngleSlopeCommand;
+import com.fullship.hBAF.domain.place.service.command.SearchPathToTrafficCommand;
+import com.fullship.hBAF.domain.place.service.command.SearchPathToWheelCommand;
 import com.fullship.hBAF.global.H3.service.H3IndexService;
 import com.fullship.hBAF.global.api.response.OdSayPath;
 import com.fullship.hBAF.global.api.response.PathGeoCode;
 import com.fullship.hBAF.global.api.response.TaxiPathForm;
 import com.fullship.hBAF.global.api.response.WheelPathForm;
 import com.fullship.hBAF.global.api.service.command.OdSayPathCommand;
-import com.fullship.hBAF.domain.place.service.command.SearchPathToTrafficCommand;
-import com.fullship.hBAF.domain.place.service.command.SearchPathToWheelCommand;
 import com.fullship.hBAF.global.response.CommonResponseEntity;
 import com.fullship.hBAF.global.response.SuccessCode;
 import com.fullship.hBAF.util.H3;
@@ -28,23 +26,17 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
-import java.io.IOException;
-import java.text.ParseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.fullship.hBAF.global.response.CommonResponseEntity.getResponseEntity;
 
 @RestController
 @RequiredArgsConstructor
@@ -122,6 +114,15 @@ public class PlaceController {
   @GetMapping("/test")
   @Operation(summary = "통신 테스트", description = "통신 테스트")
   public ResponseEntity<CommonResponseEntity> test() {
-    return getResponseEntity(SuccessCode.OK, "[0403-0143]테스트입니다.");
+    System.out.println("통신 테스트");
+    return getResponseEntity(SuccessCode.OK, "[0404-0315]테스트입니다.");
+  }
+
+  @GetMapping("/setH3")
+  @Operation(summary = "H3 index 초기화 메서드", description = "H3 index 초기화 메서드")
+  public ResponseEntity<CommonResponseEntity> setH3() throws LineUndefinedException, IOException {
+    h3.setH3Index();
+    Long h3IdexSize = h3IndexService.getH3IdexSize();
+    return getResponseEntity(SuccessCode.OK, "H3 초기화 완료" + h3IdexSize);
   }
 }

@@ -192,8 +192,11 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         endLon: widget.endLon!,
       );
 
-      List<dynamic> coordinatesList =
-          busDirections[0]["subPaths"][1]["passStationGeo"];
+      List<dynamic> coordinatesList = [
+        ...busDirections[0]["geoCode"][0]["geoCode"],
+        ...busDirections[0]["geoCode"][1]["geoCode"],
+        ...busDirections[0]["geoCode"][2]["geoCode"],
+      ];
       List<String> formattedCoordinatesList = coordinatesList
           .map((direction) =>
               'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})')
@@ -205,6 +208,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         transitCoordinates = newFormattedCoordinates; // 포맷된 좌표 데이터를 상태에 저장합니다.
         this.busDirections = busDirections;
         print('===============버스 ===================');
+        print('${coordinatesList}');
         print('formattedCoordinates = ${transitCoordinates}');
         print('busDirections = ${busDirections}');
       });
@@ -601,7 +605,6 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                 ),
               ),
             ),
-            _TransitList(),
             SizedBox(height: 10), // 드롭다운과 패널 슬라이딩 사이의 간격TransitPath
             // _buildToggleButton(),
             _showSearchResults
@@ -625,6 +628,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
               width: double.infinity, // 수평선이 가로로 전체로 펼쳐지도록 설정
               color: Colors.grey, // 수평선의 색상 설정
             ),
+            _TransitList(),
           ],
         ),
       ),

@@ -122,7 +122,6 @@ public class PlaceController {
   @Operation(summary = "H3 index 초기화 메서드", description = "H3 index 초기화 메서드")
   public ResponseEntity<CommonResponseEntity> setH3() throws LineUndefinedException, IOException {
     h3.setH3Index();
-    Long h3IdexSize = h3IndexService.getH3IdexSize();
-    return getResponseEntity(SuccessCode.OK, "H3 초기화 완료" + h3IdexSize);
+    return getResponseEntity(SuccessCode.OK, "H3 초기화 완료");
   }
 }

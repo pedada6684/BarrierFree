@@ -36,7 +36,6 @@ public class PathGeoCode {
     try {
       JSONParser parser = new JSONParser();
       JSONObject object = (JSONObject) parser.parse(response.getBody());
-//      log.info("pathResult = {}", object);
       JSONObject result = (JSONObject) object.get("result");
       JSONArray lanes = (JSONArray) result.get("lane");
       for (Object o : lanes) {

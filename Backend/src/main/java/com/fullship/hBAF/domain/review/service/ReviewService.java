@@ -11,6 +11,7 @@ import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import com.fullship.hBAF.util.BarrierFreeInfo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,13 +19,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final MemberRepository memberRepository;
 
     public GetReviewResponse getReview(GetReviewRequestCommand command){
-
+        log.info("GetReviewRequestCommand: "+command);
         Review review = reviewRepository.findById(command.getReviewId()).orElseThrow(() -> new CustomException(ErrorCode.REQUEST_NOT_FOUND));
         Member member = memberRepository.findById(review.getId()).get();
 
@@ -58,7 +60,7 @@ public class ReviewService {
     }
 
     public GetAllReviewsByPoiIdResponse getAllReviewsByPoiId(GetAllReviewsByPoiIdRequestCommand command){
-
+        log.info("GetAllReviewsByPoiIdRequestCommand: "+command);
         List<Review> allReviews = reviewRepository.findAllByPoiId(command.getPoiId());
         List<GetAllReviewsByPoiIdResponseCommand> list = new ArrayList<>();
 
@@ -88,7 +90,7 @@ public class ReviewService {
     }
 
     public GetAllReviewsByMemberIdResponse getAllReviewsByMemberId(GetAllReviewsByMemberIdRequestCommand command){
-
+        log.info("GetAllReviewsByMemberIdRequestCommand: "+command);
         List<Review> allReviews = reviewRepository.findAllByMemberId(command.getMemberId());
         List<GetAllReviewsByMemberIdResponseCommand> list = new ArrayList<>();
 
@@ -118,9 +120,8 @@ public class ReviewService {
     }
 
     public AddReviewResponse addReview(AddReviewRequestCommand command){
+        log.info("AddReviewRequestCommand: "+command);
         Member member = memberRepository.findById(command.getMemberId()).orElseThrow(() -> new CustomException(ErrorCode.REQUEST_NOT_FOUND));
-
-
         Review review = Review.createToReview(
                 member,
                 command.getContent(),
@@ -129,17 +130,16 @@ public class ReviewService {
                 command.getPoiId(),
                 command.getFile()
         );
-
         reviewRepository.save(review);
 
         AddReviewResponseCommand responseCommand = AddReviewResponseCommand.builder()
                 .response("success")
                 .build();
-
         return AddReviewResponse.builder().response(responseCommand).build();
     }
 
     public ModifyReviewResponse modifyReview(ModifyReviewRequestCommand command){
+        log.info("ModifyReviewRequestCommand: "+command);
         Review review = reviewRepository.findById(command.getReviewId()).orElseThrow(() -> new CustomException(ErrorCode.REQUEST_NOT_FOUND));
 
         review.modifyReview(
@@ -156,8 +156,8 @@ public class ReviewService {
     }
 
     public DeleteReviewResponse deleteReview(DeleteReviewRequestCommand command){
+        log.info("DeleteReviewRequestCommand: "+command);
         reviewRepository.findById(command.getReviewId()).orElseThrow(() -> new CustomException(ErrorCode.REQUEST_NOT_FOUND));
-
         reviewRepository.deleteById(command.getReviewId());
 
         DeleteReviewResponseCommand responseCommand = DeleteReviewResponseCommand.builder()

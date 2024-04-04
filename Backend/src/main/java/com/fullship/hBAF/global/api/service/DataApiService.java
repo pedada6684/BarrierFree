@@ -221,7 +221,6 @@ public class DataApiService {
         for (int j = 0; j < lanes.size(); j++) {
           JSONObject lane = (JSONObject) ((JSONArray) result.get("lane")).get(j);
           String lbId = ((String) lane.get("localBusID"));
-          log.info("localBusId = {}", lbId);
 
           if (lbId.equals("0")) {
             continue;
@@ -319,7 +318,6 @@ public class DataApiService {
         metroInfoRepository.save(metroInfo);
         for (int r = 5; r < 27; r++) {
           Object o = checkCell(workSheet.getRow(r).getCell(c));
-          System.out.println(o);
           if (o == null || o.equals("") || o.equals("false")) {
             continue;
           }

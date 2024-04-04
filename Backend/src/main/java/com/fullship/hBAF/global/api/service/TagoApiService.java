@@ -64,7 +64,6 @@ public class TagoApiService {
 
       ResponseEntity<String> response = apiService.get(uri, setHttpHeaders(), String.class);
 
-//      log.info("curBusPos = {}", response.getBody());
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();
 
@@ -93,7 +92,6 @@ public class TagoApiService {
         list.add(command);
       }
 
-//      log.info("curBusPosResult = {}", list);
       return list;
     } catch (ParserConfigurationException | IOException | SAXException e) {
       throw new CustomException(ErrorCode.NO_AVAILABLE_API);

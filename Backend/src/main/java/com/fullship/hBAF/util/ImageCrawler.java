@@ -30,8 +30,6 @@ public class ImageCrawler {
      */
     public void updatelBFImage(List<Place> placeList) {
         //초기설정
-        //TODO: driver 분화 필요
-        //TODO: 경로 yml파일로 관리 필요 더 찾아볼 것
         String projectPath = Paths.get(System.getProperty("user.dir")).toString();
         String path = projectPath + "\\asset\\img\\thumbnail\\";
         System.setProperty("webdriver.chrome.driver", projectPath +"\\chromedriver-win64\\chromedriver.exe");
@@ -66,7 +64,7 @@ public class ImageCrawler {
             Thread.sleep(300);
             webDriver.switchTo().frame("searchIframe");
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);//TODO: 커스텀 Exception으로 수정필요
+            throw new RuntimeException(e);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (NoSuchFrameException e) {
@@ -82,10 +80,6 @@ public class ImageCrawler {
             String altNB = alt.replaceAll(" ", "");
             if (altNB.charAt(0) == searchNB.charAt(0) && altNB.contains(searchNB)){ //이미지 S3 저장
                 return s3Util.uploadImageToS3(src, "ThumbNail",searchKey);
-            }else { // 검색결과가 매칭되지 않으면 저장하지 않음
-                log.info("NOT MATCH");
-                log.info("alt: " + altNB);
-                log.info("search: " + searchNB);
             }
         }
         return null;

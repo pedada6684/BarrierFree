@@ -70,5 +70,6 @@ public class MemberController {
     Member member = memberService.findMemberById(command);
     GetMemberInfoResponse response = GetMemberInfoResponse.from(member);
     return new ResponseEntity<>(response, HttpStatus.OK);
+
   }
 }

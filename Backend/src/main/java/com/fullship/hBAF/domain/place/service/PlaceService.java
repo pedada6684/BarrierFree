@@ -19,7 +19,6 @@ import com.fullship.hBAF.domain.place.service.command.Request.AngleSlopeCommand;
 import com.fullship.hBAF.domain.place.service.command.Request.GetPlaceListRequestCommand;
 import com.fullship.hBAF.domain.stationInfo.entity.StationInfo;
 import com.fullship.hBAF.domain.stationInfo.repository.StationInfoRepository;
-import com.fullship.hBAF.domain.stationStopInfo.entity.StationStopInfo;
 import com.fullship.hBAF.domain.stationStopInfo.repository.StationStopInfoRepository;
 import com.fullship.hBAF.global.api.response.*;
 import com.fullship.hBAF.global.api.response.OdSayPath.SubPath;
@@ -39,7 +38,6 @@ import com.fullship.hBAF.domain.place.service.command.SearchPathToWheelCommand;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
@@ -83,8 +81,7 @@ public class PlaceService {
    */
   @Cacheable(value = "WheelPath", key = "#command", cacheManager = "BAFCacheManager")
   public WheelPathForm useWheelPath(SearchPathToWheelCommand command) {
-    System.out.println("**********************************************PlaceService*********useWheelPath**********************************************************");
-//    log.info("SearchPathToWheelCommand: {}",command);
+    log.info("SearchPathToWheelCommand: "+command);
     WheelPathForm wheelPathForm = tMapApiService.searchPathToWheel(command);
     ElevationForPathCommand elevation = ElevationForPathCommand.createElevateCommand(
         wheelPathForm.getGeoCode());
@@ -97,8 +94,7 @@ public class PlaceService {
    */
   @Cacheable(value = "TransitPath", key = "#command", cacheManager = "BAFCacheManager")
   public List<OdSayPath> useTransitPath(OdSayPathCommand command) {
-    System.out.println("**********************************************PlaceService*********useTransitPath**********************************************************");
-//    log.info("OdSayPathCommand: {}",command);
+    log.info("OdSayPathCommand: "+command);
     List<OdSayPath> list = odSayApiService.searchPathToTransit(command);
 
     /* 총합 시간 순 정렬 (오름차순) */
@@ -182,8 +178,6 @@ public class PlaceService {
             Bus bus = subPath.getBusList().get(bb);
             /* 버스 고르기 해야 함 */
             // 1. 상 하행 구분
-            log.info("stopId = {}", subPath.getStartStationId());
-            log.info("busNo = {}", bus.getBusNo());
 
             BusStop busStop = busStopRepository.findBusStopByStopIdAndBusId(
                 subPath.getStartStationId(), bus.getBusId());
@@ -215,8 +209,6 @@ public class PlaceService {
                   busStopRepository.findBusStopByLocalStationIdAndBusIdAndStopDirection(
                       busesCurLocation.getLocalStationId(),
                       bus.getBusId(), direction);
-              System.out.println("+======busStop======" + busStop);
-              System.out.println("+======curBusStop======" + curBusStop);
               minCountStop = Math.min(minCountStop, Math.abs(busStop.getId() - curBusStop.getId()));
             }
             odSayPath.getSubPaths().get(j).getBusList().get(bb)
@@ -263,8 +255,7 @@ public class PlaceService {
    */
   @Cacheable(value = "TaxiPath", key = "#command", cacheManager = "BAFCacheManager")
   public TaxiPathForm useTaxiPath(SearchPathToTrafficCommand command) {
-    System.out.println("**********************************************PlaceService*********useTaxiPath**********************************************************");
-//    log.info("SearchPathToTrafficCommand: {}",command);
+    log.info("SearchPathToTrafficCommand: "+command);
     TaxiPathForm taxiPathForm = tMapApiService.searchPathToCar(command);
     try {
       Double cost = calculateCost(taxiPathForm.getGeoCode());
@@ -282,7 +273,6 @@ public class PlaceService {
    * 택시 요금 계산
    */
   public Double calculateCost(List<GeoCode> arr) throws IOException {
-    System.out.println("**********************************************PlaceService*********useTaxiPath**********************************************************");
     H3Core h3 = H3Core.newInstance();
     GeoCoord coord = new GeoCoord(Double.parseDouble(arr.get(arr.size() - 1).getLatitude()),
         Double.parseDouble(arr.get(arr.size() - 1).getLongitude()));
@@ -316,16 +306,10 @@ public class PlaceService {
       preLng = curLng;
     }
     totalCostDis = Math.max(0, totalCostDis);
-    System.out.println("토탈 거리 : " + totalDis);
-    System.out.println(
-        "시계 위치 : " + arr.get(clockIdx).getLatitude() + " " + arr.get(clockIdx).getLongitude());
-    System.out.println("시계 거리 : " + totalClockDis);
-    System.out.println("금액 : " + (cost + totalCostDis * 100 / 440));
     return (cost + totalCostDis * 100 / 440);
   }
 
   public int findClock(List<GeoCode> arr) throws IOException {
-    System.out.println("**********************************************PlaceService*********findClock**********************************************************");
     int l = 0;
     int r = arr.size() - 1;
 
@@ -400,8 +384,6 @@ public class PlaceService {
   }
 
   public GetPlaceResponse getPlace(String poiId) {
-    System.out.println("**********************************************PlaceService*********getPlace**********************************************************");
-    log.info("poiId: {}",poiId);
     Place place = placeRepository.findPlaceByPoiIdWithImage(poiId)
         .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
     return GetPlaceResponse.from(place);
@@ -414,8 +396,7 @@ public class PlaceService {
    */
   @Cacheable(value = "BFPlaces", key = "#command", cacheManager = "BAFCacheManager")
   public List<PlaceListResponse> getPlaceList(GetPlaceListRequestCommand command) {
-    System.out.println("**********************************************PlaceService*********getPlaceList**********************************************************");
-//    log.info("GetPlaceListRequestCommand: {}",command);
+    log.info("GetPlaceListRequestCommand: "+command);
     List<Place> placeEntityList = placeRepository.findByTypeWithImage(true);
     double lat = command.getLat();
     double lng = command.getLng();
@@ -444,10 +425,7 @@ public class PlaceService {
   }
 
   public List<PathGeoCode> calculateAngle(AngleSlopeCommand command) {
-    System.out.println("**********************************************PlaceService*********calculateAngle**********************************************************");
-//    log.info("AngleSlopeCommand: {}",command);
     List<PathGeoCode> pathGeoCodes = command.getGeoCodes();
-//    log.info("pathGeoCode = {}", pathGeoCodes);
     for (PathGeoCode pathGeoCode : pathGeoCodes) {
       if (pathGeoCode == null) {
         continue;
@@ -505,6 +483,7 @@ public class PlaceService {
 
   @Cacheable(value = "CalcAstar", key = "#command", cacheManager = "BAFCacheManager")
   public WheelPathForm findPathByAStar(FindPathByAStarCommand command) {
+    log.info("FindPathByAStarCommand: "+command);
     int[] se = command.getSe();
     List<GeoCode> list = command.getGeoCodes();
     String type = command.getType();
@@ -537,9 +516,6 @@ public class PlaceService {
     long end = h3.geoToH3(endGeo.lat, endGeo.lng, 12);
     //급경사의 시작점 또는 도착점이 대전이 아닌 경우 경로 null 반환
     if (!h3IndexService.isContainInRedisH3(start) || !h3IndexService.isContainInRedisH3(end)) {
-      log.info("start: "+ h3IndexService.isContainInRedisH3(start));
-      log.info("end: "+ h3IndexService.isContainInRedisH3(end));
-      log.info("#####대전이 아님");
       return null;
     }
 
@@ -633,29 +609,12 @@ public class PlaceService {
         } else {
           tentativeG = 987654321;
         }
-//        if(0<=diff && diff<30)
-//          tentativeG += diff*9;
-//        else if(30<=diff && diff<50)
-//          tentativeG += diff*18;
-//        else if(50<=diff && diff<100)
-//          tentativeG += diff*36;
-//        else if(100<=diff)
-//          tentativeG += diff*100;
-//        if(0<=diff && diff<3)
-//          tentativeG += diff*9;
-//        else if(3<=diff && diff<6)
-//          tentativeG += diff*18;
-//        else if(6<=diff && diff<9)
-//          tentativeG += diff*36;
-//        else if(9<=diff)
-//          tentativeG += 99999.0;
         //openMap에 없거나, 이미 openMap에 존재하는 인덱스보다 가중치가 작은 경우
         if (!openMap.containsKey(h3Index) || tentativeG < openMap.get(h3Index).g) {
           NodeAStar node = new NodeAStar(h3Index);
           node.preNode = current;
           node.g = tentativeG;
           node.h = calculateDistance(h3.h3ToGeo(h3Index).lat, h3.h3ToGeo(h3Index).lng, eX, eY);
-          log.info(node.g + "******" + node.h);
           node.f = node.g + node.h;
           if (node.f > 99999.0) {
             continue;
@@ -665,7 +624,6 @@ public class PlaceService {
 
       }
     }
-    log.info("######경로가 없음");
     return null;
   }
 
@@ -674,12 +632,10 @@ public class PlaceService {
    */
   @Transactional(readOnly = false)
   public Long createPlace(CreatePlaceCommand command) {
-    System.out.println("**********************************************PlaceService*********createPlace**********************************************************");
-//    log.info("CreatePlaceCommand: {}",command);
+    log.info("CreatePlaceCommand: "+command);
     //poiId를 통해 존재확인
     if (placeRepository.existsByPoiId(command.getPoiId())) {
       return null;
-//      throw new IllegalStateException("이미 존재하는 장소 :" + command.getPoiId()+" "+command.getPlaceName());
     }
     Place newPlace = Place.createNewPlace(
         command.getPlaceName(),
@@ -707,8 +663,7 @@ public class PlaceService {
    */
   @Transactional(readOnly = false)
   public Long updatePlaceImageUrl(UpdatePlaceImageCommand command) {
-    System.out.println("**********************************************PlaceService*********updatePlaceImageUrl**********************************************************");
-//    log.info("UpdatePlaceImageCommand: {}",command);
+    log.info("UpdatePlaceImageCommand: "+command);
     Place place = placeRepository.findById(command.getPlaceId())
         .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
     Optional<Image> imageOptional = imageRepository.findByPlaceAndImageType(place, 0);

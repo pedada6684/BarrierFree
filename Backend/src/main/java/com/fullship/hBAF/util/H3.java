@@ -130,42 +130,9 @@ public class H3 {
             }
         }
 
-        System.out.println("대전 테두리 전체 개수 : "+daejeonH3Index.size());
-
-        System.out.println("민맥스 : "+xMax+" "+yMax+" "+xMin+" "+yMin);
-
         daejeonH3Index = bfs(daejeonH3Index, 36.321655,127.378953);
 
-        System.out.println("대전 전체 h3 인덱스 개수 : "+daejeonH3Index.size());
-
-//        List<Long> daejeonCompact = h3.compact(daejeonH3Index);
-//
-//        System.out.println("대전 compact 전체 h3 인덱스 개수 : "+daejeonCompact.size());
-//
-//        System.out.println("max : "+max);
-//        System.out.println("min : "+min);
         elevationBfs(s3Util.readExcelFromS3("Data/godo.xlsx"));
-
-        JSONArray jsonArray = new JSONArray();
-
-//        for(Long i : daejeonH3Index.keySet()){
-//
-//            List<GeoCoord> geoCoordList = h3.h3ToGeoBoundary(i);
-//            for(GeoCoord coord : geoCoordList) {
-//                JSONObject jsonObject = new JSONObject();
-//                jsonObject.put("lat", coord.lat);
-//                jsonObject.put("lng", coord.lng);
-//                jsonArray.add(jsonObject);
-//            }
-//
-//        }
-//
-//        try (FileWriter file = new FileWriter("geo_coord.json")) {
-//            file.write(jsonArray.toString());
-//            System.out.println("JSON 객체를 파일에 저장했습니다.");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
 
         h3IndexService.saveH3IndexSet(daejeonH3Index);
     }

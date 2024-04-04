@@ -40,7 +40,6 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (!checkAnnotation(handler, Auth.class)){//@Auth 어노테이션 없으면
             return true; // 로그인 검증 넘어감
         }
-        log.info("Login Interceptor preHandlerpreHandler");
 
         //JWT 추출
         String accessToken = resolveTokenInRequest(request);

@@ -31,7 +31,6 @@ public class KakaoPlace {
   private String placeUrl;
 
   public static List<KakaoPlace> jsonToO(ResponseEntity<String> result) {
-//    log.info("result = {}", result.getBody());
     List<KakaoPlace> kakaoPlaces = new ArrayList<>();
     try {
       JSONParser parser = new JSONParser();

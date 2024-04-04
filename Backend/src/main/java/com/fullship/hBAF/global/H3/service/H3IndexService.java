@@ -2,6 +2,7 @@ package com.fullship.hBAF.global.H3.service;
 
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
+import com.fullship.hBAF.util.H3;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ public class H3IndexService {
     @Resource(name = "redisTemplateForH3")
     private HashOperations<String, Long, Double> hashOperations;
     private final String H3IndexKey = "H3INDEX";
+    private final H3 h3;
     /**
      * H3 index를 redis에 삽입
      * @param h3IndexSet: 삽입할 indexSet
@@ -45,9 +47,5 @@ public class H3IndexService {
      */
     public boolean isContainInRedisH3(Long index){
         return hashOperations.hasKey(H3IndexKey, index);
-    }
-
-    public Long getH3IdexSize(){
-        return hashOperations.size(H3IndexKey);
     }
 }

@@ -246,7 +246,6 @@ public class BarrierFreeConstructor {
 
             RestTemplate rt = new RestTemplate();
             HttpEntity<?> he = new HttpEntity<>(setHttpHeaders());
-//            System.out.println(publicDataDetailPlaceUri.toUri());
             ResponseEntity<String> resultMap = rt.exchange(publicDataDetailPlaceUri.toUri(), HttpMethod.GET, he, String.class);
 
             InputStream is = new ByteArrayInputStream(Objects.requireNonNull(resultMap.getBody()).getBytes("UTF-8"));
@@ -339,7 +338,6 @@ public class BarrierFreeConstructor {
             String searchKeyword = row.getCell(0).getStringCellValue();
             String faclLat = String.valueOf(row.getCell(1).getNumericCellValue());
             String faclLng = String.valueOf(row.getCell(2).getNumericCellValue());
-            System.out.println(searchKeyword + ", " + faclLat + ", " + faclLng);
 
             SearchKakaoPlaceCommand searchCommand = SearchKakaoPlaceCommand.builder()
                     .lat(faclLat)

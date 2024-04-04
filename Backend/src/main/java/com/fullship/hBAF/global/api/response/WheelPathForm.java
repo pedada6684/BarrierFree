@@ -35,7 +35,6 @@ public class WheelPathForm {
 
   public static WheelPathForm jsonToO(ResponseEntity<String> result) {
     List<GeoCode> geoCode = new ArrayList<>();
-//    log.info("result = {}", result.getBody());
     try {
       JSONParser parser = new JSONParser();
       JSONObject object = (JSONObject) parser.parse(result.getBody());

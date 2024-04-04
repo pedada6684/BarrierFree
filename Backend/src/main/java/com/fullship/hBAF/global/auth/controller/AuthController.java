@@ -98,7 +98,6 @@ public class AuthController {
   @GetMapping("/test")
   @Operation(summary = "로그인 여부 확인 테스트", description = "로그인 여부 확인 테스트")
   public ResponseEntity<CommonResponseEntity> test() {
-    System.out.println("통신 테스트");
     return getResponseEntity(SuccessCode.OK, "테스트입니다.");
   }
 }

@@ -17,8 +17,6 @@ public class OAuthLoginService {
   private final MemberRepository memberRepository;
   private final AuthTokenGenerator authTokenGenerator;
   private final RequestOAuthInfoService requestOAuthInfoService;
-//  private final PasswordEncorder 
-//TODO: passwordEncoder 사용해볼것
 
   /**
    * oauth login or join 메서드

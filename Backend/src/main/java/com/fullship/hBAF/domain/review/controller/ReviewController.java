@@ -35,7 +35,6 @@ public class ReviewController {
     public ResponseEntity<UploadImgResponse> uploadImg(@RequestParam("img") List<MultipartFile> img){
         List<String> list = new ArrayList<>();
         for(MultipartFile i : img) {
-            System.out.println(i.getOriginalFilename());
             list.add(s3Util.uploadImageToS3(i, "review", UUID.randomUUID().toString().replace("-", "") + i.getOriginalFilename()).toString());
         }
 

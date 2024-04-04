@@ -18,7 +18,6 @@ public class H3IndexService {
     @Resource(name = "redisTemplateForH3")
     private HashOperations<String, Long, Double> hashOperations;
     private final String H3IndexKey = "H3INDEX";
-    private final H3 h3;
     /**
      * H3 index를 redis에 삽입
      * @param h3IndexSet: 삽입할 indexSet

@@ -19,7 +19,6 @@ import com.fullship.hBAF.domain.place.service.command.Request.AngleSlopeCommand;
 import com.fullship.hBAF.domain.place.service.command.Request.GetPlaceListRequestCommand;
 import com.fullship.hBAF.domain.stationInfo.entity.StationInfo;
 import com.fullship.hBAF.domain.stationInfo.repository.StationInfoRepository;
-import com.fullship.hBAF.domain.stationStopInfo.entity.StationStopInfo;
 import com.fullship.hBAF.domain.stationStopInfo.repository.StationStopInfoRepository;
 import com.fullship.hBAF.global.api.response.*;
 import com.fullship.hBAF.global.api.response.OdSayPath.SubPath;
@@ -39,7 +38,6 @@ import com.fullship.hBAF.domain.place.service.command.SearchPathToWheelCommand;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
@@ -83,6 +81,7 @@ public class PlaceService {
    */
   @Cacheable(value = "WheelPath", key = "#command", cacheManager = "BAFCacheManager")
   public WheelPathForm useWheelPath(SearchPathToWheelCommand command) {
+    log.info("SearchPathToWheelCommand: "+command);
     WheelPathForm wheelPathForm = tMapApiService.searchPathToWheel(command);
     ElevationForPathCommand elevation = ElevationForPathCommand.createElevateCommand(
         wheelPathForm.getGeoCode());
@@ -95,6 +94,7 @@ public class PlaceService {
    */
   @Cacheable(value = "TransitPath", key = "#command", cacheManager = "BAFCacheManager")
   public List<OdSayPath> useTransitPath(OdSayPathCommand command) {
+    log.info("OdSayPathCommand: "+command);
     List<OdSayPath> list = odSayApiService.searchPathToTransit(command);
 
     /* 총합 시간 순 정렬 (오름차순) */
@@ -255,6 +255,7 @@ public class PlaceService {
    */
   @Cacheable(value = "TaxiPath", key = "#command", cacheManager = "BAFCacheManager")
   public TaxiPathForm useTaxiPath(SearchPathToTrafficCommand command) {
+    log.info("SearchPathToTrafficCommand: "+command);
     TaxiPathForm taxiPathForm = tMapApiService.searchPathToCar(command);
     try {
       Double cost = calculateCost(taxiPathForm.getGeoCode());
@@ -395,6 +396,7 @@ public class PlaceService {
    */
   @Cacheable(value = "BFPlaces", key = "#command", cacheManager = "BAFCacheManager")
   public List<PlaceListResponse> getPlaceList(GetPlaceListRequestCommand command) {
+    log.info("GetPlaceListRequestCommand: "+command);
     List<Place> placeEntityList = placeRepository.findByTypeWithImage(true);
     double lat = command.getLat();
     double lng = command.getLng();
@@ -481,6 +483,7 @@ public class PlaceService {
 
   @Cacheable(value = "CalcAstar", key = "#command", cacheManager = "BAFCacheManager")
   public WheelPathForm findPathByAStar(FindPathByAStarCommand command) {
+    log.info("FindPathByAStarCommand: "+command);
     int[] se = command.getSe();
     List<GeoCode> list = command.getGeoCodes();
     String type = command.getType();
@@ -629,6 +632,7 @@ public class PlaceService {
    */
   @Transactional(readOnly = false)
   public Long createPlace(CreatePlaceCommand command) {
+    log.info("CreatePlaceCommand: "+command);
     //poiId를 통해 존재확인
     if (placeRepository.existsByPoiId(command.getPoiId())) {
       return null;
@@ -659,6 +663,7 @@ public class PlaceService {
    */
   @Transactional(readOnly = false)
   public Long updatePlaceImageUrl(UpdatePlaceImageCommand command) {
+    log.info("UpdatePlaceImageCommand: "+command);
     Place place = placeRepository.findById(command.getPlaceId())
         .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
     Optional<Image> imageOptional = imageRepository.findByPlaceAndImageType(place, 0);

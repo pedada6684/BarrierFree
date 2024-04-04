@@ -19,6 +19,7 @@ import com.fullship.hBAF.global.api.service.command.SearchKakaoPlaceCommand;
 import com.fullship.hBAF.global.response.ErrorCode;
 import com.fullship.hBAF.global.response.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookmarkPlaceService {
 
   private final BookmarkPlaceRepository bookmarkPlaceRepository;
@@ -35,7 +37,6 @@ public class BookmarkPlaceService {
   private final KakaoMapApiService kakaoMapApiService;
 
   public GetBookmarkPlaceByMemberIdResponse getBookmarkPlaceByMember(Long memberId){
-
     Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(ErrorCode.REQUEST_NOT_FOUND));
     List<BookmarkPlace> list = bookmarkPlaceRepository.findAllByMemberId(memberId);
 
@@ -52,6 +53,7 @@ public class BookmarkPlaceService {
   }
 
   public BookmarkPlaceResponse bookmark(BookmarkPlaceRequestCommand command){
+    log.info("BookmarkPlaceRequestCommand: "+command);
     if(command.getMemberId()==null || command.getPoiId()==null)
       throw new CustomException(ErrorCode.REQUEST_NOT_FOUND);
 

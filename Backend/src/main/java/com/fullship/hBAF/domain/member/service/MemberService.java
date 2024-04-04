@@ -37,6 +37,7 @@ public class MemberService {
 
   @Transactional(readOnly = false)
   public LoginResult login(NaverLoginCommand command) {
+    log.info("NaverLoginCommand: "+command);
     Member member = memberRepository.findByEmail(command.getEmail())
             .orElseGet(// 신규 유저인 경우 회원 가입
                     ()->joinMember(command.convertToJoinMemberCommand())
@@ -51,6 +52,7 @@ public class MemberService {
 
   @Transactional(readOnly = false)
   public Member joinMember(JoinMemberCommand command) {
+    log.info("JoinMemberCommand: "+command);
     Member newMember = Member.createNewMember(
             command.getEmail(),
             null,
@@ -73,6 +75,7 @@ public class MemberService {
    */
   @Transactional(readOnly = false)
   public String updateProfileImg(UpdateProfileImgCommand command) {
+    log.info("UpdateProfileImgCommand: "+command);
     Member member = memberRepository.findById(command.getMemberId())
             .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
     URL S3Url = s3Util.uploadImageToS3(command.getProfileImg(), "profile", member.getId().toString());
@@ -82,6 +85,7 @@ public class MemberService {
   }
 
   public void withdrawMember(WithdrawMemberCommand command) {
+    log.info("WithdrawMemberCommand: "+command);
     Member member = memberRepository.findById(command.getMemberId())
             .orElseThrow(() -> new CustomException(ErrorCode.ENTITIY_NOT_FOUND));
     member.withdraw();
@@ -89,6 +93,7 @@ public class MemberService {
   }
 
   public void logout(LogoutCommand command) {
+    log.info("LogoutCommand: "+command);
     refreshTokenService.removeRefreshToken(command.getMemberId());
     return;
   }

@@ -605,18 +605,21 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
             SizedBox(height: 10), // 드롭다운과 패널 슬라이딩 사이의 간격TransitPath
             // _buildToggleButton(),
             _showSearchResults
-                ? SlidingUpPanel(
-                    // controller: _panelController,
-                    panel: _buildPanel(), // 검색 결과가 있을 때만 패널을 보이도록 설정
-                    // collapsed: _buildCollapsedPanel(),
-                    // borderRadius: const BorderRadius.only(
-                    //   topRight: Radius.circular(30.0),
-                    //   topLeft: Radius.circular(30.
-                    // ),
-                    minHeight: 100.0,
-                    maxHeight: MediaQuery.of(context).size.height * 0.35,
-                  )
-                : SizedBox(), // 검색 결과가 없으면 아무것도 보이지 않게 함
+                ? SingleChildScrollView( // 스크롤이 가능한 SingleChildScrollView를 추가합니다.
+              child: SlidingUpPanel(
+                // controller: _panelController,
+                panel: _buildPanel(), // 검색 결과가 있을 때만 패널을 보이도록 설정
+                // collapsed: _buildCollapsedPanel(),
+                // borderRadius: const BorderRadius.only(
+                //   topRight: Radius.circular(30.0),
+                //   topLeft: Radius.circular(30.
+                // ),
+                minHeight: MediaQuery.of(context).size.height,
+                // maxHeight: MediaQuery.of(context).size.height * 0.35,
+              ),
+            )
+                : SizedBox(),
+            // 검색 결과가 없으면 아무것도 보이지 않게 함
             Container(
               height: 0.3, // 수평선의 높이 설정
               width: double.infinity, // 수평선이 가로로 전체로 펼쳐지도록 설정

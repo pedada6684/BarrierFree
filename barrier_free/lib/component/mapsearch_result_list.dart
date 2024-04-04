@@ -124,6 +124,11 @@ class MapSearchResultList extends StatelessWidget {
                 Text(categoryReal),
                 Text(result['road_address_name'] ?? '주소 정보 없음'),
                 Text('${result['phone']}'),
+                // Container(
+                //   height: 1, // 수평선의 높이
+                //   color: Colors.grey, // 수평선의 색상
+                //   margin: EdgeInsets.symmetric(vertical: 10), // 수평선의 위아래 여백 조절
+                // ),
               ],
             ),
             onTap: () {

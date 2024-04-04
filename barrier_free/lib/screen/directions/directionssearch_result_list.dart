@@ -90,6 +90,12 @@ class DirectionSearchResultList extends StatelessWidget {
                 Text(categoryReal),
                 Text(result['road_address_name'] ?? '주소 정보 없음'),
                 Text('${result['phone']}'),
+                const SizedBox(height: 12.0),
+                Container(
+                  height: 0.5, // 수평선의 높이
+                  color: Colors.grey, // 수평선의 색상
+                  margin: EdgeInsets.symmetric(vertical: 10), // 수평선의 위아래 여백 조절
+                ),
               ],
             ),
             onTap: () {
@@ -129,6 +135,12 @@ class DirectionSearchResultList extends StatelessWidget {
                 Text(categoryReal),
                 Text(result['road_address_name'] ?? '주소 정보 없음'),
                 Text('${result['phone']}'),
+                const SizedBox(height: 12.0),
+                Container(
+                  height: 0.5, // 수평선의 높이
+                  color: Colors.grey, // 수평선의 색상
+                  margin: EdgeInsets.symmetric(vertical: 10), // 수평선의 위아래 여백 조절
+                ),
               ],
             ),
             onTap: () {

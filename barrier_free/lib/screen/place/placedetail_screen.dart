@@ -48,7 +48,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   void initState() {
     super.initState();
     // 장소 상세 정보에서 위도와 경도를 가져옵니다.
-    print('============${widget.placeDetail}==============');
     barrierFreeDetailsFuture = _fetchBarrierFreeDetails();
 
     reviewListFuture =

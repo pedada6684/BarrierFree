@@ -135,6 +135,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         endLon: widget.endLon!,
       );
 
+      print('====================휠 휠 휠 휠 휠 ========================');
       print('API response: $directionsResult');
 
       // Map<String, dynamic>? basicPath 변경
@@ -142,6 +143,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
       final recommendedPath =
           directionsResult['recommendedPath'] as Map<String, dynamic>?;
 
+      print('====================휠 휠 휠 휠 휠 ========================');
       print('basicPath : $basicPath');
       print('recommendedPath : $recommendedPath');
 
@@ -154,6 +156,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
             .toList();
         wheelCoordinates = '[${coordinatesList.join(', ')}]';
 
+        print('====================휠 휠 휠 휠 휠 ========================');
         print('wheelCoordinates : $wheelCoordinates');
         print('geoCodeData : $geoCodeData');
       }
@@ -169,12 +172,14 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
       }
 
       setState(() {
+        print('====================휠 휠 휠 휠 휠 ========================');
         // 상태 업데이트
         totalDistance = basicPath?['totalDistance'].toString() ?? '';
         totalTime = basicPath?['totalTime'].toString() ?? '';
         wheelDirections = basicPath?['geoCode'] ?? [];
         rcTotalDistance = recommendedPath?['totalDistance'].toString() ?? '';
         rcTotalTime = recommendedPath?['totalTime'].toString() ?? '';
+        print('wheelDirections = ${wheelDirections }');
       });
     } catch (e) {
       print('Error fetching wheel directions: $e');

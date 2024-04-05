@@ -47,6 +47,7 @@ class WheelPathMap extends StatefulWidget {
 }
 
 class _WheelPathMapState extends State<WheelPathMap> {
+  Future<void>? _loadFuture;
   Key wheelKey = UniqueKey();
 
   // late List<Position> _markerPositions;
@@ -63,26 +64,28 @@ class _WheelPathMapState extends State<WheelPathMap> {
   @override
   void initState() {
     super.initState();
-    _loadData();
-    _addMarkers1(); // 출발지와 도착지 마커 추가
+    _loadFuture = _loadData();
+    // _addMarkers1(); // 출발지와 도착지 마커 추가
+    // _addMarkers2();
     WidgetsBinding.instance.addPostFrameCallback((_) {});
 
-    print('recommendedpathCoordinates:${widget.recommendedGeoCodeData}');
-    print('wheelDirections : ${widget.wheelDirections}');
+    // print('wheelDirections : ${widget.wheelDirections}');
+    // print('recommendeGeoCodeData넘어옴 : ${widget.recommendedGeoCodeData}');
   }
 
   Future<void> _loadData() async {
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(Duration(seconds: 10));
 
     if (mounted) {
       setState(() {
         _isLoading = false;
+        _addMarkers1();
         _addMarkers2();
       });
     }
   }
 
-  //일반경로
+  //추천경로
   void _addMarkers1() {
     double averageLat = (widget.startLat! + widget.endLat!) / 2;
     double averageLon = (widget.startLon! + widget.endLon!) / 2;
@@ -327,61 +330,121 @@ class _WheelPathMapState extends State<WheelPathMap> {
 
     return Scaffold(
       appBar: CustomAppBar(title: '도보'),
-      body: Column(
-        children: [
-          Expanded(
-            child: Stack(
-              children: <Widget>[
-                Container(
-                  key: wheelKey,
-                  child: KakaoMapView(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height -
-                        AppBar().preferredSize.height,
-                    kakaoMapKey: appKey!,
-                    lat: currentPosition!.latitude,
-                    lng: currentPosition!.longitude,
-                    markerImageURL:
-                        'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
-                    showZoomControl: false,
-                    showMapTypeControl: false,
-                    draggableMarker: true,
-                    customScript: customScript,
-                  ),
-                ),
-                Positioned(
-                  bottom: 20,
-                  left: 10,
-                  right: 10,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      widget.recommendedGeoCodeData.isNotEmpty
-                          ? _buildBottomButton(
-                              '추천 경로',
-                              () => _setPath('recommended'),
-                              _isRecommendedSelected,
-                              rcTotalTimeMinutes,
-                              rcTotalDistanceKm)
-                          : Container(
-                              child: Text('추천 경로가 없습니다'),
+      body: FutureBuilder<void>(
+        future: _loadFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            return Column(
+              children: [
+                Expanded(
+                  child: Stack(
+                    children: <Widget>[
+                      Container(
+                        key: wheelKey,
+                        child: KakaoMapView(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height -
+                              AppBar().preferredSize.height,
+                          kakaoMapKey: appKey!,
+                          lat: currentPosition!.latitude,
+                          lng: currentPosition!.longitude,
+                          markerImageURL:
+                              'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                          showZoomControl: false,
+                          showMapTypeControl: false,
+                          draggableMarker: true,
+                          customScript: customScript,
+                        ),
+                      ),
+                      if (widget.initialSearchAddress != null &&
+                          widget.initialDestinationSearchAddress != null)
+                        Positioned(
+                          top: 20, // 위치 조정이 필요할 수 있음
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            width: MediaQuery.of(context).size.width,
+                            child: Column(
+                              children: [
+                                _buildLocationContainer(
+                                    widget.initialSearchAddress!),
+                                SizedBox(height: 5), // 간격 조정
+                                _buildLocationContainer(
+                                    widget.initialDestinationSearchAddress!),
+                              ],
                             ),
-                      _buildBottomButton('일반 경로', () => _setPath('basic'),
-                          _isBasicSelected, totalTimeMinutes, totalDistanceKm),
+                          ),
+                        ),
+                      Positioned(
+                        bottom: 20,
+                        left: 10,
+                        right: 10,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            widget.recommendedGeoCodeData.isNotEmpty
+                                ? _buildBottomButton(
+                                    '추천 경로',
+                                    () => _setPath('recommended'),
+                                    _isRecommendedSelected,
+                                    rcTotalTimeMinutes,
+                                    rcTotalDistanceKm)
+                                : Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 15.0),
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.4,
+                                      child: Text(
+                                        '추천 경로가 없습니다',
+                                        style: TextStyle(
+                                            fontSize: 18.0,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          border: Border.all(
+                                              color: mainOrange, width: 2),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: mainGray.withOpacity(0.5),
+                                              spreadRadius: 1,
+                                              blurRadius: 2,
+                                              offset: Offset(0, 2),
+                                            ),
+                                          ]),
+                                    ),
+                                  ),
+                            _buildBottomButton(
+                                '일반 경로',
+                                () => _setPath('basic'),
+                                _isBasicSelected,
+                                totalTimeMinutes,
+                                totalDistanceKm),
+                          ],
+                        ),
+                      )
                     ],
                   ),
-                )
+                ),
               ],
-            ),
-          ),
-        ],
+            );
+          }
+        },
       ),
     );
   }
 
   Widget _buildBottomButton(String title, VoidCallback onTap, bool isSelected,
       int totalTime, double totalDistance) {
-    Color textColor =  title == '추천 경로' ? mainOrange : mainBlack;
+    Color textColor = title == '추천 경로' ? mainOrange : mainBlack;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -420,7 +483,10 @@ class _WheelPathMapState extends State<WheelPathMap> {
             children: <Widget>[
               Text(
                 title,
-                style: TextStyle(fontSize: 16.0, color: textColor, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 16.0,
+                    color: textColor,
+                    fontWeight: FontWeight.bold),
               ),
               Text(
                 '약 $totalTime 분',
@@ -430,6 +496,43 @@ class _WheelPathMapState extends State<WheelPathMap> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLocationContainer(String address) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: mainOrange, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.location_on,
+            color: mainOrange,
+          ),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              address,
+              style: TextStyle(
+                fontSize: 16.0,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }

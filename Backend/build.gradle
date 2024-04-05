@@ -40,7 +40,43 @@ dependencies {
 	// 쿼리문 상세
 	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
 
+	// JSON 데이터 파싱
+	implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+
+	// 엑셀 데이터 저장 POI
+	implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'
+	implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
+	implementation group: 'org.apache.poi', name: 'poi-scratchpad', version: '4.1.2'
+
+	// In-Memory H2 DB
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc' // Jdbc, Driver
+	implementation 'com.h2database:h2'
+
 	implementation 'commons-io:commons-io:2.8.0'
+	//json parsing
+	implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+	//크롤링 selenium
+	implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '2.41.0'
+	//aws
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+	//uber h3
+	implementation 'com.uber:h3:3.7.0'
+
+//	testImplementation group: 'com.h2database', name: 'h2', version: '2.1.214'
+
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc' // Jdbc, Driver
+	implementation 'com.h2database:h2'
+
+	//임시로 사용할 타임리프
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+	// In-Memory H2 DB
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc' // Jdbc, Driver
+	implementation 'com.h2database:h2'
+
+	//redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 tasks.named('test') {

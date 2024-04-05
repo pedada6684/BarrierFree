@@ -1,0 +1,5 @@
+### IntelliJ IDEA ###
+.idea
+.idea/misc.xml
+.idea/modules.xml
+chromedriver-win64/chromedriver.exe

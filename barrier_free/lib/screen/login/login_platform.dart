@@ -1,0 +1,4 @@
+enum LoginPlatform {
+  naver,
+  none
+}

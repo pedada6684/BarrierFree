@@ -1,19 +1,65 @@
 package com.fullship.hBAF.domain.member.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fullship.hBAF.domain.bookmarkPlace.entity.BookmarkPlace;
+import com.fullship.hBAF.domain.review.entity.Review;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
 @Table(name = "member")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member {
 
   @Id
   @GeneratedValue
   @Column(name = "member_id")
   private Long id;
+  @Column(unique = true)
+  private String email;
+  private String password;
+  private String nickname;
+  private String username;
+  private String profileUrl = null;
+  private Long role;
+  private LocalDateTime regDate;
+  private Long status;
+  private LocalDateTime delDate;
+  private OAuthProvider provider;
+
+  @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+  private List<BookmarkPlace> bookmarkPlaces;
+
+  @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+  private List<Review> reviews;
+
+  public static Member createNewMember(
+          String email,
+          String password,
+          String nickname,
+          String username
+  ){
+    Member member = new Member();
+    member.email = email;
+    member.password = password;
+    member.nickname = nickname;
+    member.username = username;
+    member.status = 1L;
+    member.regDate = LocalDateTime.now();
+    return member;
+  }
+
+  public void withdraw(){
+    this.status = 0L;
+    this.delDate = LocalDateTime.now();
+  }
+
+  public void updateProfileUrl(String profileUrl){
+    this.profileUrl = profileUrl;
+  }
 }

@@ -1,0 +1,13 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Social Login</title>
+</head>
+<body>
+<button id="socialLoginButton">소셜 로그인</button>
+<script>
+    document.getElementById("socialLoginButton").addEventListener("click", function() {
+        window.location.href = "http://localhost:8080/api/member/login";
+    });
+</script>
+</body>
+</html>

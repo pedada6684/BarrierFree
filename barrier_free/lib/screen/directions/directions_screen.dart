@@ -129,7 +129,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         endLat: widget.endLat!,
         endLon: widget.endLon!,
       );
-      
+
       // Map<String, dynamic>? basicPath 변경
       final basicPath = directionsResult['basicPath'] as Map<String, dynamic>?;
       final recommendedPath =
@@ -143,7 +143,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                 'new kakao.maps.LatLng(${direction['latitude']}, ${direction['longitude']})')
             .toList();
         wheelCoordinates = '[${coordinatesList.join(', ')}]';
-        
+
       }
 
       // 추천 경로 데이터가 있는 경우 처리
@@ -164,8 +164,6 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         rcTotalDistance = recommendedPath?['totalDistance'].toString() ?? '';
         rcTotalTime = recommendedPath?['totalTime'].toString() ?? '';
         recommendedGeoCodeData = recommendedPath?['geoCode'] ?? [];
-
-        print('추천추천추천 콛  $recommendedGeoCodeData');
       });
     } catch (e) {
       print('Error fetching wheel directions: $e');
@@ -198,7 +196,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
       setState(() {
         transitCoordinates = newFormattedCoordinates; // 포맷된 좌표 데이터를 상태에 저장합니다.
         this.busDirections = busDirections;
-     
+
       });
     } catch (e) {
       print('=========================================');
@@ -210,10 +208,9 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
   @override
   void initState() {
     super.initState();
-    //
-    // _fetchWheelDirections();
-    // _fetchBusDirections();
-    // _fetchTaxiDirections();
+    _fetchWheelDirections();
+    _fetchBusDirections();
+    _fetchTaxiDirections();
     _originController = TextEditingController(
         text: Provider.of<TextProvider>(context, listen: false).originText);
     _destinationController = TextEditingController(
@@ -410,7 +407,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                         if (_originController.text.isNotEmpty &&
                             _destinationController.text.isNotEmpty &&
                             _selectedVehicles != null) {
-                        
+
                         } else {
                           // 출발지와 도착지 값 중 하나라도 비어있을 경우 경고창 표시
                           showDialog(
@@ -589,10 +586,10 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
             _showSearchResults
                 ? SingleChildScrollView( // 스크롤이 가능한 SingleChildScrollView를 추가합니다.
               child: SlidingUpPanel(
-              
+
                 panel: _buildPanel(), // 검색 결과가 있을 때만 패널을 보이도록 설정
                 minHeight: MediaQuery.of(context).size.height,
-               
+
               ),
             )
                 : SizedBox(),
@@ -610,7 +607,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
   }
 
   Widget _TransitList() {
-    if (busDirections.isNotEmpty &&
+    if (busDirections != null &&
+        busDirections.isNotEmpty &&
         (_selectedVehicles == '목발' ||
             _selectedVehicles == '휠체어' ||
             _selectedVehicles == '전동휠체어')) {
@@ -624,22 +622,25 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                 child: GestureDetector(
                   // GestureDetector를 사용하여 onTap 이벤트를 추가합니다.
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => TransitPathMap(
-                          initialSearchAddress: _originController.text,
-                          initialDestinationSearchAddress:
-                              _destinationController.text,
-                          startLat: widget.startLat!,
-                          startLon: widget.startLon!,
-                          endLat: widget.endLat!,
-                          endLon: widget.endLon!,
-                          formattedCoordinates: [transitCoordinates],
-                          type: _selectedVehicles!, // 선택된 이동 방식 전달
+                    if (_selectedVehicles != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              TransitPathMap(
+                                initialSearchAddress: _originController.text,
+                                initialDestinationSearchAddress: _destinationController
+                                    .text,
+                                startLat: widget.startLat!,
+                                startLon: widget.startLon!,
+                                endLat: widget.endLat!,
+                                endLon: widget.endLon!,
+                                formattedCoordinates: [transitCoordinates],
+                                type: _selectedVehicles!, // 선택된 이동 방식 전달
+                              ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -710,20 +711,14 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                                   ["trafficType"] ==
                                               1
                                           ? Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                              mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
-                                                Icon(Icons.directions_subway,
-                                                    color: Colors.white,
-                                                    size: 18),
-                                                Flexible(
+                                                Icon(Icons.directions_subway, color: Colors.white, size: 18),
+                                                Expanded(
                                                   child: Text(
                                                     ' ${busDirections[i]["subPaths"][j]["sectionTime"]}분',
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 14),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(color: Colors.white, fontSize: 14),
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                               ],
@@ -732,36 +727,25 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                                       ["trafficType"] ==
                                                   2
                                               ? Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
+                                                  mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
-                                                    Icon(Icons.directions_bus,
-                                                        color: Colors.white,
-                                                        size: 18),
-                                                    Flexible(
+                                                    Icon(Icons.directions_bus, color: Colors.white, size: 18),
+                                                    Expanded(
                                                       child: Text(
                                                         ' ${busDirections[i]["subPaths"][j]["sectionTime"]}분',
-                                                        style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 14),
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
+                                                        style: TextStyle(color: Colors.white, fontSize: 14),
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
                                                     ),
                                                   ],
                                                 )
-                                              : Center(
-                                                  child: Flexible(
-                                                    child: Text(
-                                                      ' ${busDirections[i]["subPaths"][j]["sectionTime"]}분',
-                                                      style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 14),
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                ), // 다른 경우에는 아무것도 표시하지 않음
+                                          : Center(
+                                        child: Text(
+                                          ' ${busDirections[i]["subPaths"][j]["sectionTime"]}분',
+                                          style: TextStyle(color: Colors.white, fontSize: 14),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
                                     ),
                                   );
                                 },
@@ -795,8 +779,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                                       Icon(
                                                         Icons.directions_subway,
                                                         // 지하철 아이콘
-                                                        color: Colors
-                                                            .blue, // 아이콘 색상
+                                                        color: Colors.blue, // 아이콘 색상
                                                         size: 22, // 아이콘 크기
                                                       ),
                                                       SizedBox(width: 5),
@@ -828,8 +811,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                                       Container(
                                                         height: 50, // 선의 높이
                                                         width: 2, // 선의 너비
-                                                        color: Colors
-                                                            .blue, // 선의 색상
+                                                        color: Colors.blue, // 선의 색상
                                                       ),
                                                       SizedBox(width: 80),
                                                       Text(
@@ -851,8 +833,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                                       Icon(
                                                         Icons.directions_subway,
                                                         // 지하철 아이콘
-                                                        color: Colors
-                                                            .blue, // 아이콘 색상
+                                                        color: Colors.blue, // 아이콘 색상
                                                         size: 22, // 아이콘 크기
                                                       ),
                                                       SizedBox(width: 8),
@@ -887,8 +868,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                               ? Container(
                                                   child: Column(
                                                     crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
+                                                        CrossAxisAlignment.start,
                                                     children: [
                                                       Row(
                                                         children: [
@@ -905,11 +885,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                                             '저상', // 텍스트 내용
                                                             style: TextStyle(
                                                                 fontSize: 16,
-                                                                color: Colors
-                                                                    .green,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold), // 텍스트 스타일
+                                                                color: Colors.green,
+                                                                fontWeight: FontWeight.bold), // 텍스트 스타일
                                                           ),
                                                           SizedBox(width: 22),
                                                           // 아이콘과 텍스트 사이 간격
@@ -918,11 +895,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                                             // 텍스트 내용
                                                             style: TextStyle(
                                                                 fontSize: 16,
-                                                                color: Colors
-                                                                    .black,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold), // 텍스트 스타일
+                                                                color: Colors.black,
+                                                                fontWeight: FontWeight.bold), // 텍스트 스타일
                                                           ),
                                                         ],
                                                       ),
@@ -938,8 +912,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                                           SizedBox(width: 10),
                                                           Row(
                                                             children: [
-                                                              SizedBox(
-                                                                  width: 70),
+                                                              SizedBox(width: 70),
                                                               Container(
                                                                 padding: EdgeInsets
                                                                     .symmetric(
@@ -971,14 +944,12 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                                                               .bold), // 텍스트 스타일
                                                                 ),
                                                               ),
-                                                              SizedBox(
-                                                                  width: 5),
+                                                              SizedBox(width: 5),
                                                               Text(
                                                                 '${busDirections[i]['subPaths'][j]["busList"][0]["busBeforeCount"]} 정거장 전',
                                                                 // 텍스트 내용
                                                                 style: TextStyle(
-                                                                    fontSize:
-                                                                        16,
+                                                                    fontSize: 16,
                                                                     color: Colors
                                                                         .black), // 텍스트 스타일
                                                               ),
@@ -1001,11 +972,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                                             '저상', // 텍스트 내용
                                                             style: TextStyle(
                                                                 fontSize: 16,
-                                                                color: Colors
-                                                                    .green,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold), // 텍스트 스타일
+                                                                color: Colors.green,
+                                                                fontWeight: FontWeight.bold), // 텍스트 스타일
                                                           ),
                                                           SizedBox(width: 22),
                                                           // 아이콘과 텍스트 사이 간격
@@ -1014,11 +982,8 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                                             // 텍스트 내용
                                                             style: TextStyle(
                                                                 fontSize: 16,
-                                                                color: Colors
-                                                                    .black,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold), // 텍스트 스타일
+                                                                color: Colors.black,
+                                                                fontWeight: FontWeight.bold), // 텍스트 스타일
                                                           ),
                                                         ],
                                                       ),
@@ -1034,8 +999,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                                                       Icon(
                                                         Icons
                                                             .accessible, // 걷는 아이콘
-                                                        color: Colors
-                                                            .grey, // 아이콘 색상
+                                                        color: Colors.grey, // 아이콘 색상
                                                         size: 22, // 아이콘 크기
                                                       ),
                                                       SizedBox(

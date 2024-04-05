@@ -196,22 +196,18 @@ domain
 
 ### 프로젝트 산출물
 
-- [페르소나](docs/프로젝트%20산출물/페르소나.md)
 - [기능명세서](docs/프로젝트%20산출물/기능명세서.md)
 - [시스템 아키텍처](docs/프로젝트%20산출물/시스템아키텍처.md)
 - [와이어프레임](docs/프로젝트%20산출물/와이어프레임.md)
-- [화면정의서](docs/프로젝트%20산출물/화면정의서.md)
 - [ERD](docs/프로젝트%20산출물/ERD.md)
-- [Flow chart](docs/프로젝트%20산출물/FlowChart.md)
-- [시퀀스 다이어그램](docs/프로젝트%20산출물/시퀀스다이어그램.md)
 - [API 명세서](docs/프로젝트%20산출물/API명세서.md)
 - [BE 코드 컨벤션](docs/프로젝트%20산출물/BE코드컨벤션.md)
-- [FE 코드 컨벤션](docs/프로젝트%20산출물/FE코드컨벤션.md)
+- [포팅메뉴얼](docs/프로젝트%20산출물/포팅메뉴얼.md)
 ---
 ### 프로젝트 결과물
 
-- [중간 발표자료](docs/프로젝트%20결과물/기획발표자료.md)
-- [최종 발표자료](docs/프로젝트%20결과물/최종발표자료.md)
+- [중간 발표자료](docs/프로젝트%20결과물/중간발표.md)
+- [최종 발표자료](docs/프로젝트%20결과물/최종발표.md)
 
 ---
 
@@ -220,22 +216,31 @@ domain
 
 <table style="width: 100%; text-align: center;">
   <tr>
-    <td style="text-align: center;"><img src="docs/images/김준표.jpg" width="110"><br><strong>김준표</strong><br>🍪Back-end<br>💎Team Leader<br>🤴Back-end Leader</td>
-    <td style="text-align: center;"><img src="docs/images/김혜지.jpg" width="110"><br><strong>김혜지</strong><br>💟Back-end</td>
-    <td style="text-align: center;"><img src="docs/images/이민형.jpg" width="110"><br><strong>이민형</strong><br>🧗‍♂️Back-end<br>🧔Survey Leader</td>
+    <td style="text-align: center;"><img src="docs/src/이재신.png" width="110"><br><strong>이재신</strong><br>🍪Back-end<br>💎Team Leader</td>
+    <td style="text-align: center;"><img src="docs/src/신유진.png" width="110"><br><strong>신유진</strong><br>💟Back-end</td>
+    <td style="text-align: center;"><img src="docs/src/이민형.png" width="110"><br><strong>이민형</strong><br>🧗‍♂️Back-end<br>🧔Survey Leader</td>
   </tr>
   <tr>
-    <td style="text-align: center;"><img src="docs/images/이태경.jpg" width="110"><br><strong>이태경</strong><br>🍖Back-end<br>🎥발표/UCC 제작</td>
-    <td style="text-align: center;"><img src="docs/images/김은지.jpg" width="110"><br><strong>김은지</strong><br>🌹Front-end<br>👸Front-end Leader</td>
-    <td style="text-align: center;"><img src="docs/images/강대은.jpg" width="110"><br><strong>강대은</strong><br>🍞Front-end</td>
+    <td style="text-align: center;"><img src="docs/src/이태경.png" width="110"><br><strong>이태경</strong><br>🍖Back-end<br>🎥UCC 제작</td>
+    <td style="text-align: center;"><img src="docs/src/김은지.png" width="110"><br><strong>김은지</strong><br>🌹Front-end<br></td>
+    <td style="text-align: center;"><img src="docs/src/서민지.png" width="110"><br><strong>서민지</strong><br>🍞Front-end</td>
   </tr>
 </table>
 
 ---
-## SCENE:RGY 서비스 화면
+## hBAF 서비스 화면
 
 ### 로그인
-<img src="docs/images/serviceGIF/로그인.gif" width="100%">
+
+
+<img src="docs/src/usecase/도보%20길찾기%20추천%20경로.gif" width="100%" height="100%">
+
+
+--- | --- 
+<img src="docs/src/usecase/즐겨찾기%20기능.gif"> | <img src="docs/src/usecase/택시%20예상%20요금%20안내.gif">
+<img src="docs/src/usecase/휠체어%20택시%20전화%20연결.gif"> | <img src="docs/src/usecase/리뷰%20작성하기.gif">
+<img src="docs/src/usecase/휠체어%20택시%20전화%20연결.gif"> | <img src="docs/src/usecase/리뷰%20작성하기.gif">
+
 
 ### 화상채팅
 <img src="docs/images/serviceGIF/peerjs.gif" width="100%">

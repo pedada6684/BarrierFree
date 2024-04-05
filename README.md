@@ -1,61 +1,72 @@
-> 음악과 사람을 잇는 모든 연결의 시작, 시너지
+> 함께 가는 길, 장애물 없는 하루
 ---
-![시너지로고](docs/images/SCENERGY_logo.png)
+![베프로고](docs/images/BAF_LOGO.jpg)
 
 ---
 ###  💎프로젝트 진행기간
-2024.01.08(월) ~ 2024.02.16(금) (40일간 진행)  
-SSAFY 10기 2학기 공통 프로젝트 - SCENE:RGY
+2024.02.22(목) ~ 2024.04.04(목) (30일간 진행)  
+SSAFY 10기 2학기 특화 프로젝트 - 베프
 
 ---
 ### 🎬소개영상 보기
-https://youtu.be/McxwgpA2l3k
+https://www.youtube.com/watch?v=wrNHhnH9OpY
 
 --- 
-### 🏅 SCENE:RGY - 배경
+### 🏅 베프 - 배경
 
-친구, 커뮤니티 게시글로부터 뮤지션들이 팀 활동을 하기 위해 협업파트너를 구하기 어렵다는 이야기를 전해 들었습니다. 저희는 정확히 어떠한 어려움이 있는지 알기 위해 뮤지션들을 대상으로 설문조사를 진행 하였으며, 파트너를 찾는 과정에서 어려움을 겪는 답변으로 ‘협업 파트너를 찾기 어렵다(43.9%)’, ‘실력 검증이 어렵다(43.9%)’의 비율(복수 응답 가능)이 높았습니다. 또한 원하는 기능으로 ‘음악 창작물을 공유(48.8%)’, ‘나의 활동 이력을 관리(53.7%)’의 답변 비율(복수 응답 가능)이 높았습니다.
+배리어프리란,
 
-위와 같은 뮤지션들의 어려움을 해결하기 위해 저희는 자신의 연주 영상을 기록하며 공유하고, 프로필에서 이력서를 관리할 수 있는 기능을 제공하는 ‘Scenergy’ 웹 서비스를 기획하게 되었습니다. Scenergy에서 다른 사람들의 연주 영상을 손쉽게 접하며, 마음에 드는 영상의 연주자의 포트폴리오를 확인해 검증된 협업 파트너를 보다 쉽게 구할 수 있습니다.
+장벽과 자유의 합성어로 사회적 약자들의 사회 생활에 있어 지장이 되는
+물리적, 심리적 장벽을 없애는 것을 의미합니다. 저희는 수많은 장벽 중 휠체어 사용자의 **대전광역시** 교통 불편에 집중하였습니다.
+
+대전시지체장애인협회 등 5개 협회와 인터뷰를 진행해 '대중교통 이용', '도보 이동', '장애인 콜택시 이용'  세 가지 어려움을 확인할 수 있었습니다.
+
+1. 대중교통 이용
+
+편의성과 안전성을 이유로 버스 보다 지하철을 선호하며, 버스의 경우 저상 버스 도착 정보를 별도로 확인해야하는 번거로움도 있었습니다. 또한 이동시 1시간 정도 이동시간이 더 소모되더라도 최소 환승 경로를 선호하는 것으로 나타났습니다.  
+
+2. 도보 이동
+
+휠체어를 타고 이동 중 계단이나 경사도가 급한 도로를 마주치는 경우, 어디로 길을 돌아가야 하지 대체 경로를 확인하기 어렵다는 경험을 들었습니다.
+
+3. 장애인 콜택시 이용
+
+인터뷰를 진행해주신 대부분의 분들께서는 가장 선호하는 이동 수단은 콜택시라고 답변해주셨습니다. 하지만, 장애인 콜택시의 이용 요금 계산 방식이 일반 택시와 달라
+요금이 어느정도 나올지 알 수 없다는 어려움이 있었습니다.
 
 ___
 ### 프로젝트 소개
-+ Scenergy는 `Springboot` `React`를 기반으로 만들어진 뮤지션을 위한 웹 큐레이팅 SNS 입니다.
++ 베프는 `Springboot` `Flutter`를 기반으로 만들어진 휠체어 사용자를 위한 교통앱 입니다.
 
 
 ---
-### 🔎 SCENE:RGY - 개요
+### 🔎 베프 - 개요
 
-SCENE:RGY - 음악인을 위한 연결 플랫폼
+베프 - 휠체어 사용자를 위한 교통앱 서비스
 
-더 효율적인 팀 구성을 통해 음악적 시너지를 만들어보세요.
+베프는 휠체어 사용자들이 이동 시 겪는 어려움을 해결해 자유로운 이동을 가능하게 합니다.
 
-SCENE:RGY는 음악인들의 활발한 교류와 협업을 통해 시너지를 창출하는 플랫폼입니다. 뮤지션들은 SCENE:RGY를 통해 다음과 같은 어려움을 해결할 수 있습니다.
+#### 베프의 주요 기능 : 
+- 계단이 없는 경로로 휠체어를 통해 이동 가능
+- 최단 경로와 경사가 완만한 경로 두 가지의 경로 추천
+- 버스 이용 경로 탐식 시, 저상 버스만을 필터
+- 장애인 콜택시 예상 요금 확인
+- 전동 휠체어 충전소, 장애인 화장실 등 배리어프리 시설 확인
 
-- 지인에 의존하지 않고 원하는 뮤지션과 간편하게 연결
-- 실력 검증 기능을 통해 신뢰할 수 있는 팀원 확보
-- 작업물 공유 및 포트폴리오 제작
-
-SCENE:RGY의 주요 기능:
-
-- 팔로우 시스템: 관심 있는 뮤지션을 팔로우하여 작업물을 확인하고 팀 구성 제안
-- 실력 검증: 화상통화 기능을 통한 실시간 실력 확인
-- 작업물 공유: 자신만의 작업물을 공유하고 포트폴리오로 활용
-- 채팅 기능: 팀 구성을 위한 간편한 소통
-
-**SCENE:RGY와 함께 음악적 꿈을 향한 여정을 시작하세요!**
+**베프와 함께 장애물 없는 하루를 시작하세요!**
 
 
 --- 
 
 ### 🚩 프로젝트 목표
-- 멤버를 구하는데 어려움을 겪는 뮤지션을 위해 플랫폼을 제공합니다.
-- 연주 영상 업로드에 특화된 게시글 작성 기능을 통해 자신을 어필하고 싶은 뮤지션에게 좀 더 나은 환경을 제공합니다.
+- 휠체어 사용자를 위한 교통 앱 서비스를 개발합니다.
+- 계단이 없는 경로를 추천하며, 경사도가 높은 경우 돌아갈 수 있는 경로를 추천합니다.
+- 주로 이용하는 장애인 콜택시의 예상 요금을 확인할 수 있도록 합니다.
 - 역할을 분담하여 서비스를 코드로  **구현**하고  **배포**합니다.
--   구현하는 과정에서 Front-end와 Back-end가  **협업**하는 과정을 이해합니다.
--   RESTful API를 직접 설계하고 API를 통한 HTTP 통신을 겪으며 협업 능력을 기릅니다.
--   자신이 맡은 부분을 남에게 설명할 수 있는 의사소통 능력을 기릅니다.
--   단순히 구현 후 끝나는 것이 아닌  **코드 리뷰**와  **피드백**을 통해 함께 성장합니다.
+- 구현하는 과정에서 Front-end와 Back-end가  **협업**하는 과정을 이해합니다.
+- RESTful API를 직접 설계하고 API를 통한 HTTP 통신을 겪으며 협업 능력을 기릅니다.
+- 자신이 맡은 부분을 남에게 설명할 수 있는 의사소통 능력을 기릅니다.
+- 단순히 구현 후 끝나는 것이 아닌  **코드 리뷰**와  **피드백**을 통해 함께 성장합니다.
 
 ---
 ### 기술스택
@@ -63,21 +74,34 @@ SCENE:RGY의 주요 기능:
 #### 개발 환경
 
 <img src="https://img.shields.io/badge/intellijidea-000000.svg?&style=for-the-badge&logo=intellijidea&logoColor=white"> 
+<img src="https://img.shields.io/badge/androidstudio-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white">
 
 #### 개발
 
 - ##### BackEnd & Database
 
-<img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"> <img src="https://img.shields.io/badge/springsecurity-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white"> <img src="https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white"> <img src="https://img.shields.io/badge/apachekafka-231F20?style=for-the-badge&logo=apachekafka&logoColor=white"> <img src="https://img.shields.io/badge/springdatajpa-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> <img src="https://img.shields.io/badge/h2database-231F20?style=for-the-badge&logo=h2database&logoColor=white"> <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">
+<img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">  
+<img src="https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white"> 
+<img src="https://img.shields.io/badge/h3-1E54B7.svg?style=for-the-badge&logo=h3&logoColor=white">  
+<img src="https://img.shields.io/badge/springdatajpa-6DB33F?style=for-the-badge&logo=spring&logoColor=white"> 
+<img src="https://img.shields.io/badge/h2database-231F20?style=for-the-badge&logo=h2database&logoColor=white"> 
+<img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">
 
 - ##### FrontEnd
-<img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=white"> <img src="https://img.shields.io/badge/peerjs-%23000000.svg?style=for-the-badge&logo=peerjs&logoColor=white"> <img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=white"> <img src="https://img.shields.io/badge/reactquery-FF4154?style=for-the-badge&logo=reactquery&logoColor=white">
+<img src="https://img.shields.io/badge/flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white">  
+<img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=white">
+<img src="https://img.shields.io/badge/dart-0175C2?style=for-the-badge&logo=dart&logoColor=white">
+
 
 #### CI/CD
-<img src="https://img.shields.io/badge/amazonec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white"> <img src="https://img.shields.io/badge/amazons3-569A31?style=for-the-badge&logo=amazons3&logoColor=white"> <img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/nginx-009639?style=for-the-badge&logo=nginx&logoColor=white"> <img src="https://img.shields.io/badge/jenkins-%232C5263.svg?style=for-the-badge&logo=jenkins&logoColor=white">
+<img src="https://img.shields.io/badge/amazonec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white">
+<img src="https://img.shields.io/badge/amazons3-569A31?style=for-the-badge&logo=amazons3&logoColor=white">
+<img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> 
+<img src="https://img.shields.io/badge/nginx-009639?style=for-the-badge&logo=nginx&logoColor=white"> 
+<img src="https://img.shields.io/badge/jenkins-%232C5263.svg?style=for-the-badge&logo=jenkins&logoColor=white">
 
 #### 협업 툴
-<img src="https://img.shields.io/badge/gitlab-FC6D26?style=for-the-badge&logo=gitlab&logoColor=white"> <img src="https://img.shields.io/badge/jirasoftware-0052CC?style=for-the-badge&logo=jirasoftware&logoColor=white"> <img src="https://img.shields.io/badge/gerrit-0058CC?style=for-the-badge&logo=gerrit&logoColor=white"> <img src="https://img.shields.io/badge/mattermost-0058CC?style=for-the-badge&logo=mattermost&logoColor=white"> <img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=Figma&logoColor=white"> <img src="https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white"> <img src="https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white">
+<img src="https://img.shields.io/badge/gitlab-FC6D26?style=for-the-badge&logo=gitlab&logoColor=white"> <img src="https://img.shields.io/badge/jirasoftware-0052CC?style=for-the-badge&logo=jirasoftware&logoColor=white"> <img src="https://img.shields.io/badge/gerrit-0058CC?style=for-the-badge&logo=gerrit&logoColor=white"> <img src="https://img.shields.io/badge/mattermost-0058CC?style=for-the-badge&logo=mattermost&logoColor=white"> <img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=Figma&logoColor=white"> <img src="https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white">
 ---
 ### 백엔드 디렉토리 구조
  ```sh

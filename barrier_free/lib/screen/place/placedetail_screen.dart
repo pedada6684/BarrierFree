@@ -48,7 +48,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   void initState() {
     super.initState();
     // 장소 상세 정보에서 위도와 경도를 가져옵니다.
-    print('============${widget.placeDetail}==============');
     barrierFreeDetailsFuture = _fetchBarrierFreeDetails();
 
     reviewListFuture =
@@ -471,7 +470,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
-                      return Text('리뷰를 불러오는데 실패했습니다: ${snapshot.error}');
+                      return Text('리뷰를 불러오는데 실패했습니다');
                     } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                       return ListView.builder(
                         physics: NeverScrollableScrollPhysics(),

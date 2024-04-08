@@ -6,6 +6,7 @@ import 'package:barrier_free/screen/place/placedetail_screen.dart';
 import 'package:barrier_free/services/bookmarkPlace_service.dart';
 import 'package:barrier_free/services/search_service.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 class MyFavoriteScreen extends StatefulWidget {
@@ -50,7 +51,10 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
     final keyword = bookmark['placeName'];
 
     try {
-      final searchResults = await fetchSearchResults(keyword);
+      Position currentPosition = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+
+      final searchResults = await fetchSearchResults(keyword, currentPosition);
       if (searchResults.isNotEmpty) {
         Navigator.push(
             context,

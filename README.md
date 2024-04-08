@@ -123,34 +123,77 @@ domain
 
 ### 프론트 디렉토리 구조
 ```sh
-├─actions
-├─apis
-│  ├─entity
-│  ├─Profile
-│  ├─User
-│  └─VideoUpload
-├─assets
-│  └─VideoUpload
-├─components
-│  ├─Chat
-│  ├─commons
-│  │  ├─Dialog
-│  │  ├─Drawer
-│  │  ├─Navbar
-│  │  ├─ScenergyList
-│  │  └─Search
-│  ├─JobPost
-│  ├─Portfolio
-│  ├─Profile
-│  ├─Search
-│  ├─User
-│  └─VideoUpload
-├─contexts
-├─hooks
-├─pages
-├─reducers
-├─router
-└─store
+├─lib
+│  │  main.dart
+│  │
+│  ├─component
+│  │      appBar.dart
+│  │      bottomBar.dart
+│  │      facility_button.dart
+│  │      mapsearch_result_list.dart
+│  │      map_markers.dart
+│  │
+│  ├─const
+│  │      color.dart
+│  │
+│  ├─provider
+│  │      location_provider.dart
+│  │      user_provider.dart
+│  │
+│  ├─providers
+│  │      text_provider.dart
+│  │
+│  ├─screen
+│  │  │  home_screen.dart
+│  │  │
+│  │  ├─directions
+│  │  │      bus_path_map.dart
+│  │  │      directionssearch_result_list.dart
+│  │  │      directions_screen.dart
+│  │  │      taxi_path_map.dart
+│  │  │      transit_path_map.dart
+│  │  │      wheel_path_map.dart
+│  │  │
+│  │  ├─login
+│  │  │      login_platform.dart
+│  │  │      login_screen.dart
+│  │  │
+│  │  ├─map
+│  │  │      mapresult_screen.dart
+│  │  │      map_screen.dart
+│  │  │
+│  │  ├─mypage
+│  │  │      myfavorite_screen.dart
+│  │  │      mypage_screen.dart
+│  │  │      myplace_screen.dart
+│  │  │      myreview_screen.dart
+│  │  │
+│  │  ├─place
+│  │  │      placedetail_screen.dart
+│  │  │
+│  │  ├─review
+│  │  │      review_screen.dart
+│  │  │
+│  │  └─search
+│  │          mapresult_screen.dart
+│  │          search_screen.dart
+│  │
+│  └─services
+│          barrierfree_service.dart
+│          bookmarkPlace_service.dart
+│          location_service.dart
+│          place_service.dart
+│          review_service.dart
+│          search_service.dart
+│          secure_storage_service.dart
+│          taxipath_service.dart
+│          test_service.dart
+│          transitpath_service.dart
+│          wheelpath_service.dart
+│
+└─test
+        widget_test.dart
+
 ```
 
 ---

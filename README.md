@@ -230,38 +230,24 @@ domain
 ---
 ## hBAF 서비스 화면
 
-### 로그인
-
-
-<img src="docs/src/usecase/도보%20길찾기%20추천%20경로.gif" width="100%" height="100%">
-
-
---- | --- 
-<img src="docs/src/usecase/즐겨찾기%20기능.gif"> | <img src="docs/src/usecase/택시%20예상%20요금%20안내.gif">
-<img src="docs/src/usecase/휠체어%20택시%20전화%20연결.gif"> | <img src="docs/src/usecase/리뷰%20작성하기.gif">
-<img src="docs/src/usecase/휠체어%20택시%20전화%20연결.gif"> | <img src="docs/src/usecase/리뷰%20작성하기.gif">
-
-
-### 화상채팅
-<img src="docs/images/serviceGIF/peerjs.gif" width="100%">
-
-### 검색
-<img src="docs/images/serviceGIF/검색.gif" width="100%">
-
-### 알림
-<img src="docs/images/serviceGIF/알림.gif" width="100%">
-
-### 영상 업로드
-<img src="docs/images/serviceGIF/영상업로드.gif" width="100%">
-
-### 채팅
-<img src="docs/images/serviceGIF/채팅.gif" width="100%">
-
-### 프로필
-<img src="docs/images/serviceGIF/프로필.gif" width="100%">
-
-### 피드
-<img src="docs/images/serviceGIF/피드.gif" width="100%">
-
-### 구인구직
-<img src="docs/images/serviceGIF/시너지.gif" width="100%">
+<table style="width: 100%; text-align: center; border-collapse: collapse;" >
+  <tr>
+    <td style="text-align: center;"><h3>로그인</h3><img src="docs/src/usecase/로그인.gif" width="85%"></td>
+    <td style="text-align: center;"><h3>내주변 베리어프리 장소 표시</h3><img src="docs/src/usecase/배리어프리마커.gif" width="85%"></td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"><h3>베리어프리 장소 검색하기</h3><img src="docs/src/usecase/배리어프리장소검색.gif" width="85%"></td>
+    <td style="text-align: center;"><h3>베리어프리 리뷰 작성하기</h3><img src="docs/src/usecase/리뷰작성하기.gif" width="85%"></td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"><h3>장소 즐겨찾기, 내가 쓴 글 열람</h3><img src="docs/src/usecase/즐겨찾기기능.gif" width="85%"></td>
+    <td style="text-align: center;"><h3>도보 길찾기</h3><img src="docs/src/usecase/도보길찾기추천경로.gif" width="85%"></td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"><h3>대중교통 길찾기</h3><img src="docs/src/usecase/대중교통길찾기.gif" width="85%"></td>
+    <td style="text-align: center;"><h3>택시 요금 길찾기 & 요금안내</h3><img src="docs/src/usecase/택시예상요금안내.gif" width="85%"></td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"><h3>장애인 콜택시 전화 연결</h3><img src="docs/src/usecase/휠체어택시전화연결.gif" width="85%"></td>
+  </tr>
+</table>
